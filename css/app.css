@@ -1,0 +1,393 @@
+:root {
+    --bg-app: #000000;
+    --bg-panel: #0a0a0a;
+    --bg-hover: #171717;
+    --border: #262626;
+    --text-primary: #ededed;
+    --text-secondary: #a1a1aa;
+    --primary: #0070f3;
+    /* Vercel Blue */
+    --success: #10b981;
+    --warning: #f5a623;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 1fr;
+    /* The magic split */
+    height: 100vh;
+}
+
+/* --- SIDEBAR --- */
+#sidebar {
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* CRITICAL FIX: allows scrolling */
+}
+
+.brand {
+    padding: 20px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-container {
+    flex: 1;
+    /* CRITICAL FIX: Forces it to fill space and scroll */
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.nav-phase {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 20px 0 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.nav-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: 0.2s;
+    display: flex;
+    justify-content: space-between;
+}
+
+.nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background: rgba(0, 112, 243, 0.1);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+}
+
+.nav-item.completed .status-indicator {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+/* --- MIDDLE PANE (Briefing) --- */
+#briefing-pane {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: var(--bg-app);
+    min-height: 0;
+    overflow: hidden;
+    /* <--- ADD THIS to force the middle section to scroll properly */
+}
+
+.pane-header {
+    padding: 40px 40px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tag {
+    font-size: 0.75rem;
+    background: var(--border);
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+}
+
+h1 {
+    font-size: 2rem;
+    margin-top: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.pane-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #d4d4d8;
+}
+
+.pane-content h2 {
+    color: var(--text-primary);
+    margin: 2rem 0 1rem;
+    font-size: 1.3rem;
+}
+
+.pane-content p {
+    margin-bottom: 1.5rem;
+}
+
+.mission-box {
+    background: rgba(245, 166, 35, 0.1);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.pane-footer {
+    padding: 20px 40px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-app);
+    /* <--- ADD THIS so it stays solid */
+    flex-shrink: 0;
+    /* <--- ADD THIS so the button never gets squished */
+    z-index: 10;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-primary:disabled {
+    background: var(--border);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+/* --- RIGHT PANE (Workspace) --- */
+#workspace-pane {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    min-height: 0;
+    /* CRITICAL FIX */
+}
+
+.workspace-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: #111111;
+    /* Slightly lighter so it doesn't blend into the abyss */
+}
+
+.tab {
+    padding: 12px 24px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tab.active {
+    background: var(--bg-panel);
+    /* Matches the pane below it */
+    color: var(--primary);
+    border-top: 2px solid var(--primary);
+}
+
+.workspace-content {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* CRITICAL FIX */
+}
+
+.workspace-view {
+    display: none;
+    flex: 1;
+    /* Makes it stretch */
+    flex-direction: column;
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    overflow: hidden;
+    /* Contains the scroll */
+}
+
+.workspace-view.active {
+    display: flex;
+}
+
+/* Terminal Mode */
+#ui-terminal {
+    background: #000000;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+#term-output {
+    flex: 1;
+    /* Takes up all available space above the input */
+    overflow-y: auto;
+    /* Scrolls naturally */
+    color: #a3a3a3;
+    display: block;
+}
+
+.term-input-line {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.prompt {
+    color: var(--success);
+    margin-right: 10px;
+}
+
+#term-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    flex: 1;
+    outline: none;
+}
+
+/* Editor Mode */
+#ui-editor {
+    flex-direction: row;
+    padding: 0;
+}
+
+.run-code-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: var(--success);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* --- Visualizer Mode --- */
+#ui-visualizer {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: var(--bg-app);
+}
+
+.visualizer-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 40px;
+}
+
+.git-zone {
+    background: var(--bg-panel);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.zone-header {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+.zone-body {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.file-node {
+    background: #1f2937;
+    border: 1px solid #374151;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    text-align: center;
+}
+
+.file-node.untracked {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.file-node.staged {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(0, 112, 243, 0.1);
+}
+
+.file-node.committed {
+    border-color: var(--success);
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+/* Mini Terminal mapped to the bottom of the visualizer */
+.mini-terminal {
+    height: 120px;
+    background: #000;
+    border-top: 1px solid var(--border);
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+#vis-term-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: var(--font-mono);
+    flex: 1;
+    outline: none;
+}

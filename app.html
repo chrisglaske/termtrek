@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCore | Interactive Workspace</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+
+<body>
+
+    <div id="app-layout">
+        <aside id="sidebar">
+            <a href="index.html" class="brand" style="text-decoration: none; color: var(--text-primary);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
+                    <path d="m18 16 4-4-4-4" />
+                    <path d="m6 8-4 4 4 4" />
+                    <path d="m14.5 4-5 16" />
+                </svg>
+                DevCore
+            </a>
+            <div class="nav-container" id="nav-tree">
+            </div>
+        </aside>
+
+        <section id="briefing-pane">
+            <header class="pane-header">
+                <span id="module-tag" class="tag">Phase 0</span>
+                <h1 id="module-title">Initializing...</h1>
+            </header>
+            <div class="pane-content" id="module-content">
+            </div>
+            <footer class="pane-footer">
+                <button id="next-mission-btn" class="btn-primary" disabled>Mission Incomplete</button>
+            </footer>
+        </section>
+
+        <section id="workspace-pane">
+            <header class="workspace-tabs">
+                <div class="tab active" id="tab-terminal">Terminal</div>
+                <div class="tab" id="tab-editor">editor.py</div>
+                <div class="tab" id="tab-visualizer">Git Graph</div>
+            </header>
+
+            <div class="workspace-content">
+                <div id="ui-terminal" class="workspace-view active">
+                    <div class="term-output" id="term-output"></div>
+                    <div class="term-input-line">
+                        <span class="prompt">~/project $</span>
+                        <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+                </div>
+
+                <div id="ui-visualizer" class="workspace-view hidden">
+                    <div class="visualizer-container">
+                        <div class="git-zone" id="zone-working">
+                            <div class="zone-header">Working Directory</div>
+                            <div class="zone-body">
+                                <div class="file-node untracked" id="file-index">index.txt</div>
+                            </div>
+                        </div>
+
+                        <div class="git-zone" id="zone-staging">
+                            <div class="zone-header" style="color: var(--primary);">Staging Area</div>
+                            <div class="zone-body" id="body-staging"></div>
+                        </div>
+
+                        <div class="git-zone" id="zone-repo">
+                            <div class="zone-header" style="color: var(--success);">Repository (Vault)</div>
+                            <div class="zone-body" id="body-repo"></div>
+                        </div>
+                    </div>
+
+                    <div class="mini-terminal">
+                        <div id="vis-term-output"
+                            style="color: #a3a3a3; margin-bottom: 10px; height: 40px; overflow-y: auto;"></div>
+                        <div class="term-input-line">
+                            <span class="prompt">~/project $</span>
+                            <input type="text" id="vis-term-input" autocomplete="off" spellcheck="false">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ui-editor" class="workspace-view hidden" style="padding: 0; position: relative;">
+                    <div id="code-editor" style="flex: 1; height: 100%;"></div>
+
+                    <button class="run-code-btn" onclick="executePython()" style="z-index: 10;">Run Code ▶</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/engine.js"></script>
+</body>
+
+</html>
