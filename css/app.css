@@ -6,9 +6,9 @@
     --text-primary: #ededed;
     --text-secondary: #a1a1aa;
     --primary: #0070f3;
-    /* Vercel Blue */
     --success: #10b981;
     --warning: #f5a623;
+    --danger: #ef4444;
     --font-sans: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 }
@@ -30,7 +30,6 @@ body {
 #app-layout {
     display: grid;
     grid-template-columns: 260px 1fr 1fr;
-    /* The magic split */
     height: 100vh;
 }
 
@@ -41,7 +40,6 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    /* CRITICAL FIX: allows scrolling */
 }
 
 .brand {
@@ -56,7 +54,6 @@ body {
 
 .nav-container {
     flex: 1;
-    /* CRITICAL FIX: Forces it to fill space and scroll */
     padding: 20px;
     overflow-y: auto;
 }
@@ -112,7 +109,6 @@ body {
     background: var(--bg-app);
     min-height: 0;
     overflow: hidden;
-    /* <--- ADD THIS to force the middle section to scroll properly */
 }
 
 .pane-header {
@@ -166,9 +162,7 @@ h1 {
     padding: 20px 40px;
     border-top: 1px solid var(--border);
     background: var(--bg-app);
-    /* <--- ADD THIS so it stays solid */
     flex-shrink: 0;
-    /* <--- ADD THIS so the button never gets squished */
     z-index: 10;
 }
 
@@ -195,14 +189,12 @@ h1 {
     flex-direction: column;
     background: var(--bg-panel);
     min-height: 0;
-    /* CRITICAL FIX */
 }
 
 .workspace-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
     background: #111111;
-    /* Slightly lighter so it doesn't blend into the abyss */
 }
 
 .tab {
@@ -216,7 +208,6 @@ h1 {
 
 .tab.active {
     background: var(--bg-panel);
-    /* Matches the pane below it */
     color: var(--primary);
     border-top: 2px solid var(--primary);
 }
@@ -227,19 +218,16 @@ h1 {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    /* CRITICAL FIX */
 }
 
 .workspace-view {
     display: none;
     flex: 1;
-    /* Makes it stretch */
     flex-direction: column;
     padding: 20px;
     font-family: var(--font-mono);
     font-size: 0.9rem;
     overflow: hidden;
-    /* Contains the scroll */
 }
 
 .workspace-view.active {
@@ -253,13 +241,12 @@ h1 {
     display: flex;
     flex-direction: column;
     padding: 20px;
+    cursor: text;
 }
 
 #term-output {
     flex: 1;
-    /* Takes up all available space above the input */
     overflow-y: auto;
-    /* Scrolls naturally */
     color: #a3a3a3;
     display: block;
 }
@@ -373,7 +360,6 @@ h1 {
     background: rgba(16, 185, 129, 0.1);
 }
 
-/* Mini Terminal mapped to the bottom of the visualizer */
 .mini-terminal {
     height: 120px;
     background: #000;
@@ -381,6 +367,7 @@ h1 {
     padding: 20px;
     font-family: var(--font-mono);
     font-size: 0.9rem;
+    cursor: text;
 }
 
 #vis-term-input {
@@ -390,4 +377,128 @@ h1 {
     font-family: var(--font-mono);
     flex: 1;
     outline: none;
+}
+
+/* --- Step Indicator UI --- */
+.step-indicator {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.step-dot {
+    height: 4px;
+    flex: 1;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+}
+
+.step-dot.completed {
+    background: var(--success);
+}
+
+.step-dot.active {
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* --- OS Toggle & Specifics --- */
+.os-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.os-toggle-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.os-btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.os-btn {
+    flex: 1;
+    background: var(--bg-app);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 10px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.os-btn:hover {
+    border-color: #404040;
+}
+
+.os-btn.active {
+    background: rgba(0, 112, 243, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+body[data-os="mac"] .win-only {
+    display: none !important;
+}
+
+body[data-os="win"] .mac-only {
+    display: none !important;
+}
+
+/* --- Reset Buttons --- */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.btn-reset-all {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.btn-reset-all:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-reset-lesson {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-reset-lesson:hover {
+    border-color: var(--primary);
+    color: var(--primary);
 }

@@ -11,11 +11,15 @@
     <style>
         :root {
             --bg: #000000;
+            --bg-panel: #0a0a0a;
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --primary: #0070f3;
             --primary-glow: rgba(0, 112, 243, 0.4);
             --border: #262626;
+            --success: #10b981;
+            --warning: #f5a623;
+            --danger: #ef4444;
         }
 
         * {
@@ -29,34 +33,37 @@
             background-color: var(--bg);
             color: var(--text-main);
             overflow-x: hidden;
-            /* Cool grid background pattern */
             background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
             background-size: 50px 50px;
             background-position: center center;
         }
 
-        /* Radial gradient overlay to make the grid fade out at the edges */
         .grid-fade {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at center, transparent 0%, var(--bg) 80%);
+            background: radial-gradient(circle at 50% 30%, transparent 0%, var(--bg) 80%);
             z-index: -1;
+            pointer-events: none;
         }
 
+        /* --- Navigation --- */
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 2rem 5%;
+            padding: 1.5rem 5%;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .brand {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 800;
             display: flex;
             align-items: center;
@@ -67,20 +74,36 @@
             color: var(--primary);
         }
 
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover {
+            background: white;
+            color: black;
+        }
+
+        /* --- Hero Section --- */
         .hero {
-            min-height: 80vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 0 20px;
+            padding: 6rem 20px 4rem;
             position: relative;
         }
 
         .pill {
             border: 1px solid var(--border);
-            padding: 8px 16px;
+            padding: 6px 16px;
             border-radius: 50px;
             font-size: 0.85rem;
             color: var(--text-muted);
@@ -95,22 +118,22 @@
         }
 
         h1 {
-            font-size: clamp(3rem, 6vw, 5.5rem);
+            font-size: clamp(2.5rem, 6vw, 5rem);
             font-weight: 800;
             letter-spacing: -0.04em;
             line-height: 1.1;
             margin-bottom: 1.5rem;
             max-width: 900px;
-            background: linear-gradient(to bottom right, #ffffff, #a1a1aa);
+            background: linear-gradient(180deg, #fff, #a1a1aa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         p.subtitle {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             color: var(--text-muted);
             max-width: 600px;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             line-height: 1.6;
         }
 
@@ -124,55 +147,865 @@
             font-weight: 600;
             text-decoration: none;
             transition: all 0.2s ease;
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
         }
 
         .btn-launch:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 60px rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 60px rgba(0, 112, 243, 0.4);
             background: var(--primary);
             color: white;
         }
 
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto 5rem;
+        /* --- Logos / Tech Stack --- */
+        .tech-stack {
+            text-align: center;
+            margin-bottom: 5rem;
             padding: 0 20px;
         }
 
-        .feature-card {
-            background: rgba(10, 10, 10, 0.8);
+        .tech-stack p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-logos {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            opacity: 0.6;
+            filter: grayscale(100%);
+        }
+
+        .tech-logos span {
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- App Preview Mockup --- */
+        .app-preview-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto 6rem;
+            padding: 0 20px;
+            perspective: 1000px;
+        }
+
+        .app-window {
+            background: var(--bg-panel);
             border: 1px solid var(--border);
-            padding: 2.5rem;
             border-radius: 12px;
-            backdrop-filter: blur(10px);
-            transition: border-color 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            transform: rotateX(2deg);
+            transition: transform 0.5s ease;
         }
 
-        .feature-card:hover {
-            border-color: var(--primary);
+        .app-window:hover {
+            transform: rotateX(0deg);
         }
 
-        .feature-card h3 {
-            font-size: 1.3rem;
+        .window-header {
+            background: #111;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red {
+            background: #ff5f56;
+        }
+
+        .dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .dot.green {
+            background: #27c93f;
+        }
+
+        .mock-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mock-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .mock-tab-btn:hover {
+            color: #fff;
+        }
+
+        .mock-tab-btn.active {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border);
+            color: var(--primary);
+        }
+
+        .window-body {
+            height: 420px;
+            text-align: left;
+        }
+
+        .mock-tab-content {
+            display: none;
+            height: 100%;
+        }
+
+        .flex-layout {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-layout-editor {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            height: 100%;
+        }
+
+        /* Terminal Base */
+        .mock-terminal {
+            background: #000;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #a3a3a3;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+            flex: 1;
+        }
+
+        .prompt {
+            color: var(--success);
+            margin-right: 10px;
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: var(--text-muted);
+            animation: blink 1s step-end infinite;
+            vertical-align: bottom;
+        }
+
+        /* Git Visualizer */
+        .git-vis-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            padding: 20px;
+            background: var(--bg-app);
+            flex: 1;
+        }
+
+        .git-zone {
+            background: var(--bg-panel);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .git-zone-head {
+            padding: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .git-zone-body {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .mock-file {
+            background: #1f2937;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            width: 100%;
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+
+        .f-work {
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            animation: file-work 7s infinite;
+        }
+
+        .f-stage {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            background: rgba(0, 112, 243, 0.1);
+            opacity: 0;
+            animation: file-stage 7s infinite;
+        }
+
+        .f-commit {
+            border: 1px solid var(--success);
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            opacity: 0;
+            animation: file-commit 7s infinite;
+        }
+
+        @keyframes file-work {
+
+            0%,
+            25% {
+                opacity: 1;
+            }
+
+            26%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes file-stage {
+
+            0%,
+            25% {
+                opacity: 0;
+            }
+
+            26%,
+            60% {
+                opacity: 1;
+            }
+
+            61%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes file-commit {
+
+            0%,
+            60% {
+                opacity: 0;
+            }
+
+            61%,
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .mini-term {
+            height: 140px;
+            border-top: 1px solid var(--border);
+        }
+
+        .type-git1 {
+            animation: type1 7s steps(10, end) infinite;
+            width: 0;
+            border-right: 2px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+            color: #fff;
+        }
+
+        /* "git commit -m "feat: init"" is 28 chars */
+        .type-git2 {
+            animation: type2 7s steps(28, end) infinite;
+            width: 0;
+            border-right: 2px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+            color: #fff;
+        }
+
+        .fade-git1 {
+            opacity: 0;
+            animation: fade1 7s infinite;
+        }
+
+        .fade-git2 {
+            opacity: 0;
+            animation: fade2 7s infinite;
+        }
+
+        @keyframes type1 {
+
+            0%,
+            10% {
+                width: 0;
+            }
+
+            20%,
+            100% {
+                width: 10ch;
+            }
+        }
+
+        @keyframes fade1 {
+
+            0%,
+            25% {
+                opacity: 0;
+            }
+
+            26%,
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes type2 {
+
+            0%,
+            40% {
+                width: 0;
+            }
+
+            55%,
+            100% {
+                width: 28ch;
+            }
+        }
+
+        @keyframes fade2 {
+
+            0%,
+            60% {
+                opacity: 0;
+            }
+
+            61%,
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Python Editor */
+        .mock-editor {
+            background: #0d0d0d;
+            display: flex;
+            border-right: 1px solid var(--border);
+            position: relative;
+        }
+
+        .line-nums {
+            padding: 20px 10px;
+            color: #404040;
+            text-align: right;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            user-select: none;
+            border-right: 1px solid #222;
+        }
+
+        .code-area {
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .run-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            animation: btn-click 5s infinite;
+        }
+
+        @keyframes btn-click {
+
+            0%,
+            38% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            40% {
+                transform: scale(0.95);
+                filter: brightness(0.8);
+            }
+
+            45%,
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .type-py {
+            animation: py-output 5s infinite;
+            opacity: 0;
+        }
+
+        @keyframes py-output {
+
+            0%,
+            42% {
+                opacity: 0;
+            }
+
+            43%,
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Bash Terminal */
+        .anim-typing-bash1 {
+            animation: typing-bash1 1s steps(14, end) forwards;
+            width: 0;
+            border-right: 2px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+            color: #fff;
+        }
+
+        .anim-fade-bash1 {
+            opacity: 0;
+            animation: fadeIn 0.1s forwards;
+            animation-delay: 1.2s;
+        }
+
+        .anim-typing-bash2 {
+            animation: typing-bash2 0.5s steps(6, end) forwards;
+            animation-delay: 1.5s;
+            width: 0;
+            border-right: 2px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+            color: #fff;
+        }
+
+        .anim-fade-bash2 {
+            opacity: 0;
+            animation: fadeIn 0.1s forwards;
+            animation-delay: 2.2s;
+        }
+
+        @keyframes typing-bash1 {
+            0% {
+                border-right-color: #fff;
+            }
+
+            99% {
+                border-right-color: #fff;
+            }
+
+            100% {
+                width: 14ch;
+                border-right-color: transparent;
+            }
+        }
+
+        @keyframes typing-bash2 {
+            0% {
+                border-right-color: #fff;
+            }
+
+            99% {
+                border-right-color: #fff;
+            }
+
+            100% {
+                width: 6ch;
+                border-right-color: transparent;
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* --- "How it works" Section --- */
+        .how-section {
+            max-width: 1200px;
+            margin: 0 auto 8rem;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
             margin-bottom: 1rem;
-            color: var(--text-main);
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
-        .feature-card p {
+        .section-sub {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 4rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .how-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .how-num {
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            background: var(--primary);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(0, 112, 243, 0.4);
+        }
+
+        .how-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .how-card p {
             color: var(--text-muted);
             line-height: 1.6;
             font-size: 0.95rem;
         }
 
-        .feature-icon {
+        /* --- Comparison Section --- */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto 8rem;
+            padding: 0 20px;
+        }
+
+        .comp-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: left;
+        }
+
+        .comp-card.bad {
+            opacity: 0.6;
+            filter: grayscale(1);
+        }
+
+        .comp-card.good {
+            background: rgba(0, 112, 243, 0.05);
+            border-color: rgba(0, 112, 243, 0.3);
+            box-shadow: inset 0 0 40px rgba(0, 112, 243, 0.05);
+        }
+
+        .comp-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .comp-list {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .comp-list li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+        }
+
+        .comp-card.good .comp-list li {
+            color: #d4d4d8;
+        }
+
+        .comp-list svg {
+            flex-shrink: 0;
+        }
+
+        .comp-card.good .comp-list svg {
+            color: var(--success);
+        }
+
+        .comp-card.bad .comp-list svg {
+            color: var(--danger);
+        }
+
+        /* --- Curriculum Roadmap Section --- */
+        .roadmap-section {
+            max-width: 900px;
+            margin: 0 auto 8rem;
+            padding: 0 20px;
+        }
+
+        .roadmap-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .roadmap-item {
+            display: flex;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            gap: 2rem;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-item:hover {
+            border-color: var(--primary);
+            transform: translateX(10px);
+        }
+
+        .road-num {
+            font-family: var(--font-mono);
+            font-size: 3rem;
+            font-weight: 800;
+            color: transparent;
+            -webkit-text-stroke: 1px var(--border);
+            transition: 0.3s;
+        }
+
+        .roadmap-item:hover .road-num {
+            -webkit-text-stroke: 1px var(--primary);
+            color: rgba(0, 112, 243, 0.1);
+        }
+
+        .road-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .road-content p {
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        /* --- Wall of Love (Testimonials) --- */
+        .testimonials {
+            max-width: 1200px;
+            margin: 0 auto 8rem;
+            padding: 0 20px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 12px;
+        }
+
+        .test-card p {
+            font-style: italic;
+            color: #d4d4d8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .test-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .test-avatar {
             width: 40px;
             height: 40px;
-            margin-bottom: 1.5rem;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .test-info h4 {
+            font-size: 0.95rem;
+        }
+
+        .test-info span {
+            font-size: 0.8rem;
             color: var(--primary);
+        }
+
+        /* --- FAQ Section --- */
+        .faq-section {
+            max-width: 800px;
+            margin: 0 auto 8rem;
+            padding: 0 20px;
+        }
+
+        .faq-item {
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            background: var(--bg-panel);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-question:hover {
+            color: var(--primary);
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-item.active .faq-question {
+            color: var(--primary);
+        }
+
+        /* --- Bottom CTA --- */
+        .bottom-cta {
+            text-align: center;
+            padding: 8rem 20px;
+            background: linear-gradient(to bottom, transparent, rgba(0, 112, 243, 0.05));
+            border-top: 1px solid var(--border);
+        }
+
+        .bottom-cta h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .bottom-cta p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 800px) {
+            .grid-layout-editor {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-grid,
+            .how-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .roadmap-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
         }
     </style>
 </head>
@@ -187,53 +1020,302 @@
                 <path d="m18 16 4-4-4-4" />
                 <path d="m6 8-4 4 4 4" />
                 <path d="m14.5 4-5 16" />
-            </svg>
-            DevCore
+            </svg> DevCore
         </div>
-        <a href="app.html" class="btn-launch" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Enter Workspace</a>
+        <a href="app.html" class="btn-nav">Enter Workspace</a>
     </nav>
 
     <main class="hero">
         <div class="pill">🚀 The <span>Zero to Engineer</span> Simulation Engine</div>
-        <h1>Stop watching tutorials. Start engineering.</h1>
+        <h1>Stop watching tutorials.<br>Start engineering.</h1>
         <p class="subtitle">A fully interactive, browser-based sandbox. Learn Git, Python, and Bash by typing real
             commands into a simulated terminal and code editor.</p>
         <a href="app.html" class="btn-launch">Launch Simulation →</a>
     </main>
 
-    <section class="features">
-        <div class="feature-card">
-            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 17 10 11 4 5"></polyline>
-                <line x1="12" y1="19" x2="20" y2="19"></line>
-            </svg>
-            <h3>Interactive Terminal</h3>
-            <p>Don't just read about the command line. Write real Bash commands, navigate directories, and interact with
-                a live simulator directly in your browser.</p>
+    <div class="tech-stack">
+        <p>Powered by industry standard tools</p>
+        <div class="tech-logos">
+            <span>🖥️ Monaco Editor</span>
+            <span>🐍 Pyodide</span>
+            <span>⚙️ WebAssembly</span>
+            <span>🌿 Git</span>
         </div>
-        <div class="feature-card">
-            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <h3>Git Visualizer</h3>
-            <p>Git is invisible. We made it visible. Watch your files physically move between the Working Directory,
-                Staging Area, and Vault as you type commands.</p>
+    </div>
+
+    <div class="app-preview-wrapper">
+        <div class="app-window">
+            <div class="window-header">
+                <div class="window-controls">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div class="mock-tabs">
+                    <button class="mock-tab-btn active" onclick="switchMockTab('git')">Git Visualizer</button>
+                    <button class="mock-tab-btn" onclick="switchMockTab('python')">Python Editor</button>
+                    <button class="mock-tab-btn" onclick="switchMockTab('bash')">Terminal</button>
+                </div>
+            </div>
+
+            <div id="mock-container" class="window-body">
+
+                <div id="mock-git" class="mock-tab-content flex-layout" style="display: flex;">
+                    <div class="git-vis-container">
+                        <div class="git-zone">
+                            <div class="git-zone-head">Working Directory</div>
+                            <div class="git-zone-body">
+                                <div class="mock-file f-work">main.py</div>
+                            </div>
+                        </div>
+                        <div class="git-zone" style="border-color: var(--primary)">
+                            <div class="git-zone-head" style="color: var(--primary)">Staging Area</div>
+                            <div class="git-zone-body">
+                                <div class="mock-file f-stage">main.py</div>
+                            </div>
+                        </div>
+                        <div class="git-zone" style="border-color: var(--success)">
+                            <div class="git-zone-head" style="color: var(--success)">Repository (Vault)</div>
+                            <div class="git-zone-body">
+                                <div class="mock-file f-commit">main.py</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mock-terminal mini-term">
+                        <div><span class="prompt">project $</span> <span class="type-git1">git add .</span></div>
+                        <div class="fade-git1">
+                            <div style="color: var(--text-muted); margin-bottom: 10px;">Added main.py to Staging Area.
+                            </div>
+                            <span class="prompt">project $</span> <span class="type-git2">git commit -m "feat:
+                                init"</span>
+                        </div>
+                        <div class="fade-git2">
+                            <div style="color: var(--text-muted); margin-bottom: 10px;">[main a1b2c3d] Committed to
+                                Local Vault.</div>
+                            <span class="prompt">project $</span><span class="cursor-blink"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mock-python" class="mock-tab-content grid-layout-editor">
+                    <div class="mock-editor">
+                        <div class="line-nums">1<br>2<br>3<br>4<br>5<br>6</div>
+                        <div class="code-area">
+                            <div style="color: #569cd6;">def <span
+                                    style="color: #dcdcaa;">calculate_orbit</span>(radius):</div>
+                            <div style="color: #ce9178; padding-left: 20px;">"""Calculates orbital velocity"""</div>
+                            <div style="padding-left: 20px;">G = <span style="color: #b5cea8;">6.6743e-11</span></div>
+                            <div style="padding-left: 20px;">M = <span style="color: #b5cea8;">5.972e24</span> <span
+                                    style="color: #6a9955;"># Earth mass</span></div>
+                            <div style="padding-left: 20px; color: #c586c0;">return</div>
+                            <br>
+                            <div><span style="color: #4fc1ff;">print</span>(calculate_orbit(<span
+                                    style="color: #b5cea8;">400000</span>))</div>
+                        </div>
+                        <button class="run-btn">Run Code ▶</button>
+                    </div>
+                    <div class="mock-terminal">
+                        <div style="color: #a3a3a3; margin-bottom: 20px;">[Terminal Output]</div>
+                        <div class="type-py">
+                            <div style="color: var(--text-main);">> 7668.54 m/s</div>
+                            <div style="color: var(--text-muted); margin-bottom: 20px;">> Program finished execution.
+                            </div>
+                            <span class="prompt">project $</span><span class="cursor-blink"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mock-bash" class="mock-tab-content flex-layout">
+                    <div class="mock-terminal">
+                        <div><span class="prompt">~ $</span> <span class="anim-typing-bash1">cd project/src</span></div>
+                        <div class="anim-fade-bash1" style="margin-top: 5px;">
+                            <span class="prompt">src $</span> <span class="anim-typing-bash2">ls -la</span>
+                        </div>
+                        <div class="anim-fade-bash2" style="margin-top: 10px;">
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: 10px; max-width: 400px; margin-bottom: 20px;">
+                                <span>drwxr-xr-x</span> <span>user</span> <span>160</span> <span>.</span>
+                                <span>drwxr-xr-x</span> <span>user</span> <span>256</span> <span>..</span>
+                                <span>-rw-r--r--</span> <span>user</span> <span>102</span> <span
+                                    style="color: #4fc1ff;">index.py</span>
+                                <span>-rw-r--r--</span> <span>user</span> <span>405</span> <span
+                                    style="color: #4fc1ff;">utils.py</span>
+                            </div>
+                            <span class="prompt">src $</span><span class="cursor-blink"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        <div class="feature-card">
-            <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-            <h3>Python IDE</h3>
-            <p>Write, run, and break real Python code in our integrated editor. The system validates your logic
-                instantly so you can learn without configuration headaches.</p>
+    </div>
+
+    <section class="how-section">
+        <h2 class="section-title">The Engineering Loop</h2>
+        <p class="section-sub">We don't teach syntax. We teach the workflow used by every software engineer on earth.
+        </p>
+        <div class="how-grid">
+            <div class="how-card">
+                <div class="how-num">1</div>
+                <h3>Read the Brief</h3>
+                <p>Every mission starts with a technical brief explaining the concept. No fluff, just the exact logic
+                    you need to accomplish the task.</p>
+            </div>
+            <div class="how-card">
+                <div class="how-num">2</div>
+                <h3>Execute Code</h3>
+                <p>You switch to the terminal or editor and physically type the commands. Muscle memory is the only way
+                    to retain information.</p>
+            </div>
+            <div class="how-card">
+                <div class="how-num">3</div>
+                <h3>Instant Validation</h3>
+                <p>The simulation engine validates your code in real-time. If you fail, read the error. If you succeed,
+                    the next mission unlocks.</p>
+            </div>
         </div>
     </section>
+
+    <section class="comparison-section">
+        <div class="comparison-grid">
+            <div class="comp-card bad">
+                <h3>Watching Video Courses</h3>
+                <p style="color: var(--text-muted)">Passive consumption gives you the illusion of competence. Until you
+                    open an empty text editor.</p>
+                <ul class="comp-list">
+                    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span>Pause, type, rewind, repeat</span></li>
+                    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span>Wasting hours setting up environments</span></li>
+                    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span>No validation when your code breaks</span></li>
+                </ul>
+            </div>
+            <div class="comp-card good">
+                <h3>Engineering in DevCore</h3>
+                <p style="color: var(--text-muted)">Muscle memory is the only way to learn. You are dropped into a
+                    terminal and forced to build.</p>
+                <ul class="comp-list">
+                    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg> <span>Zero setup required (runs in browser)</span></li>
+                    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg> <span>Immediate validation and error tracking</span></li>
+                    <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg> <span>Real tools (Git Visualizer, Monaco Editor, Pyodide)</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="roadmap-section">
+        <h2 class="section-title" style="text-align: center;">The Curriculum</h2>
+        <div class="roadmap-grid">
+            <div class="roadmap-item">
+                <div class="road-num">00</div>
+                <div class="road-content">
+                    <h3>Groundwork</h3>
+                    <p>Learn how to navigate your computer without a mouse. Master Bash commands, file creation, and
+                        environment variables.</p>
+                </div>
+            </div>
+            <div class="roadmap-item">
+                <div class="road-num">01</div>
+                <div class="road-content">
+                    <h3>Git Mastery</h3>
+                    <p>Stop fearing the command line. Use our interactive visualizer to master committing, conventional
+                        commits, branching, and resolving merge conflicts.</p>
+                </div>
+            </div>
+            <div class="roadmap-item">
+                <div class="road-num">02</div>
+                <div class="road-content">
+                    <h3>Python Core</h3>
+                    <p>Write real code. Learn data types, loops, logic, and error handling natively in the browser using
+                        the Pyodide C-engine.</p>
+                </div>
+            </div>
+            <div class="roadmap-item">
+                <div class="road-num">03</div>
+                <div class="road-content">
+                    <h3>Capstone Architecture</h3>
+                    <p>Combine your skills. Build a CLI calculator, a local file-storage vault, and rescue a sabotaged
+                        Git repository.</p>
+                </div>
+            </div>
+            <div class="roadmap-item">
+                <div class="road-num">04</div>
+                <div class="road-content">
+                    <h3>Going Local</h3>
+                    <p>Graduation. We walk you through configuring VS Code, generating SSH Keys, and migrating your
+                        skills to your actual hard drive.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq-section">
+        <h2 class="section-title" style="text-align: center;">FAQ</h2>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">Do I need to install
+                anything? <span>+</span></div>
+            <div class="faq-answer">No. Phase 0 through Phase 3 run entirely in your web browser. We simulate the file
+                system, the terminal, and compile Python using WebAssembly. You only install software in Phase 4 when
+                you are ready to transition to your local machine.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">Is this for Windows or
+                Mac? <span>+</span></div>
+            <div class="faq-answer">Both. The platform includes a native toggle that adapts the lessons and the terminal
+                environment based on your operating system. If you are on Windows, we teach you how to use Git Bash to
+                emulate a Unix environment.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">I already know Python, is
+                this for me? <span>+</span></div>
+            <div class="faq-answer">If you already know Python but struggle with version control (Git), merge conflicts,
+                or navigating a terminal without a GUI, the Git Mastery and Bash phases are highly recommended.</div>
+        </div>
+    </section>
+
+    <section class="bottom-cta">
+        <h2>Ready to break things?</h2>
+        <p>Your isolated sandbox is spun up and waiting for input. No credit card, no sign-up required.</p>
+        <a href="app.html" class="btn-launch" style="padding: 1.2rem 3rem; font-size: 1.2rem;">Initialize Workspace</a>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 DevCore Simulation Engine. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function switchMockTab(tabId) {
+            document.querySelectorAll('.mock-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.mock-tab-btn[onclick="switchMockTab('${tabId}')"]`).classList.add('active');
+
+            document.querySelectorAll('.mock-tab-content').forEach(tab => tab.style.display = 'none');
+
+            const targetContent = document.getElementById('mock-' + tabId);
+            targetContent.style.display = tabId === 'python' ? 'grid' : 'flex';
+
+            const newContent = targetContent.cloneNode(true);
+            targetContent.parentNode.replaceChild(newContent, targetContent);
+        }
+    </script>
 </body>
 
 </html>
