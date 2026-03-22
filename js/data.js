@@ -56,8 +56,10 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Let's configure your simulation. Look at the sidebar on the left and click the toggle to select the actual Operating System you are using.
-                                    <br><br>Once selected, verify your environment by typing: <code>echo "Environment Set"</code>
+                                    <strong>🖥️ IN THE SIDEBAR & TERMINAL:</strong><br><br>
+                                    1. Look at the sidebar on the far left of your screen and click the toggle to select the actual Operating System you are using.<br>
+                                    2. Once selected, click into the black Terminal on the right and type: <code>echo "Environment Set"</code><br>
+                                    3. Press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("echo") && cmd.includes("Environment Set")
@@ -80,7 +82,8 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Find out where you are sitting. Type <code>pwd</code> and hit enter.
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Find out where you are sitting. Click the terminal, type <code>pwd</code>, and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "pwd"
@@ -89,11 +92,12 @@ const curriculum = {
                             content: `
                                 <h2>Peering into the Dark</h2>
                                 <p>Now that you know you are inside the <code>/home/student/project</code> folder, you need to see what files exist inside it.</p>
-                                <p>The <code>ls</code> (List) command lists all visible files and folders in your current working directory. Look at the File Explorer panel—when you run the command, the output should match what you see there.</p>
+                                <p>The <code>ls</code> (List) command lists all visible files and folders in your current working directory. Look at the File Explorer panel in the middle of your screen—when you run the command, the terminal output should match what you see there.</p>
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Look around your current directory. Type <code>ls</code>.
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Look around your current directory. Type <code>ls</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "ls"
@@ -102,12 +106,13 @@ const curriculum = {
                             content: `
                                 <h2>Hidden Files</h2>
                                 <p>Not all files are visible by default. Files or folders that start with a dot (like <code>.git</code>) are intentionally hidden by the operating system to prevent accidental deletion or clutter.</p>
-                                <p>To see absolutely everything, you must pass the <strong>"all" flag</strong> to the list command.</p>
+                                <p>To see absolutely everything, you must pass the <strong>"all" flag</strong> (<code>-a</code>) to the list command.</p>
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Reveal the hidden files in your project directory.
-                                    <br><br>Type <code>ls -a</code> (or <code>ls -la</code> for a detailed vertical list). Watch the explorer to see them appear!
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Reveal the hidden files in your project directory.<br><br>
+                                    Type <code>ls -a</code> (or <code>ls -la</code> for a detailed vertical list) and press <strong>Enter</strong>. Watch the explorer to see them appear!
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "ls -a" || cmd === "ls -la" || cmd === "ls -al"
@@ -123,12 +128,11 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Let's practice path resolution. Watch the terminal prompt update as you move!
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type <code>mkdir logs</code> (Make Directory).</li>
-                                        <li>Type <code>cd logs</code> to enter it using a relative path.</li>
-                                        <li>Now, navigate backwards to the parent folder by typing <code>cd ..</code></li>
-                                    </ol>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Let's practice navigating folders. Press <strong>Enter</strong> after each command:<br><br>
+                                    1. Type <code>mkdir logs</code> (to Make a Directory).<br>
+                                    2. Type <code>cd logs</code> (to Change Directory and enter it).<br>
+                                    3. Type <code>cd ..</code> (to navigate backwards to the parent folder).
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "cd .."
@@ -147,7 +151,9 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Create a new file in your current folder. Type <code>touch server.log</code>. Watch it glow and slide into your Explorer panel!
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Create a new file in your current folder. <br><br>
+                                    Type <code>touch server.log</code> and press <strong>Enter</strong>. Watch it glow and slide into your Explorer panel!
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "touch server.log"
@@ -160,8 +166,9 @@ const curriculum = {
 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    We already have a <code>README.md</code> file in our project. Let's read it.
-                                    <br><br>Type: <code>cat README.md</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    We already have a <code>README.md</code> file in our project. Let's read it.<br><br>
+                                    Type <code>cat README.md</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "cat README.md"
@@ -174,7 +181,9 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Delete the file you just made. Type <code>rm server.log</code>. Watch it explode.
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Delete the file you just made. <br><br>
+                                    Type <code>rm server.log</code> and press <strong>Enter</strong>. Watch it explode.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "rm server.log"
@@ -207,7 +216,9 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Watch the Visualizer above your terminal. Move the file from the Working Directory to the Staging Area by typing <code>git add index.txt</code> (or <code>git add .</code> to stage everything).
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Watch the Visualizer above your terminal. Move the file from the Working Directory to the Staging Area.<br><br>
+                                    Type <code>git add index.txt</code> (or <code>git add .</code> to stage everything) and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git add index.txt" || cmd === "git add ."
@@ -221,7 +232,9 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Lock the staged file into the Vault. Type <code>git commit -m "feat: initial commit"</code>.
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Lock the staged file into the Vault.<br><br>
+                                    Type <code>git commit -m "feat: initial commit"</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("git commit") && cmd.includes("feat:")
@@ -268,12 +281,11 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Let's practice the professional workflow.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type <code>touch api.py</code></li>
-                                        <li>Type <code>git add .</code> to stage it.</li>
-                                        <li>Commit it using the proper feature tag: <code>git commit -m "feat: build api structure"</code></li>
-                                    </ol>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Let's practice the professional workflow.<br><br>
+                                    1. Type <code>touch api.py</code> and press <strong>Enter</strong>.<br>
+                                    2. Type <code>git add .</code> to stage it and press <strong>Enter</strong>.<br>
+                                    3. Commit it using the proper feature tag: <code>git commit -m "feat: build api structure"</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("git commit") && cmd.includes("feat:")
@@ -297,8 +309,9 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Create a branch named 'dev' and switch your <code>HEAD</code> pointer to it simultaneously using the <code>-b</code> flag. 
-                                    <br><br>Type: <code>git checkout -b dev</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Create a branch named 'dev' and switch your <code>HEAD</code> pointer to it simultaneously using the <code>-b</code> flag. <br><br>
+                                    Type <code>git checkout -b dev</code> and press <strong>Enter</strong>.
                                     <br><br><em>Notice how your terminal prompt changes to (dev)!</em>
                                 </div>
                             `,
@@ -320,15 +333,15 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Let's trigger a disaster. You wrote code on <code>dev</code>, but <code>main</code> was also updated. Attempt to smash them together. 
-                                    <br><br>Type: <code>git merge dev</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Let's trigger a disaster. You wrote code on <code>dev</code>, but <code>main</code> was also updated. Attempt to smash them together. <br><br>
+                                    Type <code>git merge dev</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git merge dev"
                         },
                         {
                             workspaceType: "editor",
-                            editorDefaultValue: `def add(a, b):\n<<<<<<< HEAD\n    print(f"Main Branch says: {a+b}")\n=======\n    print(f"Dev Branch says: {a+b}")\n>>>>>>> dev\n    return a + b`,
                             content: `
                                 <h2>Anatomy of a Conflict</h2>
                                 <p>When a conflict occurs, Git literally injects weird markers directly into your text file to show you the collision. We have automatically opened the broken <code>calc.py</code> file in your editor.</p>
@@ -341,15 +354,15 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Resolve the conflict manually in the editor.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Delete the <code>&lt;&lt;&lt;</code>, <code>===</code>, and <code>&gt;&gt;&gt;</code> marker lines entirely.</li>
-                                        <li>Keep ONLY the "Dev Branch" print statement. Delete the Main branch one.</li>
-                                        <li>Click <strong>Run Code ▶</strong> to save the fixed file to your hard drive.</li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Resolve the conflict manually in the text editor.<br><br>
+                                    1. Delete the <code>&lt;&lt;&lt;</code>, <code>===</code>, and <code>&gt;&gt;&gt;</code> marker lines entirely.<br>
+                                    2. Keep ONLY the "Dev Branch" print statement. Delete the Main branch one.<br>
+                                    3. Click <strong>Run Code ▶</strong> to save the fixed file to your hard drive.
                                 </div>
                             `,
                             isEditorMissionOnly: true,
+                            editorDefaultValue: `def add(a, b):\n<<<<<<< HEAD\n    print(f"Main Branch says: {a+b}")\n=======\n    print(f"Dev Branch says: {a+b}")\n>>>>>>> dev\n    return a + b`,
                             validateCode: (code) => !code.includes("<<<<<<<") && !code.includes("=======") && !code.includes("Main Branch") && code.includes("Dev Branch")
                         },
                         {
@@ -361,11 +374,10 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Finalize the merge using a conventional commit.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Stage the fix: <code>git add .</code></li>
-                                        <li>Commit it: <code>git commit -m "fix: resolve merge conflict"</code></li>
-                                    </ol>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Finalize the merge using a conventional commit.<br><br>
+                                    1. Stage the fix: <code>git add .</code> (Press Enter)<br>
+                                    2. Commit it: <code>git commit -m "fix: resolve merge conflict"</code> (Press Enter)
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("git commit") && cmd.includes("fix:")
@@ -405,7 +417,8 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Let's talk to the interpreter. Type <code>python3</code> (or just <code>python</code>) and hit Enter to enter "Interactive Mode."
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Let's talk to the interpreter. Type <code>python3</code> (or just <code>python</code>) and hit <strong>Enter</strong> to enter "Interactive Mode."
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "python3" || cmd === "python"
@@ -417,7 +430,8 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Read the philosophy. While still inside the interactive Python mode, type <code>import this</code> and hit Enter.
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Read the philosophy. While still inside the interactive Python mode, type <code>import this</code> and hit <strong>Enter</strong>.
                                     <br><br>Once you've read it, type <code>exit()</code> to return to the normal terminal.
                                 </div>
                             `,
@@ -428,8 +442,7 @@ const curriculum = {
                 {
                     id: "py-vars",
                     title: "Variables & Types",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# Step 1: Create a variable named 'user' below this line\n\n\n# Step 2: Use an f-string to print a greeting using the variable\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -453,14 +466,15 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Let's write a dynamic greeting in the <strong>editor.py</strong> tab to the right in the menu bar.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Create a variable: <code>user = "Engineer"</code></li>
-                                        <li>Print an f-string: <code>print(f"Welcome to the system, {user}")</code></li>
-                                    </ol>
-                                    Click <strong>Run Code ▶</strong> to compile it. Watch the terminal to see your output!
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Let's write a dynamic greeting. Make sure the <strong>editor.py</strong> tab is selected.<br><br>
+                                    1. Create a variable: <code>user = "Engineer"</code><br>
+                                    2. Print an f-string: <code>print(f"Welcome to the system, {user}")</code><br>
+                                    3. Click <strong>Run Code ▶</strong> to compile it. Watch the terminal to see your output!
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# Step 1: Create a variable named 'user' below this line\n\n\n# Step 2: Use an f-string to print a greeting using the variable\n`,
                             validateCode: (code) => code.includes('user') && code.includes('{user}') && code.includes('print')
                         }
                     ]
@@ -468,8 +482,7 @@ const curriculum = {
                 {
                     id: "py-math",
                     title: "Math & Operators",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# Calculate if 15 is even or odd using modulo\nnum = 15\n\n# Calculate the remainder and print it below:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -481,16 +494,21 @@ const curriculum = {
                                     <li><strong>Floor Division (<code>//</code>):</strong> Divides and rounds down to the nearest whole integer. <code>10 // 3</code> is 3.</li>
                                     <li><strong>Modulo (<code>%</code>):</strong> Returns only the remainder of a division. <code>10 % 3</code> is 1.</li>
                                 </ul>
-                                
+                            `
+                        },
+                        {
+                            content: `
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Modulo is famously used to check if a number is even (if it divides by 2 with a remainder of 0).
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Create a variable to hold the remainder: <code>remainder = num % 2</code></li>
-                                        <li>Print it: <code>print(remainder)</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Modulo is famously used to check if a number is even (if it divides by 2 with a remainder of 0).<br><br>
+                                    1. Create a variable to hold the remainder: <code>remainder = num % 2</code><br>
+                                    2. Print it: <code>print(remainder)</code><br>
+                                    3. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# Calculate if 15 is even or odd using modulo\nnum = 15\n\n# Calculate the remainder and print it below:\n`,
                             validateCode: (code) => code.includes('%') && code.includes('2') && code.includes('print(')
                         }
                     ]
@@ -498,8 +516,7 @@ const curriculum = {
                 {
                     id: "py-strings",
                     title: "String Manipulation",
-                    workspaceType: "editor",
-                    editorDefaultValue: `text = "hello world"\n\n# Capitalize the text and print it below:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -511,16 +528,21 @@ const curriculum = {
                                     <li><strong><code>.replace(old, new)</code>:</strong> Swaps specific substrings.</li>
                                     <li><strong><code>.split(" ")</code>:</strong> Chops a string into a List of smaller strings based on a separator (like a space).</li>
                                 </ul>
-                                
+                            `
+                        },
+                        {
+                            content: `
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Format the text data using string methods.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Print the text in all caps: <code>print(text.upper())</code></li>
-                                        <li>Print the text with "world" swapped out: <code>print(text.replace("world", "engineer"))</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Format the text data using string methods.<br><br>
+                                    1. Print the text in all caps: <code>print(text.upper())</code><br>
+                                    2. Print the text with "world" swapped out: <code>print(text.replace("world", "engineer"))</code><br>
+                                    3. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `text = "hello world"\n\n# Capitalize the text and print it below:\n`,
                             validateCode: (code) => code.includes('text.upper()') && code.includes('text.replace(')
                         }
                     ]
@@ -528,8 +550,7 @@ const curriculum = {
                 {
                     id: "py-logic",
                     title: "Conditional Logic",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# We are building an authentication system.\n\nadmin = True\n\n# Write your if/else statement below:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -549,14 +570,17 @@ const curriculum = {
                             content: `
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Write the authentication block in the editor.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Write the if statement: <code>if admin == True:</code></li>
-                                        <li>Indent the next line and write: <code>print("Access Granted")</code></li>
-                                        <li>Remove the indent, write <code>else:</code>, and indent the next line to print <code>"Denied"</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Write the authentication block in the editor.<br><br>
+                                    1. Write the if statement: <code>if admin == True:</code><br>
+                                    2. Press Enter to indent the next line and write: <code>print("Access Granted")</code><br>
+                                    3. Press Enter, then remove the indent (Backspace) and write: <code>else:</code><br>
+                                    4. Press Enter to indent the final line and print: <code>print("Denied")</code><br>
+                                    5. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# We are building an authentication system.\n\nadmin = True\n\n# Write your if/else statement below:\n`,
                             validateCode: (code) => code.includes('if admin') && code.includes('print(') && code.includes('else:')
                         }
                     ]
@@ -564,8 +588,7 @@ const curriculum = {
                 {
                     id: "py-loops",
                     title: "Iteration & Loops",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# Build a countdown timer that prints 0 through 4\n\n# Write your for loop below:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -583,14 +606,16 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Write a countdown using a <code>for</code> loop and the built-in <code>range()</code> function.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type: <code>for i in range(5):</code></li>
-                                        <li>Indent and type: <code>print(i)</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Write a countdown using a <code>for</code> loop and the built-in <code>range()</code> function.<br><br>
+                                    1. Type: <code>for i in range(5):</code><br>
+                                    2. Indent and type: <code>print(i)</code><br>
+                                    3. Click <strong>Run Code ▶</strong><br><br>
                                     <em>Note: When you run this, observe how computers start counting at 0, not 1!</em>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# Build a countdown timer that prints 0 through 4\n\n# Write your for loop below:\n`,
                             validateCode: (code) => code.includes('for i in range') && code.includes('print(i)')
                         }
                     ]
@@ -598,8 +623,7 @@ const curriculum = {
                 {
                     id: "py-lists",
                     title: "Deep Dive: Lists",
-                    workspaceType: "editor",
-                    editorDefaultValue: `servers = ["web-1", "db-1"]\n\n# Add a new server 'cache-1' to the list:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -609,16 +633,21 @@ const curriculum = {
                                 
                                 <h2>List Methods</h2>
                                 <p>You can dynamically modify a list using built in methods like <code>.append(item)</code> to stick a new item on the end, or <code>.remove(item)</code> to delete one.</p>
-                                
+                            `
+                        },
+                        {
+                            content: `
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Scale up your server infrastructure.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Append a new server: <code>servers.append("cache-1")</code></li>
-                                        <li>Print the entire list: <code>print(servers)</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Scale up your server infrastructure.<br><br>
+                                    1. Append a new server: <code>servers.append("cache-1")</code><br>
+                                    2. Print the entire list: <code>print(servers)</code><br>
+                                    3. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `servers = ["web-1", "db-1"]\n\n# Add a new server 'cache-1' to the list:\n`,
                             validateCode: (code) => code.includes('.append') && code.includes('cache-1') && code.includes('print(servers)')
                         }
                     ]
@@ -626,8 +655,7 @@ const curriculum = {
                 {
                     id: "py-dicts",
                     title: "Deep Dive: Dictionaries",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# Create a dictionary representing a server:\nserver = { "status": "Online", "ping": 42 }\n\n# Print the status key safely using .get():\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -644,13 +672,15 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Safely retrieve data from the dictionary.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Print the ping safely: <code>print(server.get("ping"))</code></li>
-                                        <li>Try to print a missing key with a fallback: <code>print(server.get("region", "Unknown Region"))</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Safely retrieve data from the dictionary we pre-filled for you.<br><br>
+                                    1. Print the ping safely: <code>print(server.get("ping"))</code><br>
+                                    2. Try to print a missing key with a fallback: <code>print(server.get("region", "Unknown Region"))</code><br>
+                                    3. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# We have created a dictionary representing a server for you:\nserver = { "status": "Online", "ping": 42 }\n\n# Safely print the "ping" and "region" keys below:\n`,
                             validateCode: (code) => code.includes('.get("ping")') && code.includes('.get("region"')
                         }
                     ]
@@ -658,8 +688,7 @@ const curriculum = {
                 {
                     id: "py-errors",
                     title: "Error Handling",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# Wrap the dangerous code below in a try/except block:\n\nprint(ghost_variable) # This variable does not exist\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -682,13 +711,15 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Catch a failure in the editor.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Write a <code>try:</code> block that attempts to print the undefined variable: <code>print(ghost_variable)</code></li>
-                                        <li>Write an <code>except:</code> block below it that prints: <code>"Caught the error!"</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Catch a failure in the editor.<br><br>
+                                    1. Write a <code>try:</code> block that attempts to print the undefined variable: <code>print(ghost_variable)</code><br>
+                                    2. Write an <code>except:</code> block below it that prints: <code>print("Caught the error!")</code><br>
+                                    3. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# Wrap the dangerous code below in a try/except block:\n\nprint(ghost_variable) # This variable does not exist\n`,
                             validateCode: (code) => code.includes('try:') && code.includes('except:') && code.includes('print(')
                         }
                     ]
@@ -696,8 +727,7 @@ except:
                 {
                     id: "py-funcs",
                     title: "Functions & Architecture",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# Define the reusable 'add' function below:\n\n\n\n# Call the function and print the result:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -716,15 +746,17 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Build a reusable engine in the editor.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Define it: <code>def add(a, b):</code></li>
-                                        <li>Return the math: <code>return a + b</code></li>
-                                        <li>Un-indent to call it and save the returned data: <code>total = add(5, 10)</code></li>
-                                        <li>Print the saved data: <code>print(total)</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Build a reusable engine in the editor.<br><br>
+                                    1. Define it: <code>def add(a, b):</code><br>
+                                    2. Return the math: <code>return a + b</code><br>
+                                    3. Un-indent to call it and save the returned data: <code>total = add(5, 10)</code><br>
+                                    4. Print the saved data: <code>print(total)</code><br>
+                                    5. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# Define the reusable 'add' function below:\n\n\n\n# Call the function and print the result:\n`,
                             validateCode: (code) => code.includes('def add') && code.includes('return') && code.includes('total = add(') && code.includes('print(total)')
                         }
                     ]
@@ -732,8 +764,7 @@ except:
                 {
                     id: "py-imports",
                     title: "Modules & Libraries",
-                    workspaceType: "editor",
-                    editorDefaultValue: `import random\n\n# Generate a random number between 1 and 100\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -743,14 +774,16 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Use the built-in random module to generate a number.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>We've added <code>import random</code> to the top of the file.</li>
-                                        <li>Use dot notation to call the randint method and print it: <code>print(random.randint(1, 100))</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Use the built-in random module to generate a number.<br><br>
+                                    1. We've added <code>import random</code> to the top of the file.<br>
+                                    2. Use dot notation to call the randint method and print it: <code>print(random.randint(1, 100))</code><br>
+                                    3. Click <strong>Run Code ▶</strong><br><br>
                                     <em>Run the code multiple times and watch the terminal output change!</em>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `import random\n\n# Generate a random number between 1 and 100\n`,
                             validateCode: (code) => code.includes('import random') && code.includes('random.randint') && code.includes('print')
                         }
                     ]
@@ -758,8 +791,7 @@ except:
                 {
                     id: "py-oop",
                     title: "Object-Oriented Design",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# 1. Define the class\nclass User:\n    def __init__(self, name):\n        self.name = name\n\n# 2. Add the login() method below:\n\n\n# 3. Create an instance and call the method:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -776,15 +808,17 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Finish building the User blueprint.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Add a method inside the class: <code>def login(self):</code></li>
-                                        <li>Indent and make it print: <code>print(f"{self.name} logged in.")</code></li>
-                                        <li>Un-indent to the root level. Create an instance: <code>admin = User("Engineer")</code></li>
-                                        <li>Call your method on the instance: <code>admin.login()</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Finish building the User blueprint.<br><br>
+                                    1. Add a method inside the class: <code>def login(self):</code><br>
+                                    2. Indent and make it print: <code>print(f"{self.name} logged in.")</code><br>
+                                    3. Un-indent to the root level. Create an instance: <code>admin = User("Engineer")</code><br>
+                                    4. Call your method on the instance: <code>admin.login()</code><br>
+                                    5. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# 1. Define the class\nclass User:\n    def __init__(self, name):\n        self.name = name\n\n# 2. Add the login() method below:\n\n\n# 3. Create an instance and call the method:\n`,
                             validateCode: (code) => code.includes('def login(self):') && code.includes('admin = User') && code.includes('admin.login()')
                         }
                     ]
@@ -792,8 +826,7 @@ except:
                 {
                     id: "py-oop-2",
                     title: "Inheritance",
-                    workspaceType: "editor",
-                    editorDefaultValue: `class User:\n    def __init__(self, name):\n        self.name = name\n\n# Create a SuperUser class that inherits from User:\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -803,16 +836,18 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Build an inherited class.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Define the child: <code>class SuperUser(User):</code></li>
-                                        <li>Indent and add a new method: <code>def sudo(self):</code></li>
-                                        <li>Indent and print: <code>print("Running as admin")</code></li>
-                                        <li>Un-indent to root. Create an instance: <code>root = SuperUser("Root")</code></li>
-                                        <li>Call the inherited property AND the new method: <code>print(root.name)</code> and <code>root.sudo()</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Build an inherited class.<br><br>
+                                    1. Define the child: <code>class SuperUser(User):</code><br>
+                                    2. Indent and add a new method: <code>def sudo(self):</code><br>
+                                    3. Indent and print: <code>print("Running as admin")</code><br>
+                                    4. Un-indent to root. Create an instance: <code>root = SuperUser("Root")</code><br>
+                                    5. Call the inherited property AND the new method: <code>print(root.name)</code> and <code>root.sudo()</code><br>
+                                    6. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `class User:\n    def __init__(self, name):\n        self.name = name\n\n# Create a SuperUser class that inherits from User:\n`,
                             validateCode: (code) => code.includes('class SuperUser(User):') && code.includes('def sudo(self):') && code.includes('SuperUser(') && code.includes('.sudo()')
                         }
                     ]
@@ -825,8 +860,7 @@ except:
                 {
                     id: "proj-1",
                     title: "Project 1: CLI Calculator",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# THE CALCULATOR ENGINE\n# 1. Ask for first number (cast to float)\n# 2. Ask for operator (+, -, *, /)\n# 3. Ask for second number (cast to float)\n# 4. Use if/elif/else to run the math and print result\n\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -845,17 +879,19 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Build the calculator engine.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Prompt and cast: <code>num1 = float(input("First: "))</code></li>
-                                        <li>Prompt operator: <code>op = input("Operator (+, -, *, /): ")</code></li>
-                                        <li>Prompt and cast: <code>num2 = float(input("Second: "))</code></li>
-                                        <li>Write the logic block starting with: <code>if op == "+":</code></li>
-                                        <li>Print the final result.</li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Build the calculator engine.<br><br>
+                                    1. Prompt and cast: <code>num1 = float(input("First: "))</code><br>
+                                    2. Prompt operator: <code>op = input("Operator (+, -, *, /): ")</code><br>
+                                    3. Prompt and cast: <code>num2 = float(input("Second: "))</code><br>
+                                    4. Write the logic block starting with: <code>if op == "+":</code><br>
+                                    5. Print the final result.<br>
+                                    6. Click <strong>Run Code ▶</strong><br><br>
                                     <em>Note: When you hit Run Code, the terminal will prompt you to enter the numbers!</em>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# THE CALCULATOR ENGINE\n# 1. Ask for first number (cast to float)\n# 2. Ask for operator (+, -, *, /)\n# 3. Ask for second number (cast to float)\n# 4. Use if/elif/else to run the math and print result\n\n`,
                             validateCode: (code) => code.includes('float(input') && code.includes('if op') && code.includes('elif') && code.includes('print(')
                         }
                     ]
@@ -863,8 +899,7 @@ except:
                 {
                     id: "proj-2",
                     title: "Project 2: The Secret Vault",
-                    workspaceType: "editor",
-                    editorDefaultValue: `# THE VAULT ENGINE\n# 1. Ask the user for a secret using input()\n# 2. Open 'secrets.txt' in append mode ('a')\n# 3. Write the secret to the file with a newline ('\\n')\n\n`,
+                    workspaceType: "terminal",
                     steps: [
                         {
                             content: `
@@ -885,14 +920,16 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Build the file writer.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Ask for input: <code>secret = input("Enter secret: ")</code></li>
-                                        <li>Open the stream: <code>with open("secrets.txt", "a") as file:</code></li>
-                                        <li>Write to it (adding a newline character so they stack): <code>file.write(secret + "\\n")</code></li>
-                                    </ol>
+                                    <strong>📝 IN THE EDITOR:</strong><br><br>
+                                    Build the file writer.<br><br>
+                                    1. Ask for input: <code>secret = input("Enter secret: ")</code><br>
+                                    2. Open the stream: <code>with open("secrets.txt", "a") as file:</code><br>
+                                    3. Write to it (adding a newline character so they stack): <code>file.write(secret + "\\n")</code><br>
+                                    4. Click <strong>Run Code ▶</strong>
                                 </div>
                             `,
+                            workspaceType: "editor",
+                            editorDefaultValue: `# THE VAULT ENGINE\n# 1. Ask the user for a secret using input()\n# 2. Open 'secrets.txt' in append mode ('a')\n# 3. Write the secret to the file with a newline ('\\n')\n\n`,
                             validateCode: (code) => code.includes('open(') && code.includes('"a"') && code.includes('.write(')
                         }
                     ]
@@ -920,8 +957,9 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Your code is gone. Rescue <code>calc.py</code> from the Vault. 
-                                    <br><br>Type: <code>git checkout -- calc.py</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Your code is gone. Rescue <code>calc.py</code> from the Vault. <br><br>
+                                    Type <code>git checkout -- calc.py</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git checkout -- calc.py"
@@ -964,8 +1002,9 @@ except:
                                 </ol>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Once you have VS Code installed locally, simulate the confirmation here.
-                                    <br><br>Type <code>echo "Editor Installed"</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Once you have VS Code installed locally, simulate the confirmation here.<br><br>
+                                    Type <code>echo "Editor Installed"</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("echo") && cmd.includes("Editor")
@@ -1000,8 +1039,9 @@ except:
                                 </div>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
                                     Verify your installation. Open your computer's *real* terminal and type <code>python --version</code> (or <code>python3 --version</code> on Mac).
-                                    <br><br>Once you see the version number locally, simulate it here: <code>python --version</code>
+                                    <br><br>Once you see the version number locally, simulate it here: <code>python --version</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "python --version" || cmd === "python3 --version"
@@ -1023,10 +1063,11 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Tell the built-in <code>venv</code> module (<code>-m</code>) to generate a sandbox folder named "venv".
-                                    <br><br>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Tell the built-in <code>venv</code> module (<code>-m</code>) to generate a sandbox folder named "venv".<br><br>
                                     <span class="mac-only">Type: <code>python3 -m venv venv</code></span>
                                     <span class="win-only">Type: <code>python -m venv venv</code></span>
+                                    <br>Press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("-m venv venv")
@@ -1039,10 +1080,11 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Run the activation script inside the folder.
-                                    <br><br>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Run the activation script inside the folder.<br><br>
                                     <span class="mac-only">Type: <code>source venv/bin/activate</code></span>
                                     <span class="win-only">Type: <code>source venv/Scripts/activate</code></span>
+                                    <br>Press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("activate")
@@ -1054,8 +1096,9 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Let's install the famous 'requests' library, which allows Python to easily talk to web APIs.
-                                    <br><br>Type: <code>pip install requests</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Let's install the famous 'requests' library, which allows Python to easily talk to web APIs.<br><br>
+                                    Type <code>pip install requests</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "pip install requests" || cmd === "pip3 install requests"
@@ -1067,8 +1110,9 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    View your installed packages to verify the download.
-                                    <br><br>Type: <code>pip list</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    View your installed packages to verify the download.<br><br>
+                                    Type <code>pip list</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "pip list" || cmd === "pip3 list"
@@ -1107,8 +1151,9 @@ except:
                             content: `
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Once installed on your physical machine, verify the installation by asking for the version. Simulate it below.
-                                    <br><br>Type: <code>git --version</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Once installed on your physical machine, verify the installation by asking for the version. Simulate it below.<br><br>
+                                    Type <code>git --version</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("git --version")
@@ -1126,11 +1171,10 @@ except:
                                 <p>Git permanently stamps every commit with an author's name and email. Before you can use Git locally, you must tell it who you are. We use the <code>--global</code> flag to apply these settings to your entire computer, not just one project.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Configure your identity.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type: <code>git config --global user.name "Your Name"</code></li>
-                                        <li>Type: <code>git config --global user.email "email@example.com"</code></li>
-                                    </ol>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Configure your identity. Press <strong>Enter</strong> after each:<br><br>
+                                    1. Type: <code>git config --global user.name "Your Name"</code><br>
+                                    2. Type: <code>git config --global user.email "email@example.com"</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.startsWith("git config --global user.email")
@@ -1142,8 +1186,9 @@ except:
                                 <p>We can use the <code>cat</code> command to look inside the file and prove our configuration saved properly.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Read the hidden config file.
-                                    <br><br>Type: <code>cat ~/.gitconfig</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Read the hidden config file.<br><br>
+                                    Type <code>cat ~/.gitconfig</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "cat ~/.gitconfig"
@@ -1155,8 +1200,9 @@ except:
                                 <p>An SSH Key is an impossibly complex cryptographic lock-and-key system. We generate a pair: a Private Key (which stays hidden deep in your hard drive) and a Public Key (which you give to GitHub). When you push code, GitHub checks if your hidden Private Key matches the Public Key they have on file. If it does, you authenticate instantly.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Run the key generator. We use the ed25519 algorithm, which is the current cryptographic standard.
-                                    <br><br>Type: <code>ssh-keygen -t ed25519 -C "email@example.com"</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Run the key generator. We use the ed25519 algorithm, which is the current cryptographic standard.<br><br>
+                                    Type <code>ssh-keygen -t ed25519 -C "email@example.com"</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.startsWith("ssh-keygen")
@@ -1167,8 +1213,9 @@ except:
                                 <p>The generator created a hidden folder in your home directory called <code>.ssh</code> and placed the two files inside it. Let's look inside the folder to ensure they are there.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    List the contents of the hidden SSH folder.
-                                    <br><br>Type: <code>ls ~/.ssh</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    List the contents of the hidden SSH folder.<br><br>
+                                    Type <code>ls ~/.ssh</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "ls ~/.ssh"
@@ -1179,11 +1226,10 @@ except:
                                 <p>The keys exist, but your computer's background security guard (the SSH Agent) doesn't know about them yet. The agent is responsible for grabbing the private key and presenting it to GitHub when requested. You must wake the agent up and hand it the key.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Add the key to the agent.
-                                    <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Start the background agent: <code>eval "$(ssh-agent -s)"</code></li>
-                                        <li><span class="mac-only">Add it to the Apple Keychain: <code>ssh-add --apple-use-keychain ~/.ssh/id_ed25519</code></span><span class="win-only">Add it: <code>ssh-add ~/.ssh/id_ed25519</code></span></li>
-                                    </ol>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Add the key to the agent. Press <strong>Enter</strong> after each:<br><br>
+                                    1. Start the background agent: <code>eval "$(ssh-agent -s)"</code><br>
+                                    2. <span class="mac-only">Add it to the Apple Keychain: <code>ssh-add --apple-use-keychain ~/.ssh/id_ed25519</code></span><span class="win-only">Add it: <code>ssh-add ~/.ssh/id_ed25519</code></span>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.startsWith("ssh-add")
@@ -1194,10 +1240,11 @@ except:
                                 <p>Now you need to grab the Public half of the key (the <code>.pub</code> file) and paste it into <a href="https://github.com/settings/keys" target="_blank" style="color: var(--primary);">GitHub's SSH Settings</a>.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Extract the text from the public key file so you can copy it.
-                                    <br><br>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Extract the text from the public key file so you can copy it.<br><br>
                                     <span class="mac-only">Type: <code>pbcopy < ~/.ssh/id_ed25519.pub</code> (This pipes the output directly to your clipboard invisibly, which is much safer!)</span>
                                     <span class="win-only">Type: <code>cat ~/.ssh/id_ed25519.pub</code> (Then manually highlight and copy the output)</span>
+                                    <br>Press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("pbcopy") || cmd.includes("cat")
@@ -1208,8 +1255,9 @@ except:
                                 <p>Assuming you pasted the key into GitHub on your real machine, you need to verify that the cryptographic handshake actually works. We do this by attempting a raw SSH connection to the GitHub servers.</p>
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Ping GitHub's servers to test your authentication.
-                                    <br><br>Type: <code>ssh -T git@github.com</code>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
+                                    Ping GitHub's servers to test your authentication.<br><br>
+                                    Type <code>ssh -T git@github.com</code> and press <strong>Enter</strong>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "ssh -T git@github.com"
@@ -1242,6 +1290,7 @@ except:
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    <strong>🖥️ IN THE TERMINAL:</strong><br><br>
                                     The simulation is complete. Type <code>exit</code> to shut down the terminal. Good luck, Engineer.
                                 </div>
                             `,
