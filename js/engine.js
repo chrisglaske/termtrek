@@ -1,5 +1,5 @@
 // ==========================================
-// THE TERMTREK ENGINE (v8.3 - Privacy & Close Logic)
+// THE TERMTREK ENGINE (v8.7 - Sandbox Freedom & Auto-Reset)
 // ==========================================
 
 const AppState = {
@@ -9,7 +9,12 @@ const AppState = {
     activeModuleData: null,
     currentStepIndex: 0,
     os: localStorage.getItem('termtrek_os') || 'mac',
-    gitBranch: 'main'
+    gitBranch: 'main',
+    branches: ['main'],
+    gitFiles: { working: [], staging: [], repo: [] },
+    cmdHistory: [],
+    historyIndex: 0,
+    lsActivePath: null
 };
 
 const EXPLORER_REQ_MODULES = ['bash-basics', 'bash-files', 'git-mental-model', 'local-venv', 'proj-2'];
@@ -37,7 +42,6 @@ function showPrivacyModal() {
     const modal = document.getElementById('privacy-modal');
     modal.classList.add('active');
 
-    // Highlight their current choice if they already made one
     document.getElementById('btn-accept-consent').classList.remove('active-choice');
     document.getElementById('btn-decline-consent').classList.remove('active-choice');
 
@@ -49,7 +53,6 @@ function showPrivacyModal() {
 }
 
 function closePrivacyModal() {
-    // Only let them close it if they have actually made a choice
     if (AppState.consent) {
         document.getElementById('privacy-modal').classList.remove('active');
     } else {
@@ -72,8 +75,6 @@ function setConsent(choice) {
     localStorage.setItem('termtrek_consent', choice);
     document.getElementById('privacy-modal').classList.remove('active');
     updatePrivacyUI();
-
-    // Trigger the onboarding tour right after privacy is handled
     checkTour();
 }
 
@@ -185,9 +186,10 @@ function buildTreeHTML(path, depth, animateItem, animationType) {
         }
 
         let activeClass = (itemPath === VFS.currentPath) ? 'active-dir' : '';
+        let lsClass = (AppState.lsActivePath === path) ? 'ls-highlight' : '';
 
         if (isDir) {
-            html += `<div class="tree-item ${animClass} ${activeClass}" style="padding-left: ${paddingLeft}px;">
+            html += `<div class="tree-item ${animClass} ${activeClass} ${lsClass}" style="padding-left: ${paddingLeft}px;">
                         <span class="tree-folder-chevron">▼</span>
                         <span class="tree-icon">${ICONS.folder}</span>
                         <span class="tree-item-name">${cleanName}</span>
@@ -199,7 +201,8 @@ function buildTreeHTML(path, depth, animateItem, animationType) {
                 html += `</div>`;
             }
         } else {
-            html += `<div class="tree-item ${animClass}" style="padding-left: ${paddingLeft + 16}px;">
+            html += `<div class="tree-item ${animClass} ${lsClass}" style="padding-left: ${paddingLeft}px;">
+                        <span class="tree-folder-chevron" style="opacity: 0;">▼</span>
                         <span class="tree-icon">${getFileIcon(cleanName)}</span>
                         <span class="tree-item-name">${cleanName}</span>
                      </div>`;
@@ -214,9 +217,10 @@ function renderFileTree(animateItem = null, animationType = null) {
 
     const rootPath = '/home/student/project';
     const isRootActive = (VFS.currentPath === rootPath) ? 'active-dir' : '';
+    let lsClass = (AppState.lsActivePath === '/home/student') ? 'ls-highlight' : '';
 
     let html = `
-        <div class="tree-item root-item ${isRootActive}" style="padding-left: 10px;">
+        <div class="tree-item root-item ${isRootActive} ${lsClass}" style="padding-left: 10px;">
             <span class="tree-folder-chevron">▼</span>
             <span class="tree-icon">${ICONS.folder}</span>
             <span class="tree-item-name" style="font-weight: 600; color: #fff;">project</span>
@@ -227,6 +231,25 @@ function renderFileTree(animateItem = null, animationType = null) {
         </div>
     `;
     treeEl.innerHTML = html;
+}
+
+function renderGitVisualizer() {
+    const work = document.getElementById('main-body-working');
+    const stage = document.getElementById('main-body-staging');
+    const repo = document.getElementById('main-body-repo');
+    const branches = document.getElementById('vis-branches');
+
+    if (!work || !stage || !repo) return;
+
+    work.innerHTML = AppState.gitFiles.working.map(f => `<div class="file-node untracked">${f}</div>`).join('');
+    stage.innerHTML = AppState.gitFiles.staging.map(f => `<div class="file-node staged">${f}</div>`).join('');
+    repo.innerHTML = AppState.gitFiles.repo.map(f => `<div class="file-node committed">${f}</div>`).join('');
+
+    if (branches) {
+        branches.innerHTML = AppState.branches.map(b =>
+            `<span style="padding: 3px 8px; border-radius: 4px; border: 1px solid ${b === AppState.gitBranch ? 'var(--primary)' : 'var(--border)'}; background: ${b === AppState.gitBranch ? 'rgba(0,112,243,0.1)' : 'transparent'}; color: ${b === AppState.gitBranch ? 'var(--primary)' : 'var(--text-secondary)'}; font-weight: ${b === AppState.gitBranch ? 'bold' : 'normal'};">${b}</span>`
+        ).join('');
+    }
 }
 
 function updatePrompt() {
@@ -244,9 +267,11 @@ function updatePrompt() {
 function updateTabGlow(step) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('glow-attention'));
     if (!step) return;
-    if (step.workspaceType === 'editor' || step.isEditorMissionOnly) document.getElementById('tab-editor').classList.add('glow-attention');
-    else if (step.workspaceType === 'terminal') document.getElementById('tab-terminal').classList.add('glow-attention');
-    else if (step.workspaceType === 'visualizer') document.getElementById('tab-visualizer').classList.add('glow-attention');
+    if (step.workspaceType === 'editor' || step.isEditorMissionOnly) {
+        document.getElementById('tab-editor').classList.add('glow-attention');
+    } else {
+        document.getElementById('tab-terminal').classList.add('glow-attention');
+    }
 }
 
 function setupResizer() {
@@ -288,10 +313,8 @@ function initApp() {
     renderSidebar();
     loadModule(AppState.currentModuleId);
     setupTerminalListeners();
-    setupVisualizerTerminal();
     setupResizer();
     bootPythonEngine();
-    renderFileTree();
     updatePrompt();
 
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
@@ -337,6 +360,23 @@ function loadModule(moduleId) {
         toggleExplorer(true);
     }
 
+    // --- Sandbox Reset --- 
+    // Wipes out user experiments when moving to a new module to start fresh
+    VFS.currentPath = '/home/student/project';
+    VFS.files = { '/home/student/project': ['main.py', 'secrets.txt', 'README.md'] };
+    renderFileTree();
+    updatePrompt();
+
+    if (moduleId === 'git-mental-model') {
+        AppState.gitFiles = { working: ['index.txt'], staging: [], repo: [] };
+    } else if (moduleId === 'git-conventional') {
+        AppState.gitFiles = { working: [], staging: [], repo: [] };
+    } else if (moduleId === 'git-branching') {
+        AppState.gitFiles = { working: [], staging: [], repo: ['api.py'] };
+    } else if (moduleId === 'git-conflicts') {
+        AppState.gitFiles = { working: [], staging: [], repo: ['api.py', 'calc.py'] };
+    }
+
     document.getElementById('module-tag').innerText = foundPhase.title;
     document.getElementById('module-title').innerText = foundModule.title;
 
@@ -357,20 +397,24 @@ function switchWorkspace(type) {
         document.getElementById('ui-editor').style.display = 'flex';
         document.getElementById('tab-editor').classList.add('active');
         if (monacoEditorInstance) monacoEditorInstance.focus();
-    } else if (type === 'visualizer') {
-        document.getElementById('ui-visualizer').style.display = 'flex';
-        document.getElementById('tab-visualizer').classList.add('active');
     }
 }
 
 document.getElementById('tab-terminal').addEventListener('click', () => switchWorkspace('terminal'));
 document.getElementById('tab-editor').addEventListener('click', () => switchWorkspace('editor'));
-document.getElementById('tab-visualizer').addEventListener('click', () => switchWorkspace('visualizer'));
 
 function loadStep() {
     const step = AppState.activeModuleData.steps[AppState.currentStepIndex];
     document.getElementById('module-content').innerHTML = step.content;
     document.getElementById('module-content').scrollTop = 0;
+
+    const visualizer = document.getElementById('inline-visualizer-wrapper');
+    if (step.showVisualizer) {
+        visualizer.style.display = 'flex';
+        renderGitVisualizer();
+    } else {
+        visualizer.style.display = 'none';
+    }
 
     updateTabGlow(step);
     document.getElementById('next-mission-btn').classList.remove('glow-next');
@@ -448,20 +492,54 @@ function setupTerminalListeners() {
     document.getElementById('ui-terminal').addEventListener('click', () => newTermInput.focus());
 
     newTermInput.addEventListener('keydown', function (e) {
+
+        if (e.key === 'ArrowUp') {
+            if (AppState.cmdHistory.length > 0 && AppState.historyIndex > 0) {
+                AppState.historyIndex--;
+                newTermInput.value = AppState.cmdHistory[AppState.historyIndex];
+            }
+            e.preventDefault();
+            return;
+        } else if (e.key === 'ArrowDown') {
+            if (AppState.historyIndex < AppState.cmdHistory.length - 1) {
+                AppState.historyIndex++;
+                newTermInput.value = AppState.cmdHistory[AppState.historyIndex];
+            } else if (AppState.historyIndex === AppState.cmdHistory.length - 1) {
+                AppState.historyIndex++;
+                newTermInput.value = '';
+            }
+            e.preventDefault();
+            return;
+        }
+
         if (e.key === 'Enter') {
             const cmd = newTermInput.value.trim();
             if (!cmd) return;
+
+            if (AppState.cmdHistory.length === 0 || AppState.cmdHistory[AppState.cmdHistory.length - 1] !== cmd) {
+                AppState.cmdHistory.push(cmd);
+            }
+            AppState.historyIndex = AppState.cmdHistory.length;
+
+            if (AppState.lsActivePath && cmd !== 'ls') {
+                AppState.lsActivePath = null;
+                renderFileTree();
+            }
 
             const promptHTML = document.getElementById('term-prompt').innerHTML;
             termOutput.innerHTML += `<div class="term-input-line" style="margin-top:2px;"><span class="prompt">${promptHTML}</span> ${cmd}</div>`;
 
             let response = '';
+            let triggerErrorSystem = false;
 
             if (cmd.startsWith('echo ')) response = cmd.substring(5).replace(/['"]/g, '');
             else if (cmd === 'pwd') response = VFS.currentPath;
             else if (cmd === 'ls') {
                 const currentFiles = VFS.files[VFS.currentPath] || [];
                 response = currentFiles.join(' &nbsp;&nbsp;&nbsp; ').replace(/<[^>]*>?/gm, '');
+
+                AppState.lsActivePath = VFS.currentPath;
+                renderFileTree();
             }
             else if (cmd.startsWith('mkdir ')) {
                 const newDir = cmd.substring(6).trim();
@@ -478,25 +556,33 @@ function setupTerminalListeners() {
                     VFS.currentPath = resolved;
                     updatePrompt();
                     renderFileTree();
-                } else response = `bash: cd: ${target}: No such file or directory`;
+                } else {
+                    response = `bash: cd: ${target}: No such file or directory`;
+                    triggerErrorSystem = true;
+                }
             }
             else if (cmd.startsWith('touch ')) {
                 const newFile = cmd.substring(6).trim();
                 if (!VFS.files[VFS.currentPath].includes(newFile)) {
                     VFS.files[VFS.currentPath].push(newFile);
                     renderFileTree(newFile, 'add');
+                    AppState.gitFiles.working.push(newFile);
+                    renderGitVisualizer();
                 }
             }
             else if (cmd.startsWith('rm ')) {
-                const fileToRm = cmd.substring(3).trim();
-                const fileIndex = VFS.files[VFS.currentPath].indexOf(fileToRm);
+                const fileToRm = cmd.substring(3).replace('-r', '').trim();
+                const fileIndex = VFS.files[VFS.currentPath].findIndex(f => f.includes(fileToRm));
                 if (fileIndex > -1) {
                     renderFileTree(fileToRm, 'delete');
                     setTimeout(() => {
                         VFS.files[VFS.currentPath].splice(fileIndex, 1);
                         renderFileTree();
                     }, 400);
-                } else response = `rm: ${fileToRm}: No such file or directory`;
+                } else {
+                    response = `rm: ${fileToRm}: No such file or directory`;
+                    triggerErrorSystem = true;
+                }
             }
 
             else if (cmd.startsWith('cat ')) {
@@ -511,24 +597,68 @@ function setupTerminalListeners() {
                     response = `[user]<br>&nbsp;&nbsp;&nbsp;&nbsp;name = Engineer<br>&nbsp;&nbsp;&nbsp;&nbsp;email = dev@example.com<br>[core]<br>&nbsp;&nbsp;&nbsp;&nbsp;editor = code --wait`;
                 } else if (cmd === 'cat ~/.ssh/id_ed25519.pub') {
                     response = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJkxG7... dev@example.com';
-                } else response = `cat: ${file}: No such file or directory`;
+                } else {
+                    response = `cat: ${file}: No such file or directory`;
+                    triggerErrorSystem = true;
+                }
             }
 
-            else if (cmd.startsWith('git add ')) response = '';
             else if (cmd === 'git status') response = `On branch ${AppState.gitBranch}<br>Your branch is up to date with origin/${AppState.gitBranch}.`;
             else if (cmd === 'git log') response = `<span style="color: var(--warning)">commit a1b2c3d</span> (HEAD -> ${AppState.gitBranch})<br>Author: Student<br>Date: Today<br><br>    Initial commit`;
+            else if (cmd === 'git merge dev') {
+                response = `Auto-merging calc.py<br><span style="color: var(--warning)">CONFLICT (content): Merge conflict in calc.py</span><br><span style="color: var(--danger)">Automatic merge failed; fix conflicts and then commit the result.</span>`;
+            }
+
+            else if (cmd.startsWith('git add')) {
+                let added = false;
+                if (cmd === 'git add .') {
+                    if (AppState.gitFiles.working.length > 0) {
+                        AppState.gitFiles.staging.push(...AppState.gitFiles.working);
+                        AppState.gitFiles.working = [];
+                        added = true;
+                    }
+                } else {
+                    const file = cmd.substring(8).trim();
+                    const idx = AppState.gitFiles.working.indexOf(file);
+                    if (idx > -1) {
+                        AppState.gitFiles.staging.push(file);
+                        AppState.gitFiles.working.splice(idx, 1);
+                        added = true;
+                    } else {
+                        response = `fatal: pathspec '${file}' did not match any files`;
+                        triggerErrorSystem = true;
+                    }
+                }
+
+                if (added) {
+                    response = `<span style="color: var(--success);">[SYSTEM] Files staged successfully. Ready to commit.</span>`;
+                    renderGitVisualizer();
+                } else if (!triggerErrorSystem) {
+                    response = `Nothing to add.`;
+                }
+            }
+            else if (cmd.startsWith('git commit')) {
+                if (AppState.gitFiles.staging.length > 0) {
+                    AppState.gitFiles.repo.push(...AppState.gitFiles.staging);
+                    AppState.gitFiles.staging = [];
+                    renderGitVisualizer();
+                }
+                response = `[${AppState.gitBranch} a1b2c3d] Commit successful.`;
+            }
             else if (cmd.includes('git checkout -b')) {
-                AppState.gitBranch = cmd.split(' ').pop();
+                const newBranch = cmd.split(' ').pop();
+                AppState.gitBranch = newBranch;
+                if (!AppState.branches.includes(newBranch)) AppState.branches.push(newBranch);
                 updatePrompt();
                 response = `Switched to a new branch '${AppState.gitBranch}'`;
+                renderGitVisualizer();
             }
             else if (cmd === 'git checkout main' || cmd === 'git checkout master') {
                 AppState.gitBranch = 'main';
                 updatePrompt();
                 response = `Switched to branch 'main'`;
+                renderGitVisualizer();
             }
-            else if (cmd === 'git merge dev') response = `Auto-merging calc.py<br><span style="color: var(--warning)">CONFLICT (content): Merge conflict in calc.py</span><br><span style="color: var(--danger)">Automatic merge failed; fix conflicts and then commit the result.</span>`;
-            else if (cmd.startsWith('git commit')) response = `[${AppState.gitBranch} a1b2c3d] Commit successful.`;
             else if (cmd.startsWith('git config')) response = '';
 
             else if (cmd.startsWith('help')) {
@@ -572,8 +702,8 @@ function setupTerminalListeners() {
             }
             else if (cmd === 'help --fun') response = `Try typing: <strong>sudo</strong>, <strong>whoami</strong>, <strong>ping</strong>, or <strong>coffee</strong>`;
             else if (cmd.startsWith('sudo ')) response = `<span style="color:var(--danger)">Nice try. This incident will be reported.</span>`;
-            else if (cmd === 'whoami') response = `You are a future Senior Engineer.`;
-            else if (cmd.startsWith('ping ')) response = `PONG! 🏓 (Response time: 0.001ms)`;
+            else if (cmd === 'whoami' || cmd === 'whomami') response = `You are a future Senior Engineer.`;
+            else if (cmd.startsWith('ping') || cmd === 'pong') response = `PONG! 🏓 (Response time: 0.001ms)`;
             else if (cmd === 'coffee' || cmd === 'brew') {
                 response = `<pre class="easter-egg">
       ( (
@@ -609,15 +739,28 @@ function setupTerminalListeners() {
             else if (cmd === 'ssh -T git@github.com') response = `Hi Engineer! You've successfully authenticated, but GitHub does not provide shell access.`;
             else if (cmd === 'clear') { termOutput.innerHTML = ''; newTermInput.value = ''; return; }
             else if (cmd === 'exit') { termOutput.innerHTML += '<div style="color: var(--warning);">Connection closed.</div>'; newTermInput.disabled = true; stepSuccess(); return; }
-            else response = `bash: ${cmd}: command not found`;
+            else {
+                response = `bash: ${cmd}: command not found`;
+                triggerErrorSystem = true;
+            }
 
             if (response) termOutput.innerHTML += `<div style="margin-bottom: 8px; color: #a3a3a3; font-family: var(--font-mono);">${response}</div>`;
 
+            // Evaluate if Mission Completed
+            const currentStep = AppState.activeModuleData.steps[AppState.currentStepIndex];
+            if (currentStep && currentStep.validateCommand) {
+                if (currentStep.validateCommand(cmd)) {
+                    stepSuccess();
+                }
+            }
+
+            // Only throw generic typos for actual invalid bash commands
+            if (triggerErrorSystem) {
+                termOutput.innerHTML += `<div style="color: var(--warning); margin-bottom: 8px;">[SYSTEM] Hint: Double-check your spelling!</div>`;
+            }
+
             termOutput.scrollTop = termOutput.scrollHeight;
             newTermInput.value = '';
-
-            const currentStep = AppState.activeModuleData.steps[AppState.currentStepIndex];
-            if (currentStep && currentStep.validateCommand && currentStep.validateCommand(cmd)) stepSuccess();
         }
     });
 }
@@ -627,6 +770,7 @@ async function executePython() {
     const currentStep = AppState.activeModuleData.steps[AppState.currentStepIndex];
     const code = monacoEditorInstance.getValue();
 
+    // Editor Mission Quick Exit
     if (currentStep && currentStep.validateCode && currentStep.validateCode(code)) {
         if (currentStep.isEditorMissionOnly) {
             switchWorkspace('terminal');
@@ -651,51 +795,21 @@ async function executePython() {
         await pyodideInstance.runPythonAsync(code);
         termOutput.innerHTML += `<div style="color: var(--text-primary); white-space: pre-wrap;">${pythonOutput || "[No output printed]"}</div>`;
         termOutput.innerHTML += `<div style="color: var(--success); margin-bottom: 10px;">[Execution Finished]</div>`;
+
+        // Evaluate Code Success OR Throw Error
+        if (currentStep && currentStep.validateCode) {
+            if (currentStep.validateCode(code)) {
+                stepSuccess();
+            } else {
+                termOutput.innerHTML += `<div style="color: var(--warning); margin-bottom: 10px; font-weight: 500;">[SYSTEM] Mission Failed: Your code executed, but the output or syntax wasn't what we expected. Check the instructions and try again.</div>`;
+            }
+        }
         termOutput.scrollTop = termOutput.scrollHeight;
-        if (currentStep && currentStep.validateCode && currentStep.validateCode(code)) stepSuccess();
+
     } catch (err) {
         termOutput.innerHTML += `<div style="color: var(--danger); white-space: pre-wrap;">Traceback:\n${err.message}</div>`;
         termOutput.scrollTop = termOutput.scrollHeight;
     }
-}
-
-function setupVisualizerTerminal() {
-    const oldInput = document.getElementById('vis-term-input');
-    const output = document.getElementById('vis-term-output');
-    const newInput = oldInput.cloneNode(true);
-    oldInput.parentNode.replaceChild(newInput, oldInput);
-
-    document.querySelector('.mini-terminal').addEventListener('click', () => newInput.focus());
-
-    newInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            const cmd = newInput.value.trim();
-            if (!cmd) return;
-
-            output.innerHTML += `<div style="color:white;"><span class="prompt">$</span> ${cmd}</div>`;
-            const fileNode = document.getElementById('file-index');
-
-            if (cmd === 'git add index.txt' || cmd === 'git add .') {
-                const stagingBody = document.getElementById('body-staging');
-                stagingBody.appendChild(fileNode);
-                fileNode.className = 'file-node staged';
-                output.innerHTML += `<div>Added index.txt to Staging Area.</div>`;
-            } else if (cmd.startsWith('git commit')) {
-                if (fileNode.classList.contains('staged')) {
-                    const repoBody = document.getElementById('body-repo');
-                    repoBody.appendChild(fileNode);
-                    fileNode.className = 'file-node committed';
-                    output.innerHTML += `<div>[main a1b2c3d] Committed to Local Vault.</div>`;
-                } else output.innerHTML += `<div style="color: var(--warning);">Nothing to commit.</div>`;
-            } else output.innerHTML += `<div>git: '${cmd}' is not a valid visualizer command.</div>`;
-
-            newInput.value = '';
-            output.scrollTop = output.scrollHeight;
-
-            const currentStep = AppState.activeModuleData.steps[AppState.currentStepIndex];
-            if (currentStep && currentStep.validateCommand && currentStep.validateCommand(cmd)) setTimeout(stepSuccess, 1000);
-        }
-    });
 }
 
 function resetCurrentLesson() {
@@ -706,12 +820,18 @@ function resetCurrentLesson() {
     }
 
     AppState.currentStepIndex = 0;
+
+    AppState.gitBranch = 'main';
+    AppState.branches = ['main'];
+    AppState.gitFiles = { working: [], staging: [], repo: [] };
+
     document.getElementById('term-output').innerHTML = '';
     VFS.files[VFS.currentPath] = ['main.py', 'secrets.txt', 'README.md'];
     renderFileTree();
+    updatePrompt();
     if (monacoEditorInstance) monacoEditorInstance.setValue(AppState.activeModuleData.steps[0]?.editorDefaultValue || '# Write your Python code here...\n\n');
     renderSidebar();
-    loadStep();
+    loadModule(AppState.currentModuleId);
 }
 
 function resetAllProgress() {
@@ -724,6 +844,9 @@ function resetAllProgress() {
 
         AppState.currentModuleId = 'welcome';
         AppState.gitBranch = 'main';
+        AppState.branches = ['main'];
+        AppState.gitFiles = { working: [], staging: [], repo: [] };
+
         document.getElementById('term-output').innerHTML = '';
         VFS.files = { '/home/student/project': ['main.py', 'secrets.txt', 'README.md'] };
         VFS.currentPath = '/home/student/project';
