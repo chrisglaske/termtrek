@@ -344,6 +344,9 @@ function setupResizer() {
 }
 
 function initApp() {
+    // BLOCK INITIALIZATION ON MOBILE
+    if (window.innerWidth <= 1024) return;
+
     checkPrivacy();
     setOS(AppState.os);
     renderSidebar();
