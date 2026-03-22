@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevCore | Interactive Workspace</title>
+    <title>TermTrek | Interactive Workspace</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
@@ -14,17 +14,60 @@
 </head>
 
 <body>
+    <div id="mobile-overlay">
+        <div class="mobile-content">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); margin-bottom: 20px;">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <h2>Desktop Required</h2>
+            <p>TermTrek is a heavy-duty engineering simulation featuring a live terminal, a virtual file system, and a
+                Python compiler. It requires a physical keyboard and a larger screen to function properly.</p>
+            <p style="color: #fff; font-weight: 600; margin-bottom: 30px;">Please open termtrek.dev on your computer.
+            </p>
+
+            <div class="mobile-resources">
+                <p class="mobile-sub">While you're here, check out these resources:</p>
+                <a href="https://roadmap.sh" target="_blank" class="mobile-btn">Developer Career Roadmaps ↗</a>
+                <a href="https://www.atlassian.com/git/tutorials" target="_blank" class="mobile-btn">Atlassian Git
+                    Guides ↗</a>
+                <a href="index.html" class="mobile-btn"
+                    style="margin-top: 20px; background: transparent; border-color: transparent; color: var(--text-secondary);">←
+                    Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-close-modal" onclick="closePrivacyModal()" title="Close">×</button>
+            <h2>Privacy & Storage</h2>
+            <p><strong>TermTrek is a zero-tracking environment.</strong> We do not use analytical cookies, we do not
+                track your IP, and your code never leaves your browser.</p>
+            <p>However, to prevent you from losing your progress when you close the tab, we need your permission to save
+                your lesson status locally on your hard drive (using your browser's <code>localStorage</code>).</p>
+            <div class="modal-actions">
+                <button id="btn-decline-consent" class="btn-decline" onclick="setConsent('declined')">Decline (Don't
+                    Save)</button>
+                <button id="btn-accept-consent" class="btn-accept" onclick="setConsent('accepted')">Accept Local
+                    Storage</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sys-toast" class="toast"></div>
+
     <div id="app-layout">
 
         <aside id="sidebar">
             <a href="index.html" class="brand" style="text-decoration: none; color: var(--text-primary);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)">
-                    <path d="m18 16 4-4-4-4" />
-                    <path d="m6 8-4 4 4 4" />
-                    <path d="m14.5 4-5 16" />
+                    <polyline points="4 17 10 11 4 5"></polyline>
+                    <line x1="12" y1="19" x2="20" y2="19"></line>
                 </svg>
-                DevCore
+                TermTrek
             </a>
 
             <div class="os-toggle">
@@ -39,6 +82,14 @@
 
             <div class="sidebar-footer">
                 <button class="btn-reset-all" onclick="resetAllProgress()">Reset All Progress</button>
+
+                <div id="privacy-status-btn" class="privacy-status" onclick="showPrivacyModal()">
+                    <div id="privacy-dot" class="status-dot"></div>
+                    <span id="privacy-text">Storage Pending</span>
+                </div>
+
+                <a href="https://github.com/chrisglaske/termtrek" target="_blank" class="github-link">Open Source
+                    (GPLv3) ↗</a>
             </div>
         </aside>
 
@@ -58,6 +109,22 @@
             </footer>
         </section>
 
+        <aside id="explorer-pane">
+            <div id="explorer-full">
+                <div class="explorer-header">
+                    <span>FILE EXPLORER</span>
+                    <button class="btn-icon" onclick="toggleExplorer()" title="Collapse Explorer">◀</button>
+                </div>
+                <div id="file-tree" class="file-tree"></div>
+            </div>
+            <div id="explorer-minimized" onclick="toggleExplorer(true)" title="Expand Explorer">
+                <div class="min-icon">📁</div>
+                <div class="min-arrow">▶</div>
+            </div>
+        </aside>
+
+        <div id="drag-resizer" class="resizer"></div>
+
         <section id="workspace-pane">
             <header class="workspace-tabs">
                 <div class="tab active" id="tab-terminal">Terminal</div>
@@ -69,9 +136,15 @@
 
                 <div id="ui-terminal" class="workspace-view active">
                     <div class="term-output" id="term-output"></div>
-                    <div class="term-input-line">
-                        <span class="prompt" id="term-prompt">project $</span>
-                        <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus>
+
+                    <div class="term-input-wrapper">
+                        <div class="term-input-line">
+                            <span class="prompt" id="term-prompt">~/project $</span>
+                            <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus>
+                        </div>
+                        <div class="term-help-text">💡 Tip: Type <span
+                                style="color:var(--primary); font-weight: bold;">help</span> for a list of available
+                            commands.</div>
                     </div>
                 </div>
 

@@ -10,10 +10,13 @@ const curriculum = {
                     steps: [
                         {
                             content: `
-                                <p>This is a simulation of how real software developers work. You will not just learn syntax; you will learn how to build, save, break, and fix software.</p>
+                                <h2>The Illusion of Competence</h2>
+                                <p>Watching a senior developer code on YouTube feels great. It makes you feel like you are learning. But the moment you open an empty text editor, your mind goes blank. This is called <strong>Tutorial Hell</strong>.</p>
+                                <p>Software engineering is not about memorizing syntax. It is about muscle memory, breaking things, reading error logs, and fixing them. You can only learn it by doing it.</p>
+                                
                                 <h2>Why Git & Python First?</h2>
-                                <p>Beginners are terrified of breaking their code. <strong>Git</strong> removes that fear entirely by acting as an infinite "undo" button.</p>
-                                <p>We use <strong>Python</strong> because it removes the boilerplate. You can write code and see it work instantly, teaching you pure logic.</p>
+                                <p>Beginners are terrified of breaking their computers. <strong>Git (Version Control)</strong> removes that fear entirely. It acts as an infinite "undo" button for your entire project.</p>
+                                <p>We use <strong>Python</strong> because it reads like English and removes the complex boilerplate required by other languages. It lets you focus entirely on pure logic.</p>
                             `
                         }
                     ]
@@ -25,12 +28,17 @@ const curriculum = {
                     steps: [
                         {
                             content: `
-                                <h2>Your Operating System Matters</h2>
-                                <p>A developer's terminal changes depending on their Operating System. Modern web development is natively built for Unix (Mac and Linux).</p>
-                                <p>If you are on Windows, we will eventually teach you how to install a tool called <strong>Git Bash</strong>, which forces Windows to act like a Mac so you can use industry-standard commands.</p>
+                                <h2>The Operating System Divide</h2>
+                                <p>The internet runs on Linux. Because of this, modern web development tools are natively built for Unix-based operating systems (macOS and Linux). The terminal commands used to navigate these systems are called <strong>Bash</strong> or <strong>Zsh</strong> commands.</p>
+                                <p>Windows uses an entirely different architecture. Its default Command Prompt uses different commands (e.g., <code>dir</code> instead of <code>ls</code>).</p>
+                                
+                                <h2>The Workaround</h2>
+                                <p>To solve this, Windows developers install tools like <strong>Git Bash</strong> or <strong>WSL</strong>, which force Windows to understand Mac/Linux commands. In this course, we teach the industry-standard Unix commands, regardless of what computer you are using.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Look at the sidebar on the left. Click the toggle to select the actual Operating System you are currently using.
-                                    <br><br>Once you have selected it, type <code>echo "Environment Set"</code> in the terminal to continue.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Let's configure your simulation. Look at the sidebar on the left and click the toggle to select the actual Operating System you are using.
+                                    <br><br>Once selected, verify your environment by typing: <code>echo "Environment Set"</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("echo") && cmd.includes("Environment Set")
@@ -44,52 +52,96 @@ const curriculum = {
                     steps: [
                         {
                             content: `
-                                <p>Before you code, you need to know how to talk to your computer without a mouse.</p>
+                                <h2>The GUI is a Crutch</h2>
+                                <p>When you use a mouse to click a folder icon, your computer is secretly running terminal commands in the background. Professional developers bypass the mouse and type the commands directly, which is infinitely faster.</p>
+                                
+                                <h2>The "Working Directory"</h2>
+                                <p>The terminal is like a physical cursor. It is always "sitting inside" one specific folder on your hard drive at any given time. We call this the <strong>Working Directory</strong>.</p>
+                                <p>We use the <code>pwd</code> (Print Working Directory) command to ask the terminal for our exact location.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's find out where you are. Type <code>pwd</code> (Print Working Directory) and hit enter.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Find out where you are sitting. Type <code>pwd</code> and hit enter.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "pwd"
                         },
                         {
                             content: `
+                                <h2>Peering into the Dark</h2>
+                                <p>Now that you know you are inside the <code>/home/student/project</code> folder, you need to see what files exist inside it.</p>
+                                <p>The <code>ls</code> (List) command lists all visible files and folders in your current working directory. Look at the File Explorer panel—when you run the command, the output should match what you see there.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Now type <code>ls</code> (List) to view the contents of your current directory.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Look around your current directory. Type <code>ls</code>.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "ls"
                         },
                         {
                             content: `
+                                <h2>Relative vs. Absolute Paths</h2>
+                                <p>If you type <code>cd logs</code>, you are using a <strong>Relative Path</strong>—you are telling the computer to look for a folder named "logs" exactly where you are standing.</p>
+                                <p>An <strong>Absolute Path</strong> starts from the very root of the computer, like <code>cd /home/student/project/logs</code>.</p>
+                                
+                                <h2>The Secret Dot Notation</h2>
+                                <p>Operating systems use shorthand for navigation. <br><code>.</code> (a single dot) means "the current folder". <br><code>..</code> (two dots) means "the parent folder" (go back one step).</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's create a new folder and move into it. 
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Let's practice path resolution. Watch the terminal prompt update as you move!
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type <code>mkdir logs</code></li>
-                                        <li>Type <code>cd logs</code></li>
+                                        <li>Type <code>mkdir logs</code> (Make Directory).</li>
+                                        <li>Type <code>cd logs</code> to enter it using a relative path.</li>
+                                        <li>Now, navigate backwards to the parent folder by typing <code>cd ..</code></li>
                                     </ol>
                                 </div>
                             `,
-                            validateCommand: (cmd) => cmd === "cd logs"
+                            validateCommand: (cmd) => cmd === "cd .."
                         }
                     ]
                 },
                 {
                     id: "bash-files",
-                    title: "Creating Files",
+                    title: "Creating, Reading & Destroying",
                     workspaceType: "terminal",
                     steps: [
                         {
                             content: `
+                                <h2>Rapid File Creation</h2>
+                                <p>The <code>touch</code> command instantly creates an empty file. It is much faster than opening a text editor, clicking "File -> New," and saving it.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Create a new file in your current folder. Type <code>touch server.log</code>.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Create a new file in your current folder. Type <code>touch server.log</code>. Watch it glow and slide into your Explorer panel!
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "touch server.log"
                         },
                         {
                             content: `
+                                <h2>Reading Files Without an Editor</h2>
+                                <p>What if you just want to quickly read a file without opening up a heavy IDE? You can use the <code>cat</code> (Concatenate) command to print the entire contents of a file directly into your terminal screen.</p>
+                                <p>This is incredibly useful for reading configuration files or checking logs on remote servers.</p>
+
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's clean up our mess. Delete the file you just made by typing <code>rm server.log</code>.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    We already have a <code>README.md</code> file in our project. Let's read it.
+                                    <br><br>Type: <code>cat README.md</code>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "cat README.md"
+                        },
+                        {
+                            content: `
+                                <h2>The Danger of the Terminal</h2>
+                                <p>To delete a file, we use the <code>rm</code> (Remove) command. <strong>This is incredibly dangerous.</strong></p>
+                                <p>When you delete a file using your mouse, your OS moves it to the "Recycle Bin", giving you a chance to recover it. The terminal has no Recycle Bin. When you use <code>rm</code>, the file is instantly and permanently destroyed from your hard drive.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Delete the file you just made. Type <code>rm server.log</code>. Watch it explode.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "rm server.log"
@@ -108,20 +160,36 @@ const curriculum = {
                     steps: [
                         {
                             content: `
-                                <p>Git moves files through a three-step pipeline: Working Directory -> Staging Area -> Repository (Vault).</p>
+                                <h2>What is Git, Actually?</h2>
+                                <p>Most beginners think Git is a cloud backup service. It isn't. <strong>Git is a local time-machine database.</strong> When initialized, it creates a hidden folder named <code>.git</code> that tracks every single keystroke you make.</p>
+                                
+                                <h2>The Three Zones</h2>
+                                <p>Git moves your code through a highly organized pipeline:</p>
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
+                                    <li><strong>1. Working Directory:</strong> Your actual folder. Git sees your changes here but isn't officially tracking them.</li>
+                                    <li><strong>2. Staging Area:</strong> The loading dock. You use <code>git add</code> to place files here to prepare them for saving.</li>
+                                    <li><strong>3. Repository (Vault):</strong> The timeline. You use <code>git commit</code> to lock a snapshot of the Staging Area into history permanently.</li>
+                                </ul>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Watch the Visualizer on the right. Type <code>git add index.txt</code> to move the file to the Staging Area.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Watch the Visualizer below. Move the file from the Working Directory to the Staging Area by typing <code>git add index.txt</code> (or <code>git add .</code> to stage everything).
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git add index.txt" || cmd === "git add ."
                         },
                         {
                             content: `
+                                <h2>The Commit Snapshot</h2>
+                                <p>Your file is on the loading dock. Now commit it to the vault. Every commit requires a "message" (the <code>-m</code> flag) explaining what changed. We will use a standard prefix (<code>feat:</code>) to denote a new feature.</p>
+                                <p>Under the hood, Git generates a massive 40-character cryptographic hash (like <code>a1b2c3d4...</code>) for this commit. That hash is the exact coordinate in time you can travel back to if your code breaks.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Lock the staged file into the Vault. Type <code>git commit -m "Initial commit"</code>.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Lock the staged file into the Vault. Type <code>git commit -m "feat: initial commit"</code>.
                                 </div>
                             `,
-                            validateCommand: (cmd) => cmd.startsWith("git commit")
+                            validateCommand: (cmd) => cmd.includes("git commit") && cmd.includes("feat:")
                         }
                     ]
                 },
@@ -132,25 +200,44 @@ const curriculum = {
                     steps: [
                         {
                             content: `
-                                <p>In the real world, you don't just type <code>git commit -m "fixed stuff"</code>. Professional teams use a standard called <strong>Conventional Commits</strong>.</p>
+                                <h2>The Chaos of Teamwork</h2>
+                                <p>If you write a commit message like <code>git commit -m "fixed the thing"</code>, your teammates will hate you. Professional engineering teams use a strict standard called <strong>Conventional Commits</strong> to bring order to the chaos.</p>
+                                
                                 <h2>The Prefixes</h2>
-                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
-                                    <li><code>feat:</code> A new feature (e.g., <code>feat: add login page</code>)</li>
-                                    <li><code>fix:</code> A bug fix (e.g., <code>fix: resolve crash on checkout</code>)</li>
-                                    <li><code>docs:</code> Documentation changes (e.g., <code>docs: update readme</code>)</li>
-                                    <li><code>chore:</code> Maintenance tasks (e.g., <code>chore: update dependencies</code>)</li>
-                                </ul>
+                                <p>Every commit message must start with a specific prefix:</p>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px; margin-bottom: 25px;">
+                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px;">
+                                        <div style="background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">feat:</div>
+                                        <div style="font-size: 0.95rem; color: #d4d4d8;">A new feature <span style="color: var(--text-secondary); font-size: 0.85rem;">(e.g., <code>feat: add login page</code>)</span></div>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px;">
+                                        <div style="background: rgba(239, 68, 68, 0.15); color: var(--danger); padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">fix:</div>
+                                        <div style="font-size: 0.95rem; color: #d4d4d8;">Resolving a bug <span style="color: var(--text-secondary); font-size: 0.85rem;">(e.g., <code>fix: stop app crash</code>)</span></div>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px;">
+                                        <div style="background: rgba(0, 112, 243, 0.15); color: #4fc1ff; padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">docs:</div>
+                                        <div style="font-size: 0.95rem; color: #d4d4d8;">Documentation <span style="color: var(--text-secondary); font-size: 0.85rem;">(e.g., <code>docs: update readme</code>)</span></div>
+                                    </div>
+                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px;">
+                                        <div style="background: rgba(245, 166, 35, 0.15); color: var(--warning); padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">chore:</div>
+                                        <div style="font-size: 0.95rem; color: #d4d4d8;">Maintenance tasks <span style="color: var(--text-secondary); font-size: 0.85rem;">(e.g., <code>chore: update packages</code>)</span></div>
+                                    </div>
+                                </div>
                             `
                         },
                         {
                             content: `
-                                <p>By using these prefixes, your entire team's Git history becomes perfectly readable, and you can even write scripts that automatically generate release notes based on the <code>feat:</code> and <code>fix:</code> tags!</p>
+                                <h2>Why do we do this? (Automation)</h2>
+                                <p>By strictly enforcing these prefixes, companies can write robots that read the Git history and automatically generate "Release Notes" for the users. A robot knows that a <code>feat:</code> means a new version!</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's practice.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Let's practice the professional workflow.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type <code>touch api.py</code> to create a new file.</li>
+                                        <li>Type <code>touch api.py</code></li>
                                         <li>Type <code>git add .</code> to stage it.</li>
-                                        <li>Commit it using the proper feature tag: <code>git commit -m "feat: add api structure"</code></li>
+                                        <li>Commit it using the proper feature tag: <code>git commit -m "feat: build api structure"</code></li>
                                     </ol>
                                 </div>
                             `,
@@ -160,14 +247,23 @@ const curriculum = {
                 },
                 {
                     id: "git-branching",
-                    title: "Branching & Merging",
+                    title: "Branching & Isolation",
                     workspaceType: "terminal",
                     steps: [
                         {
                             content: `
-                                <p>Never write experimental code on your <code>main</code> branch. If you are adding a feature, you create a "parallel universe" called a branch.</p>
+                                <h2>The Golden Rule: Protect Main</h2>
+                                <p>The <code>main</code> branch of your repository represents the code that is currently live and in production. <strong>You never write experimental code directly on main.</strong></p>
+                                
+                                <h2>Parallel Universes</h2>
+                                <p>When you want to build a new feature, you create a <strong>Branch</strong>. A branch is an exact clone of <code>main</code> at that moment in time. You can spend weeks destroying and rebuilding code on your branch, and the <code>main</code> branch remains perfectly safe.</p>
+                                <p>Under the hood, Git uses a pointer called <code>HEAD</code> to track which branch you are currently sitting in. Look at your terminal prompt at the bottom of the screen—it currently says <code>(main)</code>.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Create and switch to a new branch named 'dev'. Type <code>git checkout -b dev</code>.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Create a branch named 'dev' and switch your <code>HEAD</code> pointer to it simultaneously using the <code>-b</code> flag. 
+                                    <br><br>Type: <code>git checkout -b dev</code>
+                                    <br><br><em>Notice how your terminal prompt changes to (dev)!</em>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("git checkout -b dev")
@@ -181,10 +277,14 @@ const curriculum = {
                     steps: [
                         {
                             content: `
-                                <p>You wrote code on <code>dev</code>. Your teammate wrote code on <code>main</code>. You are about to merge them together, but you both edited the exact same line in <code>calc.py</code>.</p>
-                                <h2>The Collision</h2>
+                                <h2>The Inevitable Collision</h2>
+                                <p>When your feature is complete on the <code>dev</code> branch, you merge it back into <code>main</code>. Usually, Git combines the code automatically. But what happens if you and a teammate edit the <em>exact same line</em> of the <em>exact same file</em>?</p>
+                                <p>Git panics. It doesn't know which version is the correct one, so it halts the process and throws a <strong>Merge Conflict</strong>.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's trigger the disaster. Type <code>git merge dev</code> to attempt the merge.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Let's trigger a disaster. You wrote code on <code>dev</code>, but <code>main</code> was also updated. Attempt to smash them together. 
+                                    <br><br>Type: <code>git merge dev</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git merge dev"
@@ -193,15 +293,22 @@ const curriculum = {
                             workspaceType: "editor",
                             editorDefaultValue: `def add(a, b):\n<<<<<<< HEAD\n    print(f"Main Branch says: {a+b}")\n=======\n    print(f"Dev Branch says: {a+b}")\n>>>>>>> dev\n    return a + b`,
                             content: `
-                                <h2>Don't Panic</h2>
-                                <p>A merge conflict just means Git paused the merge and is asking a human to decide which code to keep.</p>
-                                <p>We have automatically opened <code>calc.py</code> in your editor. Notice the weird <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> markers.</p>
+                                <h2>Anatomy of a Conflict</h2>
+                                <p>When a conflict occurs, Git literally injects weird markers directly into your text file to show you the collision. We have automatically opened the broken <code>calc.py</code> file in your editor.</p>
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
+                                    <li><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> represents where you currently are (Main).</li>
+                                    <li><code>=======</code> is the divider line.</li>
+                                    <li><code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; dev</code> represents the incoming code you tried to merge.</li>
+                                </ul>
+                                <p>To fix this, you just delete the markers and delete the code you don't want.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Resolve the conflict.
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Resolve the conflict manually in the editor.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Delete the markers (<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code>, <code>=======</code>, and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; dev</code>).</li>
+                                        <li>Delete the <code>&lt;&lt;&lt;</code>, <code>===</code>, and <code>&gt;&gt;&gt;</code> marker lines entirely.</li>
                                         <li>Keep ONLY the "Dev Branch" print statement. Delete the Main branch one.</li>
-                                        <li>Click <strong>Run Code ▶</strong> to save the file.</li>
+                                        <li>Click <strong>Run Code ▶</strong> to save the fixed file to your hard drive.</li>
                                     </ol>
                                 </div>
                             `,
@@ -211,12 +318,15 @@ const curriculum = {
                         {
                             workspaceType: "terminal",
                             content: `
-                                <p>The code is clean. Now we just tell Git that the conflict is resolved by adding and committing the file.</p>
+                                <h2>Finalizing the Merge</h2>
+                                <p>The text file is clean, but Git is still waiting in a paused "merging state." You have to explicitly tell Git that the conflict is resolved by staging the file and committing the final result.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Finalize the merge using a conventional commit.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Finalize the merge using a conventional commit.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Type <code>git add calc.py</code></li>
-                                        <li>Type <code>git commit -m "fix: resolve merge conflict"</code></li>
+                                        <li>Stage the fix: <code>git add .</code></li>
+                                        <li>Commit it: <code>git commit -m "fix: resolve merge conflict"</code></li>
                                     </ol>
                                 </div>
                             `,
@@ -231,32 +341,38 @@ const curriculum = {
             modules: [
                 {
                     id: "py-vars",
-                    title: "Variables, Types & F-Strings",
+                    title: "Variables & Types",
                     workspaceType: "editor",
+                    editorDefaultValue: `# Step 1: Create a variable named 'user' below this line\n\n\n# Step 2: Use an f-string to print a greeting using the variable\n`,
                     steps: [
                         {
                             content: `
-                                <p>Python reads like plain English. It handles memory management automatically, so you can focus entirely on logic.</p>
+                                <h2>Dynamic Memory</h2>
+                                <p>Python is a <strong>dynamically typed</strong> language. In older languages like C++, you have to tell the computer exactly how much RAM to reserve for a variable (e.g., <code>int age = 5;</code>). Python handles memory management automatically; you just write <code>age = 5</code> and Python figures out the type in the background.</p>
+                                
                                 <h2>The 4 Core Data Types</h2>
-                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px;">
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
                                     <li><strong>Strings (str):</strong> Text, always wrapped in quotes. <code>hero = "Arthur"</code></li>
                                     <li><strong>Integers (int):</strong> Whole numbers. <code>level = 5</code></li>
                                     <li><strong>Floats (float):</strong> Decimals. <code>health = 85.5</code></li>
-                                    <li><strong>Booleans (bool):</strong> True or False (Must be capitalized!). <code>is_alive = True</code></li>
+                                    <li><strong>Booleans (bool):</strong> Binary True or False (Must be capitalized in Python!). <code>is_alive = True</code></li>
                                 </ul>
                             `
                         },
                         {
                             content: `
-                                <h2>Talking to the User</h2>
-                                <p>We use <code>input()</code> to ask questions. To inject variables directly into text, we use <strong>f-strings</strong> (put an 'f' before the quotes and wrap the variable in curly braces).</p>
+                                <h2>String Injection (f-strings)</h2>
+                                <p>Historically, mixing variables and text in Python was ugly. You had to use plus signs (<code>"Hello " + user + "!"</code>). Modern Python introduced <strong>f-strings</strong> (formatted strings).</p>
+                                <p>By placing an <code>f</code> directly outside the opening quote, you can inject variables seamlessly inside curly braces <code>{}</code>.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's write a dynamic greeting. In the editor on the right:
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Let's write a dynamic greeting in the editor.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
                                         <li>Create a variable: <code>user = "Engineer"</code></li>
-                                        <li>Print an f-string: <code>print(f"Welcome, {user}")</code></li>
+                                        <li>Print an f-string: <code>print(f"Welcome to the system, {user}")</code></li>
                                     </ol>
-                                    Click <strong>Run Code ▶</strong> when ready.
+                                    Click <strong>Run Code ▶</strong> to compile it. Watch the terminal to see your output!
                                 </div>
                             `,
                             validateCode: (code) => code.includes('user') && code.includes('f"') && code.includes('{user}') && code.includes('print(')
@@ -265,18 +381,23 @@ const curriculum = {
                 },
                 {
                     id: "py-logic",
-                    title: "Conditional Logic (Ifs)",
+                    title: "Conditional Logic",
                     workspaceType: "editor",
+                    editorDefaultValue: `# We are building an authentication system.\n\nadmin = True\n\n# Write your if/else statement below:\n`,
                     steps: [
                         {
                             content: `
-                                <p>Programs need to make decisions based on data.</p>
-                                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 20px;">
+                                <h2>The Brains of the Operation</h2>
+                                <p>Software is entirely built on decisions. <code>if</code> statements allow your code to branch into different paths based on incoming data.</p>
+                                
+                                <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 15px; margin-bottom: 20px;">
                                     <strong>CRITICAL: Python uses Indentation!</strong><br>
-                                    Other languages use brackets <code>{}</code> to group code. Python uses spaces. If your code is indented incorrectly, it will instantly crash.
+                                    Languages like JavaScript use curly brackets <code>{}</code> to group code blocks together. Python relies strictly on <strong>whitespace</strong>. If your code isn't indented perfectly (usually 4 spaces or 1 tab), the entire program will crash with an <code>IndentationError</code>.
                                 </div>
+                                
                                 <h2>If / Elif / Else</h2>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3;">
+                                <p>You can chain multiple conditions together using <code>elif</code> (else if). The computer checks them top-to-bottom. The first one that evaluates to True executes, and the rest are ignored.</p>
+                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
 temp = 90
 if temp > 100:
     print("Meltdown")
@@ -289,12 +410,12 @@ else:
                         {
                             content: `
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Write an <code>if/else</code> statement.
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Write the authentication block in the editor.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Set <code>admin = True</code></li>
-                                        <li>Write an if statement: <code>if admin == True:</code></li>
+                                        <li>Write the if statement: <code>if admin == True:</code></li>
                                         <li>Indent the next line and write: <code>print("Access Granted")</code></li>
-                                        <li>Write an <code>else:</code> statement that prints <code>"Denied"</code></li>
+                                        <li>Remove the indent, write <code>else:</code>, and indent the next line to print <code>"Denied"</code></li>
                                     </ol>
                                 </div>
                             `,
@@ -306,29 +427,35 @@ else:
                     id: "py-loops",
                     title: "Iteration & Loops",
                     workspaceType: "editor",
+                    editorDefaultValue: `# Build a countdown timer that prints 0 through 4\n\n# Write your for loop below:\n`,
                     steps: [
                         {
                             content: `
-                                <p>Computers are incredibly fast at doing repetitive tasks. We use loops to tell a computer to do something over and over again.</p>
-                                <h2>The While Loop</h2>
-                                <p>A <code>while</code> loop runs continuously <em>as long as</em> a condition is true. Be careful—if the condition never turns false, you will create an infinite loop that crashes your program!</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3;">
+                                <h2>The Power of Automation</h2>
+                                <p>Computers are stupid, but they are incredibly fast at doing repetitive tasks. We use loops to tell a computer to run the same block of code thousands of times.</p>
+                                
+                                <h2>The While Loop & The Infinite Trap</h2>
+                                <p>A <code>while</code> loop runs continuously <em>as long as</em> a mathematical condition remains True. You must be extremely careful to ensure the condition eventually becomes False, otherwise you create an <strong>Infinite Loop</strong> that will consume all your CPU memory and freeze the program.</p>
+                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
 hp = 3
 while hp > 0:
     print("Still alive!")
-    hp = hp - 1</pre>
+    hp = hp - 1  # Crucial: This eventually breaks the loop</pre>
                             `
                         },
                         {
                             content: `
                                 <h2>The For Loop</h2>
-                                <p>A <code>for</code> loop is used to iterate exactly a certain number of times, or to loop through a collection of items (like a list).</p>
+                                <p>A <code>for</code> loop is vastly safer. It is designed to iterate a specific number of times, or to step through a pre-existing collection of data one item at a time.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Write a countdown timer using a <code>for</code> loop and the built-in <code>range()</code> function.
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Write a countdown using a <code>for</code> loop and the built-in <code>range()</code> function.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
                                         <li>Type: <code>for i in range(5):</code></li>
                                         <li>Indent and type: <code>print(i)</code></li>
                                     </ol>
+                                    <em>Note: When you run this, observe how computers start counting at 0, not 1!</em>
                                 </div>
                             `,
                             validateCode: (code) => code.includes('for i in range') && code.includes('print(i)')
@@ -339,29 +466,35 @@ while hp > 0:
                     id: "py-data",
                     title: "Data Structures",
                     workspaceType: "editor",
+                    editorDefaultValue: `# Create a dictionary representing a server:\n\n\n# Print the status key:\n`,
                     steps: [
                         {
                             content: `
-                                <p>Variables are great for storing one piece of data, but what if you have 10,000 users? You need Data Structures.</p>
+                                <h2>Beyond Single Variables</h2>
+                                <p>Variables are great for storing one piece of data, but what if you need to load 10,000 users from a database? You cannot create 10,000 individual variables. You need Data Structures.</p>
+                                
                                 <h2>Lists (Arrays)</h2>
-                                <p>A List is an ordered collection of items, wrapped in square brackets <code>[]</code>. You can grab items by their index number (computers count from 0!).</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3;">
+                                <p>A List is an ordered collection of items wrapped in square brackets <code>[]</code>. You retrieve items by calling their "Index" number. Because computers use <strong>Zero-Based Indexing</strong>, the first item is always at index 0.</p>
+                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
 users = ["Alice", "Bob", "Charlie"]
-print(users[0]) # Prints Alice</pre>
+print(users[0]) # Prints Alice
+print(users[-1]) # A Python trick to get the last item (Charlie)</pre>
                             `
                         },
                         {
                             content: `
                                 <h2>Dictionaries (JSON Objects)</h2>
-                                <p>A Dictionary stores data in <strong>Key-Value pairs</strong> using curly braces <code>{}</code>. It is the most important data structure in modern web development.</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3;">
-player = {
-    "name": "Arthur",
-    "level": 42
-}
-print(player["name"])</pre>
+                                <p>While Lists are great for ordered data, they are terrible for lookups. If you want to find "Charlie's phone number", a List forces the computer to search through every single item until it finds him.</p>
+                                <p>A <strong>Dictionary</strong> stores data in Key-Value pairs using curly braces <code>{}</code>. It acts like a literal dictionary: you look up the "Key" (a word), and it instantly gives you the "Value" without having to read the whole book.</p>
+                                <p>Dictionaries map perfectly to JSON, which is how 99% of all data is sent across the internet today.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Create a dictionary named <code>server</code> with a key <code>"status"</code> set to <code>"Online"</code>. Then <code>print(server["status"])</code>.
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Create a network dictionary in the editor.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Create the dict: <code>server = { "status": "Online", "ping": 42 }</code></li>
+                                        <li>Print the value by calling its key: <code>print(server["status"])</code></li>
+                                    </ol>
                                 </div>
                             `,
                             validateCode: (code) => code.includes('server = {') && code.includes('"status"') && code.includes('print(server[')
@@ -370,26 +503,36 @@ print(player["name"])</pre>
                 },
                 {
                     id: "py-errors",
-                    title: "Error Handling (Try/Except)",
+                    title: "Error Handling",
                     workspaceType: "editor",
+                    editorDefaultValue: `# Wrap the dangerous code below in a try/except block:\n\nprint(ghost_variable) # This variable does not exist\n`,
                     steps: [
                         {
                             content: `
-                                <p>When users interact with your program, they will do stupid things. If you ask for a number and they type "Banana", your program will crash. Professional engineers anticipate crashes.</p>
+                                <h2>Anticipating Disaster</h2>
+                                <p>When real humans interact with your program, they will do unpredictable things. If your code asks for their age, and they type "Banana", trying to do math on the word "Banana" will cause your program to instantly shut down and throw a stack trace error.</p>
+                                <p>Professional engineers do not let their apps crash. They anticipate failures and handle them gracefully.</p>
+                                
                                 <h2>Try / Except Blocks</h2>
-                                <p>You can tell Python to <em>try</em> a block of code. If an error happens, instead of blowing up the program, it instantly jumps to the <em>except</em> block.</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3;">
+                                <p>You can wrap dangerous code inside a <code>try</code> block. If Python hits an error inside that block, it aborts the execution but <em>does not crash the app</em>. Instead, it instantly jumps to the <code>except</code> block so you can show the user a polite warning message.</p>
+                            `
+                        },
+                        {
+                            content: `
+                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
 try:
     # Trying to divide by zero causes a massive crash
     answer = 10 / 0
 except:
     print("Math error! You can't divide by zero.")</pre>
-                            `
-                        },
-                        {
-                            content: `
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Write a <code>try:</code> block that attempts to print an undefined variable: <code>print(ghost)</code>. Write an <code>except:</code> block below it that prints <code>"Caught the error!"</code>.
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Catch a failure in the editor.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Write a <code>try:</code> block that attempts to print the undefined variable: <code>print(ghost_variable)</code></li>
+                                        <li>Write an <code>except:</code> block below it that prints: <code>"Caught the error!"</code></li>
+                                    </ol>
                                 </div>
                             `,
                             validateCode: (code) => code.includes('try:') && code.includes('except:') && code.includes('print(')
@@ -400,25 +543,31 @@ except:
                     id: "py-funcs",
                     title: "Functions & Architecture",
                     workspaceType: "editor",
+                    editorDefaultValue: `# Define the reusable 'add' function below:\n\n\n\n# Call the function and print the result:\n`,
                     steps: [
                         {
                             content: `
-                                <p>As your code gets longer, it gets messy. Functions allow you to package a block of code, give it a name, and reuse it anywhere.</p>
-                                <h2>Defining vs. Calling</h2>
-                                <p>You use <code>def</code> to define a function. <em>Defining</em> it doesn't run it. It just stores the instructions in memory. You have to <em>call</em> it by typing its name with parentheses.</p>
-                                <h2>The Secret of "return"</h2>
-                                <p><code>print()</code> just shows text on the screen for the human. <code>return</code> actually hands data <em>back</em> to the computer so it can be saved in a variable and used later.</p>
+                                <h2>DRY: Don't Repeat Yourself</h2>
+                                <p>As your codebase grows, writing the same logic over and over becomes a nightmare. If the logic has a bug, you have to find and fix it in 50 different places.</p>
+                                <p><strong>Functions</strong> allow you to package a block of code, give it a name, and reuse it anywhere. You only write the logic once.</p>
+                                
+                                <h2>Parameters vs. Arguments</h2>
+                                <p>When you <em>define</em> a function using <code>def</code>, you define <strong>Parameters</strong>—these are empty placeholder variables (like <code>a</code> and <code>b</code>). When you actually <em>call</em> the function to run it, you pass in <strong>Arguments</strong>—the actual live data (like <code>5</code> and <code>10</code>) that fill those placeholders.</p>
                             `
                         },
                         {
                             content: `
+                                <h2>The Secret of "Return"</h2>
+                                <p>Beginners often confuse <code>print()</code> with <code>return</code>. <br><code>print()</code> is just a visual display for the human looking at the screen. The computer immediately forgets it.<br><code>return</code> actually hands the processed data <em>back</em> to the computer's memory so it can be saved in a variable and used in future calculations.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Build a reusable addition engine.
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Build a reusable engine in the editor.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
                                         <li>Define it: <code>def add(a, b):</code></li>
                                         <li>Return the math: <code>return a + b</code></li>
-                                        <li>Call it and save it: <code>total = add(5, 5)</code></li>
-                                        <li>Print it: <code>print(total)</code></li>
+                                        <li>Un-indent to call it and save the returned data: <code>total = add(5, 10)</code></li>
+                                        <li>Print the saved data: <code>print(total)</code></li>
                                     </ol>
                                 </div>
                             `,
@@ -433,29 +582,36 @@ except:
             modules: [
                 {
                     id: "proj-1",
-                    title: "Project 1: The CLI Calculator",
+                    title: "Project 1: CLI Calculator",
                     workspaceType: "editor",
+                    editorDefaultValue: `# THE CALCULATOR ENGINE\n# 1. Ask for first number (cast to float)\n# 2. Ask for operator (+, -, *, /)\n# 3. Ask for second number (cast to float)\n# 4. Use if/elif/else to run the math and print result\n\n`,
                     steps: [
                         {
                             content: `
-                                <p>Time to prove you understand logic, variables, and type casting.</p>
+                                <h2>Putting It All Together</h2>
+                                <p>It is time to combine Variables, Control Flow, and Input/Output to build a functional Command Line Interface (CLI) application.</p>
+                                
                                 <h2>The Type Casting Trap</h2>
-                                <p>If you run <code>num = input("Enter number: ")</code> and the user types 5, Python stores it as the <em>text</em> "5". If you try to add "5" + "5", Python gives you "55". You must convert it to a float (decimal) using <code>float()</code>.</p>
+                                <p>When you use Python's <code>input()</code> function to ask a user a question, Python grabs their keyboard strokes and treats them strictly as a String (Text), even if they typed a number.</p>
+                                <p>If a user types <code>5</code>, Python stores the <em>text character</em> "5". If you try to add "5" + "5", Python will smash the text together and give you "55". You must <strong>Cast</strong> the text into a float (a decimal number) using the <code>float()</code> wrapper before doing math.</p>
                             `
                         },
                         {
                             content: `
-                                <h2>The Mission Briefing</h2>
-                                <p>We are going to build a calculator that runs in the terminal.</p>
+                                <h2>The Logic Tree</h2>
+                                <p>Your program will need to ask three separate questions, and then use an <code>if/elif/else</code> block to check which mathematical operator the user chose to determine which math equation to run.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Project Requirements:</strong>
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Build the calculator engine.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Create <code>num1 = float(input("First: "))</code></li>
-                                        <li>Create <code>op = input("Operator (+, -, *, /): ")</code></li>
-                                        <li>Create <code>num2 = float(input("Second: "))</code></li>
-                                        <li>Write an <code>if/elif</code> block to handle the math based on <code>op</code>.</li>
-                                        <li>Print the final <code>result</code>.</li>
+                                        <li>Prompt and cast: <code>num1 = float(input("First: "))</code></li>
+                                        <li>Prompt operator: <code>op = input("Operator (+, -, *, /): ")</code></li>
+                                        <li>Prompt and cast: <code>num2 = float(input("Second: "))</code></li>
+                                        <li>Write the logic block starting with: <code>if op == "+":</code></li>
+                                        <li>Print the final result.</li>
                                     </ol>
+                                    <em>Note: When you hit Run Code, the terminal will prompt you to enter the numbers!</em>
                                 </div>
                             `,
                             validateCode: (code) => code.includes('float(input') && code.includes('if op') && code.includes('elif') && code.includes('print(')
@@ -466,26 +622,32 @@ except:
                     id: "proj-2",
                     title: "Project 2: The Secret Vault",
                     workspaceType: "editor",
+                    editorDefaultValue: `# THE VAULT ENGINE\n# 1. Ask the user for a secret using input()\n# 2. Open 'secrets.txt' in append mode ('a')\n# 3. Write the secret to the file with a newline ('\\n')\n\n`,
                     steps: [
                         {
                             content: `
-                                <p>Programs forget everything when they close. Real apps save data to a database or a file. We will build a vault that saves your secrets to a text file on your hard drive.</p>
-                                <h2>Writing to a File in Python</h2>
-                                <p>Python has a built-in <code>open()</code> function. If we open a file in <strong>"a" (append) mode</strong>, it will add new text to the end of the file without deleting the old stuff.</p>
-                                <div style="background: rgba(245, 166, 35, 0.1); border-left: 4px solid #f5a623; padding: 15px; margin-bottom: 20px;">
-                                    <strong>Git .gitignore Practice</strong><br>
-                                    In the real world, you do NOT want your <code>secrets.txt</code> file to be uploaded to GitHub for the world to see. You would create a file called <code>.gitignore</code> and type <code>secrets.txt</code> inside it.
-                                </div>
+                                <h2>The Volatility of RAM</h2>
+                                <p>Variables live in your computer's RAM. When your Python script finishes running, the RAM is instantly cleared. Everything is forgotten. To create an app that "remembers" data, you must write that data to a permanent file on the hard drive (or a database).</p>
+                                
+                                <h2>File Descriptors</h2>
+                                <p>To talk to a hard drive, Python uses the <code>with open("filename.txt", "mode") as file:</code> syntax. This opens a secure stream to the hard drive, writes the data, and automatically closes the stream when it's done so the file doesn't corrupt.</p>
+                                <p>We use <strong>"a" (append) mode</strong> so that new secrets are added to the bottom of the file without erasing the old ones.</p>
                             `
                         },
                         {
                             content: `
+                                <h2>Git Security (The .gitignore file)</h2>
+                                <div style="background: rgba(245, 166, 35, 0.1); border-left: 4px solid var(--warning); padding: 15px; margin-bottom: 20px;">
+                                    In the real world, you <strong>NEVER</strong> commit files containing passwords, API keys, or personal secrets to GitHub. Hackers run automated bots that scrape GitHub 24/7 looking for exposed keys. You protect them by creating a file named <code>.gitignore</code> and typing the name of your secrets file inside it. Git will then pretend that file doesn't exist.
+                                </div>
+                                
                                 <div class="mission-box">
-                                    <strong>Project Requirements:</strong>
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Build the file writer.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Ask the user for input: <code>secret = input("Enter secret: ")</code></li>
-                                        <li>Open the file: <code>with open("secrets.txt", "a") as file:</code></li>
-                                        <li>Write to it: <code>file.write(secret + "\\n")</code></li>
+                                        <li>Ask for input: <code>secret = input("Enter secret: ")</code></li>
+                                        <li>Open the stream: <code>with open("secrets.txt", "a") as file:</code></li>
+                                        <li>Write to it (adding a newline character so they stack): <code>file.write(secret + "\\n")</code></li>
                                     </ol>
                                 </div>
                             `,
@@ -500,18 +662,24 @@ except:
                     steps: [
                         {
                             content: `
-                                <p>The best way to learn version control is to destroy your own project on purpose and use Git to rescue it.</p>
+                                <h2>The True Power of Version Control</h2>
+                                <p>The absolute best way to learn to trust Git is to intentionally destroy your own work and rescue it from the brink.</p>
+                                
                                 <h2>The Disaster Scenario</h2>
-                                <p>Imagine you accidentally highlighted all the code in your calculator project and deleted it, then saved the file. Your editor shows nothing. The file is empty.</p>
-                                <p>If you run <code>git status</code>, it will show in red that the file has been modified.</p>
+                                <p>Imagine it is 2:00 AM. You accidentally highlighted all 500 lines of code in your calculator project and pressed delete. Your cat walks across the keyboard and hits <code>Ctrl+S</code> (Save). Your editor shows nothing. The file is empty.</p>
+                                <p>Because you saved the file, your editor's "Undo" button is useless. If you run <code>git status</code>, Git will see the modification and warn you that <code>calc.py</code> has been altered in the Working Directory.</p>
                             `
                         },
                         {
                             content: `
-                                <h2>The Rescue</h2>
-                                <p>Since you haven't committed the destruction to the vault yet, you can tell Git to pull the last known good version and overwrite your working directory.</p>
+                                <h2>The Rescue Operation</h2>
+                                <p>Because you practiced good habits and committed your code to the Git Vault earlier that day, the destruction only exists in your Working Directory. The Vault is safe.</p>
+                                <p>You can command Git to reach into the Vault, grab the last known perfect snapshot of <code>calc.py</code>, and forcefully overwrite the broken file in your folder.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Oh no! You ruined <code>calc.py</code>. Rescue it from the vault by checking out the last safe version. Type: <code>git checkout -- calc.py</code>
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Your code is gone. Rescue <code>calc.py</code> from the Vault. 
+                                    <br><br>Type: <code>git checkout -- calc.py</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git checkout -- calc.py"
@@ -530,9 +698,12 @@ except:
                     steps: [
                         {
                             content: `
-                                <p>You've mastered the concepts in the browser. Now, it is time to turn your actual physical machine into a professional development environment.</p>
-                                <h2>Step 1: Download Visual Studio Code</h2>
-                                <p>VS Code is the industry standard text editor. It is free, lightweight, and built by Microsoft.</p>
+                                <h2>Leaving the Sandbox</h2>
+                                <p>You have mastered the core mechanics inside our simulated browser sandbox. Now, it is time to configure your actual physical computer into a professional software development environment.</p>
+                                
+                                <h2>The IDE (Integrated Development Environment)</h2>
+                                <p>Developers don't use Microsoft Word or Notepad to write code. We use IDEs—highly advanced text editors that feature syntax highlighting, auto-completion, and integrated terminals.</p>
+                                <p>Visual Studio Code (VS Code), built by Microsoft, is the undisputed industry standard. It is lightweight, infinitely customizable, and 100% free.</p>
                                 <ul>
                                     <li><a href="https://code.visualstudio.com/" target="_blank" style="color: var(--primary); text-decoration: underline;">Click here to download VS Code</a>.</li>
                                     <li>Run the installer and leave all default options checked.</li>
@@ -541,8 +712,8 @@ except:
                         },
                         {
                             content: `
-                                <h2>Step 2: Install the Python Extension</h2>
-                                <p>Out of the box, VS Code is just a text editor. We need to give it Python superpowers.</p>
+                                <h2>Extensions (Superpowers)</h2>
+                                <p>Out of the box, VS Code is just a generic text editor. To make it understand Python syntax, format your code beautifully, and run debugger tools, you need to install the official Python extension.</p>
                                 <ol style="padding-left: 20px; margin-bottom: 20px;">
                                     <li>Open VS Code.</li>
                                     <li>Click the <strong>Extensions</strong> icon on the far left sidebar (it looks like 4 building blocks).</li>
@@ -550,7 +721,9 @@ except:
                                     <li>Find the one published by <strong>Microsoft</strong> and click Install.</li>
                                 </ol>
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Type <code>echo "Editor Installed"</code> to proceed to the Python engine setup.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Once you have VS Code installed locally, simulate the confirmation here.
+                                    <br><br>Type <code>echo "Editor Installed"</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("echo") && cmd.includes("Editor")
@@ -564,25 +737,29 @@ except:
                     steps: [
                         {
                             content: `
-                                <p>Your computer does not inherently know how to read Python code. We have to install the Python Engine.</p>
+                                <h2>The Compiler</h2>
+                                <p>Your computer's CPU only understands binary (1s and 0s). It has no idea how to read the English-like Python code you write. You must install the Python Engine (the interpreter), which acts as a translator, reading your code and converting it into machine instructions in real-time.</p>
                                 <h2>Step 1: Download Python</h2>
                                 <p><a href="https://www.python.org/downloads/" target="_blank" style="color: var(--primary); text-decoration: underline;">Click here to go to Python.org</a> and download the latest version for your operating system.</p>
                             `
                         },
                         {
                             content: `
-                                <h2>Step 2: Installation (CRITICAL)</h2>
+                                <h2>Step 2: Installation (CRITICAL WARNING)</h2>
                                 <div class="win-only">
-                                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 15px; margin-bottom: 20px;">
+                                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 15px; margin-bottom: 20px;">
                                         <strong>Windows Users - DO NOT CLICK NEXT YET:</strong><br>
-                                        On the very first screen of the Windows installer, look at the bottom. You <strong>MUST</strong> check the box that says <strong>"Add Python to PATH"</strong>. If you forget this, your terminal will never recognize Python commands, and nothing will work.
+                                        On the very first screen of the Windows installer, look at the absolute bottom. You <strong>MUST</strong> check the tiny box that says <strong>"Add Python.exe to PATH"</strong>. 
+                                        <br><br>If you forget this, Windows will not know where Python is installed. Your terminal will spit out "command not found" errors, and absolutely nothing will work.
                                     </div>
                                 </div>
                                 <div class="mac-only">
-                                    <p><strong>Mac Users:</strong> Run the installer normally. After it finishes, a Finder window will pop up. Double-click the file named <code>Install Certificates.command</code> to allow Python to access the internet.</p>
+                                    <p><strong>Mac Users:</strong> Run the installer normally. Mac handles PATH variables much better than Windows. After the installation finishes, a Finder window might pop up. Double-click the file named <code>Install Certificates.command</code> to ensure Python has security permissions to access the internet.</p>
                                 </div>
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Let's verify your installation. Open your computer's actual terminal and type <code>python --version</code> (or <code>python3 --version</code> on Mac). Once you do, simulate it here by typing <code>python --version</code>.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Verify your installation. Open your computer's *real* terminal and type <code>python --version</code> (or <code>python3 --version</code> on Mac).
+                                    <br><br>Once you see the version number locally, simulate it here: <code>python --version</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "python --version" || cmd === "python3 --version"
@@ -590,29 +767,96 @@ except:
                     ]
                 },
                 {
-                    id: "local-git",
-                    title: "3. The Time Machine (Git)",
+                    id: "local-venv",
+                    title: "3. Virtual Environments",
                     workspaceType: "terminal",
                     steps: [
                         {
                             content: `
-                                <p>We need to install Git locally so your computer can track file history and talk to GitHub.</p>
+                                <h2>The Danger of Global Pollution (Dependency Hell)</h2>
+                                <p>Imagine you build a web scraper today using version 1.0 of a library. A year from now, you build a second app that requires version 2.0 of that library. If you install libraries "globally" on your computer, installing version 2.0 will overwrite version 1.0, and your first app will instantly break.</p>
+                                
+                                <h2>The Solution: The Venv Sandbox</h2>
+                                <p>A virtual environment (<code>venv</code>) is an isolated sandbox folder. When you create one, Python literally copies its own execution engine into that folder. Anything you install inside that folder stays trapped inside it, completely protecting the rest of your computer.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Tell the built-in <code>venv</code> module (<code>-m</code>) to generate a sandbox folder named "venv".
+                                    <br><br>
+                                    <span class="mac-only">Type: <code>python3 -m venv venv</code></span>
+                                    <span class="win-only">Type: <code>python -m venv venv</code></span>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd.includes("-m venv venv")
+                        },
+                        {
+                            content: `
+                                <h2>Activating the Environment</h2>
+                                <p>Creating the folder isn't enough; you have to turn it on. When you run the activation script, it temporarily overwrites your terminal's path variables, forcing the terminal to use the isolated Python engine instead of the global one.</p>
+                                <p>You will know it worked when the prefix <code>(venv)</code> permanently attaches itself to the left side of your terminal prompt.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Run the activation script inside the folder.
+                                    <br><br>
+                                    <span class="mac-only">Type: <code>source venv/bin/activate</code></span>
+                                    <span class="win-only">Type: <code>source venv/Scripts/activate</code></span>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd.includes("activate")
+                        },
+                        {
+                            content: `
+                                <h2>Pip: The Package Manager</h2>
+                                <p>Now that your sandbox is active, you can safely download code written by other developers. We use the tool <code>pip</code> (Pip Installs Packages), which reaches out to the Python Package Index (PyPI) on the web and downloads the libraries into your sandbox.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Let's install the famous 'requests' library, which allows Python to easily talk to web APIs.
+                                    <br><br>Type: <code>pip install requests</code>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "pip install requests" || cmd === "pip3 install requests"
+                        },
+                        {
+                            content: `
+                                <h2>Trust, but Verify</h2>
+                                <p>A great engineer never assumes a command worked. Did the library actually install? Where is the proof? You can ask Pip to print out a list of every single package currently installed in your active environment.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    View your installed packages to verify the download.
+                                    <br><br>Type: <code>pip list</code>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "pip list" || cmd === "pip3 list"
+                        }
+                    ]
+                },
+                {
+                    id: "local-git",
+                    title: "4. The Time Machine (Git)",
+                    workspaceType: "terminal",
+                    steps: [
+                        {
+                            content: `
+                                <p>You understand the mechanics of Git, but now we need to install the actual Git engine locally so your computer can track file history and eventually sync to GitHub.</p>
                                 <div class="win-only">
                                     <h2>For Windows Users</h2>
-                                    <p>The default Windows Command Prompt is terrible for developers. We need to install <strong>Git Bash</strong>, which gives Windows a Mac/Linux-style terminal.</p>
+                                    <p>As mentioned earlier, the default Windows Command Prompt is painful for developers. The Git installer fixes this by including <strong>Git Bash</strong>, a highly capable terminal emulator that translates standard Unix commands for Windows.</p>
                                     <ol style="padding-left: 20px; margin-bottom: 20px;">
                                         <li><a href="https://gitforwindows.org/" target="_blank" style="color: var(--primary); text-decoration: underline;">Download Git for Windows here</a>.</li>
-                                        <li>Run the installer. You can just click "Next" through all the default options.</li>
-                                        <li>From now on, whenever you need a terminal, search your computer for <strong>Git Bash</strong> and use that!</li>
+                                        <li>Run the installer. You can just click "Next" through all the default options (there are a lot of them).</li>
+                                        <li>From now on, whenever you need a terminal, search your computer for <strong>Git Bash</strong> and use that instead of CMD!</li>
                                     </ol>
                                 </div>
                                 <div class="mac-only">
                                     <h2>For Mac Users</h2>
-                                    <p>Macs make this incredibly easy.</p>
+                                    <p>Macs are Unix-based, which makes installing developer tools incredibly easy.</p>
                                     <ol style="padding-left: 20px; margin-bottom: 20px;">
-                                        <li>Press <code>Cmd + Space</code>, type "Terminal", and hit Enter.</li>
+                                        <li>Press <code>Cmd + Space</code>, type "Terminal", and hit Enter to open your native terminal.</li>
                                         <li>Type <code>git --version</code> and hit Enter.</li>
-                                        <li>A popup will appear asking you to install "Command Line Developer Tools." Click <strong>Install</strong>.</li>
+                                        <li>Because Git isn't installed yet, Apple will intercept the command and pop up a window asking you to install "Command Line Developer Tools." Click <strong>Install</strong>.</li>
                                     </ol>
                                 </div>
                             `
@@ -620,7 +864,9 @@ except:
                         {
                             content: `
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Type <code>git --version</code> in the emulator below to verify.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Once installed on your physical machine, verify the installation by asking for the version. Simulate it below.
+                                    <br><br>Type: <code>git --version</code>
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd.includes("git --version")
@@ -629,61 +875,132 @@ except:
                 },
                 {
                     id: "ssh-keys",
-                    title: "4. The Secret Handshake (SSH)",
+                    title: "5. Git Config & SSH",
                     workspaceType: "terminal",
                     steps: [
                         {
                             content: `
-                                <p>If you push code to GitHub using HTTPS, it will ask for your password every single time. We use an <strong>SSH Key</strong>—a cryptographic lock—to prove to GitHub that your laptop is authorized.</p>
-                                <h2>Step 1: Generate the Key</h2>
-                                <p>Open your newly installed terminal (or Git Bash) and run:</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3;">ssh-keygen -t ed25519 -C "your_email@example.com"</pre>
-                                <p>Hit <strong>Enter</strong> to accept the default file location, and hit <strong>Enter twice</strong> to leave the passphrase blank for convenience.</p>
-                            `
+                                <h2>Step 1: Global Identity</h2>
+                                <p>Git permanently stamps every commit with an author's name and email. Before you can use Git locally, you must tell it who you are. We use the <code>--global</code> flag to apply these settings to your entire computer, not just one project.</p>
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Configure your identity.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Type: <code>git config --global user.name "Your Name"</code></li>
+                                        <li>Type: <code>git config --global user.email "email@example.com"</code></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd.startsWith("git config --global user.email")
                         },
                         {
                             content: `
-                                <h2>Step 2: Give the Key to GitHub</h2>
-                                <p>You need to copy the public half of the key.</p>
-                                <ul class="mac-only" style="margin-bottom:15px; padding-left: 20px;">
-                                    <li><strong>Mac:</strong> Type <code>pbcopy < ~/.ssh/id_ed25519.pub</code> (This copies it invisibly).</li>
-                                </ul>
-                                <ul class="win-only" style="margin-bottom:15px; padding-left: 20px;">
-                                    <li><strong>Windows:</strong> Type <code>cat ~/.ssh/id_ed25519.pub</code>, then highlight and copy the text that appears.</li>
-                                </ul>
-                                <p>Log into <a href="https://github.com/settings/keys" target="_blank" style="color: var(--primary); text-decoration: underline;">GitHub SSH Settings</a>, click <strong>New SSH Key</strong>, and paste it.</p>
+                                <h2>Step 2: Verify the Configuration</h2>
+                                <p>Where did that data go? The <code>git config</code> command doesn't use magic; it literally just creates a hidden text file in your home directory named <code>.gitconfig</code> and writes the data inside it.</p>
+                                <p>We can use the <code>cat</code> command to look inside the file and prove our configuration saved properly.</p>
                                 <div class="mission-box">
-                                    <strong>Mission:</strong> Tell your local Git who you are. This stamps your name on your code. Type:<br>
-                                    <code>git config --global user.name "Your Name"</code>
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Read the hidden config file.
+                                    <br><br>Type: <code>cat ~/.gitconfig</code>
                                 </div>
                             `,
-                            validateCommand: (cmd) => cmd.startsWith("git config --global user.name")
+                            validateCommand: (cmd) => cmd === "cat ~/.gitconfig"
+                        },
+                        {
+                            content: `
+                                <h2>Step 3: Asymmetric Cryptography (SSH)</h2>
+                                <p>If you push code to GitHub using the old HTTPS method, it prompts you to type your password every single time. It is highly insecure and tedious. Modern developers use <strong>SSH Keys</strong>.</p>
+                                <p>An SSH Key is an impossibly complex cryptographic lock-and-key system. We generate a pair: a Private Key (which stays hidden deep in your hard drive) and a Public Key (which you give to GitHub). When you push code, GitHub checks if your hidden Private Key matches the Public Key they have on file. If it does, you authenticate instantly.</p>
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Run the key generator. We use the ed25519 algorithm, which is the current cryptographic standard.
+                                    <br><br>Type: <code>ssh-keygen -t ed25519 -C "email@example.com"</code>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd.startsWith("ssh-keygen")
+                        },
+                        {
+                            content: `
+                                <h2>Step 4: Verify the Generation</h2>
+                                <p>The generator created a hidden folder in your home directory called <code>.ssh</code> and placed the two files inside it. Let's look inside the folder to ensure they are there.</p>
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    List the contents of the hidden SSH folder.
+                                    <br><br>Type: <code>ls ~/.ssh</code>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "ls ~/.ssh"
+                        },
+                        {
+                            content: `
+                                <h2>Step 5: The SSH Agent</h2>
+                                <p>The keys exist, but your computer's background security guard (the SSH Agent) doesn't know about them yet. The agent is responsible for grabbing the private key and presenting it to GitHub when requested. You must wake the agent up and hand it the key.</p>
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Add the key to the agent.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Start the background agent: <code>eval "$(ssh-agent -s)"</code></li>
+                                        <li><span class="mac-only">Add it to the Apple Keychain: <code>ssh-add --apple-use-keychain ~/.ssh/id_ed25519</code></span><span class="win-only">Add it: <code>ssh-add ~/.ssh/id_ed25519</code></span></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd.startsWith("ssh-add")
+                        },
+                        {
+                            content: `
+                                <h2>Step 6: Give the Lock to GitHub</h2>
+                                <p>Now you need to grab the Public half of the key (the <code>.pub</code> file) and paste it into <a href="https://github.com/settings/keys" target="_blank" style="color: var(--primary);">GitHub's SSH Settings</a>.</p>
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Extract the text from the public key file so you can copy it.
+                                    <br><br>
+                                    <span class="mac-only">Type: <code>pbcopy < ~/.ssh/id_ed25519.pub</code> (This pipes the output directly to your clipboard invisibly, which is much safer!)</span>
+                                    <span class="win-only">Type: <code>cat ~/.ssh/id_ed25519.pub</code> (Then manually highlight and copy the output)</span>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd.includes("pbcopy") || cmd.includes("cat")
+                        },
+                        {
+                            content: `
+                                <h2>Step 7: The Server Handshake Test</h2>
+                                <p>Assuming you pasted the key into GitHub on your real machine, you need to verify that the cryptographic handshake actually works. We do this by attempting a raw SSH connection to the GitHub servers.</p>
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Ping GitHub's servers to test your authentication.
+                                    <br><br>Type: <code>ssh -T git@github.com</code>
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "ssh -T git@github.com"
                         }
                     ]
                 },
                 {
                     id: "external-resources",
-                    title: "5. Next Steps & Resources",
+                    title: "6. Next Steps",
                     workspaceType: "terminal",
                     steps: [
                         {
                             content: `
-                                <p>Congratulations. Your machine is officially a professional development environment, and you understand the core mechanics of version control and programming logic.</p>
+                                <h2>The Threshold</h2>
+                                <p>Congratulations. You are no longer a spectator. Your machine is officially a professional development environment, and you understand the core mechanics of version control and programming logic.</p>
+                                <p>But this is only day one. You have the map, but now you have to walk the path.</p>
+                                
                                 <h2>Where to Go From Here</h2>
-                                <p>This bootcamp gave you the map, but you have to walk the path. Here are the best resources on the internet to continue your journey:</p>
                                 <ul style="padding-left: 20px; margin-bottom: 20px; line-height: 1.8;">
-                                    <li><strong>Advanced Git:</strong> <a href="https://www.atlassian.com/git/tutorials" target="_blank" style="color: var(--primary); text-decoration: underline;">Atlassian Git Tutorials</a> - The absolute best visual guides for complex Git workflows.</li>
-                                    <li><strong>Python Deep Dive:</strong> <a href="https://docs.python.org/3/tutorial/index.html" target="_blank" style="color: var(--primary); text-decoration: underline;">The Official Python Tutorial</a> - Learn directly from the creators of the language.</li>
-                                    <li><strong>Algorithm Practice:</strong> <a href="https://leetcode.com/" target="_blank" style="color: var(--primary); text-decoration: underline;">LeetCode</a> or <a href="https://www.codewars.com/" target="_blank" style="color: var(--primary); text-decoration: underline;">CodeWars</a> - Start doing "Easy" problems to build your problem-solving muscle.</li>
+                                    <li><strong>Algorithm Practice:</strong> Go to <a href="https://leetcode.com/" target="_blank" style="color: var(--primary); text-decoration: underline;">LeetCode</a> or <a href="https://www.codewars.com/" target="_blank" style="color: var(--primary); text-decoration: underline;">CodeWars</a>. Start doing "Easy" problems to build your problem-solving muscle. It will be brutal at first. Keep doing it.</li>
+                                    <li><strong>Python Deep Dive:</strong> Read <a href="https://docs.python.org/3/tutorial/index.html" target="_blank" style="color: var(--primary); text-decoration: underline;">The Official Python Tutorial</a>. Learn directly from the creators of the language.</li>
+                                    <li><strong>Advanced Git:</strong> Check out the <a href="https://www.atlassian.com/git/tutorials" target="_blank" style="color: var(--primary); text-decoration: underline;">Atlassian Git Tutorials</a> for the absolute best visual guides on complex workflows like rebasing and cherry-picking.</li>
                                 </ul>
                             `
                         },
                         {
                             content: `
                                 <h2>Developer Roadmaps</h2>
-                                <p>The tech industry is massive. You can become a Frontend Developer, Backend Developer, DevOps Engineer, or Data Scientist. Check out <a href="https://roadmap.sh/" target="_blank" style="color: var(--primary); text-decoration: underline;">Roadmap.sh</a> to see interactive flowcharts of exactly what technologies to learn next based on your career goals.</p>
+                                <p>The tech industry is massive. You can become a Frontend Developer, Backend Developer, DevOps Engineer, or Data Scientist. Go to <a href="https://roadmap.sh/" target="_blank" style="color: var(--primary); text-decoration: underline;">Roadmap.sh</a>. They provide interactive, industry-standard flowcharts showing you exactly what technologies to learn next based on your specific career goals.</p>
+                                
                                 <div class="mission-box">
-                                    <strong>Final Mission:</strong> The simulation is complete. Type <code>exit</code> to shut down the terminal and begin building on your own machine.
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    The simulation is complete. Type <code>exit</code> to shut down the terminal. Good luck, Engineer.
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "exit" || cmd === "clear"
