@@ -72,6 +72,9 @@ function setConsent(choice) {
     localStorage.setItem('termtrek_consent', choice);
     document.getElementById('privacy-modal').classList.remove('active');
     updatePrivacyUI();
+
+    // Trigger the onboarding tour right after privacy is handled
+    checkTour();
 }
 
 function updatePrivacyUI() {
@@ -729,6 +732,135 @@ function resetAllProgress() {
         if (monacoEditorInstance) monacoEditorInstance.setValue('# Write your Python code here...\n\n');
         renderSidebar();
         loadModule('welcome');
+    }
+}
+
+// ==========================================
+// ONBOARDING TOUR ENGINE
+// ==========================================
+const TourSteps = [
+    {
+        targetId: "sidebar",
+        title: "1. The Navigation Matrix",
+        desc: "This is your curriculum map. It automatically tracks your progress. You can also change your Target OS here to ensure the terminal simulates the correct environment.",
+        position: "right"
+    },
+    {
+        targetId: "briefing-pane",
+        title: "2. Mission Control",
+        desc: "This center screen provides your engineering briefings. Read the context, understand the 'why', and execute the Missions at the bottom to progress.",
+        position: "center"
+    },
+    {
+        targetId: "explorer-pane",
+        title: "3. Virtual File System",
+        desc: "As you type terminal commands to create or destroy files, watch this panel. It reacts in real-time, helping you visualize the hidden file system.",
+        position: "right"
+    },
+    {
+        targetId: "workspace-pane",
+        title: "4. The Workspace",
+        desc: "This is where the magic happens. You have a fully functional UNIX Terminal, a Python Code Editor, and a live Git Visualizer. Time to break things.",
+        position: "left"
+    }
+];
+
+let currentTourIndex = 0;
+
+function checkTour() {
+    const hasRunTour = localStorage.getItem('termtrek_tour_done');
+    if (!hasRunTour) {
+        document.getElementById('welcome-modal').classList.add('active');
+    }
+}
+
+function startTour() {
+    document.getElementById('welcome-modal').classList.remove('active');
+
+    if (!document.getElementById('tour-overlay-backdrop')) {
+        const backdrop = document.createElement('div');
+        backdrop.id = 'tour-overlay-backdrop';
+        document.body.appendChild(backdrop);
+    }
+    document.getElementById('tour-overlay-backdrop').classList.add('active');
+
+    const bubble = document.getElementById('tour-bubble');
+    bubble.classList.remove('hidden');
+
+    setTimeout(() => {
+        bubble.classList.add('visible');
+        renderTourStep();
+    }, 100);
+}
+
+function endTour() {
+    document.getElementById('welcome-modal').classList.remove('active');
+    document.getElementById('tour-bubble').classList.remove('visible');
+    setTimeout(() => document.getElementById('tour-bubble').classList.add('hidden'), 300);
+
+    if (document.getElementById('tour-overlay-backdrop')) {
+        document.getElementById('tour-overlay-backdrop').classList.remove('active');
+    }
+
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+
+    if (AppState.consent === 'accepted') {
+        localStorage.setItem('termtrek_tour_done', 'true');
+    }
+    showToast("Simulation Initialized. Good luck.");
+}
+
+function renderTourStep() {
+    const step = TourSteps[currentTourIndex];
+
+    document.getElementById('tour-title').innerText = step.title;
+    document.getElementById('tour-desc').innerText = step.desc;
+    document.getElementById('tour-progress').innerText = `${currentTourIndex + 1}/${TourSteps.length}`;
+
+    document.getElementById('btn-tour-prev').style.visibility = currentTourIndex === 0 ? 'hidden' : 'visible';
+    const nextBtn = document.getElementById('btn-tour-next');
+    if (currentTourIndex === TourSteps.length - 1) {
+        nextBtn.innerText = "Finish";
+        nextBtn.onclick = endTour;
+    } else {
+        nextBtn.innerText = "Next";
+        nextBtn.onclick = nextTourStep;
+    }
+
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    const targetEl = document.getElementById(step.targetId);
+    if (targetEl) {
+        targetEl.classList.add('tour-highlight');
+
+        const rect = targetEl.getBoundingClientRect();
+        const bubble = document.getElementById('tour-bubble');
+
+        if (step.position === "right") {
+            bubble.style.top = `${rect.top + 50}px`;
+            bubble.style.left = `${rect.right + 20}px`;
+        } else if (step.position === "left") {
+            bubble.style.top = `${rect.top + 50}px`;
+            bubble.style.left = `${rect.left - 320}px`;
+        } else if (step.position === "center") {
+            bubble.style.top = `${rect.top + (rect.height / 2) - 100}px`;
+            bubble.style.left = `${rect.left + (rect.width / 2) - 150}px`;
+        }
+    }
+}
+
+function nextTourStep() {
+    if (currentTourIndex < TourSteps.length - 1) {
+        currentTourIndex++;
+        renderTourStep();
+    }
+}
+
+function prevTourStep() {
+    if (currentTourIndex > 0) {
+        currentTourIndex--;
+        renderTourStep();
+        document.getElementById('btn-tour-next').innerText = "Next";
+        document.getElementById('btn-tour-next').onclick = nextTourStep;
     }
 }
 

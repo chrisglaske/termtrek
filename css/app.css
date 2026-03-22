@@ -1139,3 +1139,101 @@ body[data-os="win"] .mac-only {
     border-color: var(--danger);
     color: var(--danger);
 }
+
+/* --- ONBOARDING TOUR SYSTEM --- */
+.tour-bubble {
+    position: fixed;
+    width: 300px;
+    background: var(--bg-panel);
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(0, 112, 243, 0.3);
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s ease, top 0.4s ease, left 0.4s ease;
+    pointer-events: none;
+}
+
+.tour-bubble.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.tour-bubble.hidden {
+    display: none;
+}
+
+.tour-header {
+    padding: 12px 15px;
+    background: rgba(0, 112, 243, 0.1);
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+    color: #fff;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.tour-body {
+    padding: 15px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.tour-footer {
+    padding: 10px 15px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Tour Highlight Effect applied to the actual App UI */
+.tour-highlight {
+    position: relative;
+    z-index: 10000 !important;
+    box-shadow: 0 0 0 4px var(--primary), 0 0 20px rgba(0, 112, 243, 0.5) !important;
+    border-radius: 4px;
+    pointer-events: none;
+    /* Prevents clicks during tour */
+    transition: all 0.3s ease;
+}
+
+#tour-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: none;
+    backdrop-filter: blur(2px);
+}
+
+#tour-overlay-backdrop.active {
+    display: block;
+}
+
+/* --- Tour Restart Button --- */
+.btn-tour-restart {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    margin-bottom: 10px;
+}
+
+.btn-tour-restart:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
