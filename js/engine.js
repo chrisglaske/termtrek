@@ -1,5 +1,5 @@
 // ==========================================
-// THE TERMTREK ENGINE (v9.0 - True Visual Hierarchy & LS-LA)
+// THE TERMTREK ENGINE (v9.2 - Editor State & Workflow)
 // ==========================================
 
 const AppState = {
@@ -303,7 +303,23 @@ function updatePrompt() {
 function updateTabGlow(step) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('glow-attention'));
     if (!step) return;
-    if (step.workspaceType === 'editor' || step.isEditorMissionOnly) {
+
+    let needsEditor = false;
+
+    // 1. Explicit Editor Validation required
+    if (step.validateCode || step.isEditorMissionOnly || step.workspaceType === 'editor') {
+        needsEditor = true;
+    }
+    // 2. Explicit Terminal Validation required
+    else if (step.validateCommand || step.workspaceType === 'terminal') {
+        needsEditor = false;
+    }
+    // 3. Fallback to Module's default
+    else if (AppState.activeModuleData && AppState.activeModuleData.workspaceType) {
+        needsEditor = AppState.activeModuleData.workspaceType === 'editor';
+    }
+
+    if (needsEditor) {
         document.getElementById('tab-editor').classList.add('glow-attention');
     } else {
         document.getElementById('tab-terminal').classList.add('glow-attention');
@@ -344,8 +360,7 @@ function setupResizer() {
 }
 
 function initApp() {
-    // BLOCK INITIALIZATION ON MOBILE
-    if (window.innerWidth <= 1024) return;
+    if (window.innerWidth <= 1024) return; // Block initialization on mobile devices
 
     checkPrivacy();
     setOS(AppState.os);
@@ -420,6 +435,11 @@ function loadModule(moduleId) {
         toggleExplorer(true);
     }
 
+    // --- NEW: Reset Editor when entering a new module ---
+    if (monacoEditorInstance) {
+        monacoEditorInstance.setValue('# Write your Python code here...\n\n');
+    }
+
     VFS.currentPath = '/home/student/project';
     VFS.files = {
         '/home/student/project': ['<span style="color: var(--primary)">.git</span>', 'main.py', 'secrets.txt', 'README.md'],
@@ -441,7 +461,10 @@ function loadModule(moduleId) {
     document.getElementById('module-tag').innerText = foundPhase.title;
     document.getElementById('module-title').innerText = foundModule.title;
 
-    switchWorkspace(foundModule.workspaceType);
+    if (foundModule.workspaceType) {
+        switchWorkspace(foundModule.workspaceType);
+    }
+
     renderSidebar();
     loadStep();
 }
@@ -477,12 +500,25 @@ function loadStep() {
         visualizer.style.display = 'none';
     }
 
+    // Auto-switch workspace if the specific step demands it
+    if (step.workspaceType) {
+        switchWorkspace(step.workspaceType);
+    }
+
     updateTabGlow(step);
     document.getElementById('next-mission-btn').classList.remove('glow-next');
 
+    // --- NEW: Safe pre-fill logic ---
     if (monacoEditorInstance) {
-        if (step.editorDefaultValue) monacoEditorInstance.setValue(step.editorDefaultValue);
-        else if (AppState.currentStepIndex === 0) monacoEditorInstance.setValue('# Write your Python code here...\n\n');
+        const currentCode = monacoEditorInstance.getValue();
+        const isBlank = currentCode.trim() === '' || currentCode === '# Write your Python code here...\n\n';
+
+        // Only populate the default value if the editor hasn't been written in yet
+        if (step.editorDefaultValue && isBlank) {
+            monacoEditorInstance.setValue(step.editorDefaultValue);
+        } else if (AppState.currentStepIndex === 0 && isBlank) {
+            monacoEditorInstance.setValue('# Write your Python code here...\n\n');
+        }
     }
 
     let dotsHtml = '';
