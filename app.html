@@ -56,6 +56,35 @@
         </div>
     </div>
 
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h2>Welcome to TermTrek 🚀</h2>
+            <p style="margin-bottom: 10px;">You are about to enter a simulated UNIX engineering environment.</p>
+            <p>This tool was built to help you master Git, Python, and Bash through actual muscle memory. There are no
+                passive videos here—just real commands, real logic, and real consequences.</p>
+            <p style="margin-top: 20px; font-weight: 600; color: #fff;">Would you like a quick tour of your new
+                workspace?</p>
+            <div class="modal-actions">
+                <button class="btn-decline" onclick="endTour()">Skip Tour</button>
+                <button class="btn-accept" onclick="startTour()">Start the Tour</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tour-bubble" class="tour-bubble hidden">
+        <div class="tour-header" id="tour-title">Tour Title</div>
+        <div class="tour-body" id="tour-desc">Tour description goes here.</div>
+        <div class="tour-footer">
+            <span id="tour-progress">1/4</span>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-tour-prev" class="btn-decline" style="padding: 6px 12px; font-size: 0.8rem;"
+                    onclick="prevTourStep()">Back</button>
+                <button id="btn-tour-next" class="btn-accept" style="padding: 6px 12px; font-size: 0.8rem;"
+                    onclick="nextTourStep()">Next</button>
+            </div>
+        </div>
+    </div>
+
     <div id="sys-toast" class="toast"></div>
 
     <div id="app-layout">
@@ -81,6 +110,7 @@
             <div class="nav-container" id="nav-tree"></div>
 
             <div class="sidebar-footer">
+                <button class="btn-tour-restart" onclick="startTour()">Restart UI Tour</button>
                 <button class="btn-reset-all" onclick="resetAllProgress()">Reset All Progress</button>
 
                 <div id="privacy-status-btn" class="privacy-status" onclick="showPrivacyModal()">
