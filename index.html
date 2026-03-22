@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TermTrek | Stop Watching, Start Engineering</title>
     <meta name="title" content="TermTrek | Stop Watching, Start Engineering">
     <meta name="description"
@@ -20,6 +22,9 @@
     <meta property="twitter:description"
         content="The interactive engineering sandbox for Git, Python, and Bash. Build muscle memory, not tutorial debt.">
     <meta property="twitter:image" content="https://termtrek.work/assets/preview-image.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --bg: #000000;
@@ -340,7 +345,7 @@
         .demo-terminal {
             background: #000;
             padding: 20px;
-            font-family: var(--font-mono);
+            font-family: monospace;
             font-size: 0.85rem;
             color: #a3a3a3;
             overflow: hidden;
@@ -404,7 +409,7 @@
         /* Python Content */
         .demo-editor {
             padding: 20px;
-            font-family: var(--font-mono);
+            font-family: monospace;
             font-size: 0.85rem;
             background: #0d0d0d;
             border-right: 1px solid var(--border);
@@ -686,7 +691,7 @@
 
         .bg-term {
             padding: 15px;
-            font-family: var(--font-mono);
+            font-family: monospace;
             font-size: 0.85rem;
             color: #a3a3a3;
         }
@@ -715,7 +720,7 @@
 
         .bg-py {
             padding: 15px;
-            font-family: var(--font-mono);
+            font-family: monospace;
             font-size: 0.85rem;
         }
 
@@ -802,11 +807,14 @@
             border-top: 1px solid var(--border);
         }
 
+        /* --- RESPONSIVE MOBILE ADJUSTMENTS --- */
         @media (max-width: 900px) {
 
             .bento-grid,
             .layout-git,
-            .layout-python {
+            .layout-python,
+            .comparison-grid,
+            .how-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -814,13 +822,25 @@
                 grid-column: span 1;
             }
 
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-
             .demo-explorer,
             .demo-git {
                 display: none;
+            }
+
+            .hero {
+                padding: 4rem 20px 2rem;
+            }
+
+            .tech-logos {
+                gap: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .comp-card {
+                padding: 2rem;
             }
         }
     </style>
@@ -1059,6 +1079,28 @@
                     <div style="padding-left: 20px;"><span class="py-kw">return</span> <span
                             style="color:#b5cea8;">6.67e-11</span> * radius</div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-section">
+        <h2 class="section-title">How it works</h2>
+        <div class="how-grid">
+            <div class="how-card">
+                <div class="how-num">1</div>
+                <h3>Read the Briefing</h3>
+                <p>Every module starts with a quick engineering briefing explaining the "why" behind the tool or
+                    concept.</p>
+            </div>
+            <div class="how-card">
+                <div class="how-num">2</div>
+                <h3>Execute the Mission</h3>
+                <p>Use the integrated terminal and editor to type real commands and code based on the instructions.</p>
+            </div>
+            <div class="how-card">
+                <div class="how-num">3</div>
+                <h3>Pass or Debug</h3>
+                <p>If you fail, read the logs and fix it. Once you pass, the system unlocks the next module.</p>
             </div>
         </div>
     </section>

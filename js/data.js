@@ -378,6 +378,54 @@ const curriculum = {
             title: "Phase 2: Python Core",
             modules: [
                 {
+                    id: "py-intro",
+                    title: "What is Python?",
+                    workspaceType: "terminal",
+                    steps: [
+                        {
+                            content: `
+                                <h2>The "Swiss Army Knife" of Code</h2>
+                                <p>Python is currently the most popular programming language in the world. Why? Because it was designed to be <strong>readable</strong>. While other languages look like math equations, Python looks like English.</p>
+                                
+                                <h2>Real-World Use Cases</h2>
+                                <p>You aren't just learning a "beginner" tool. Python powers the world's most advanced technology:</p>
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
+                                    <li><strong>Artificial Intelligence:</strong> Almost every AI (like ChatGPT) and Machine Learning model is built using Python.</li>
+                                    <li><strong>Data Science:</strong> Scientists use it to analyze massive amounts of data and create visualizations.</li>
+                                    <li><strong>Web Development:</strong> Sites like Instagram, Netflix, and Spotify use Python for their "Backend" (the brain of the website).</li>
+                                    <li><strong>Automation:</strong> Engineers use it to write "scripts" that do hours of boring manual work in seconds.</li>
+                                </ul>
+                            `
+                        },
+                        {
+                            content: `
+                                <h2>Interpreted vs. Compiled</h2>
+                                <p>Computers cannot actually read Python. They only understand 1s and 0s. Some languages (like C++) require a "Compilation" step where you convert the whole file into a <code>.exe</code> before you can run it.</p>
+                                <p>Python is <strong>Interpreted</strong>. This means there is a "Translator" program (the Python Interpreter) that reads your code line-by-line and executes it instantly. This makes it much faster for you to experiment and find bugs.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Let's talk to the interpreter. Type <code>python3</code> (or just <code>python</code>) and hit Enter to enter "Interactive Mode."
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "python3" || cmd === "python"
+                        },
+                        {
+                            content: `
+                                <h2>The "Zen" of Python</h2>
+                                <p>The creators of Python believe that "Simple is better than complex." They even hid a poem inside the language called <em>The Zen of Python</em> which outlines the philosophy of how to write good code.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Read the philosophy. While still inside the interactive Python mode, type <code>import this</code> and hit Enter.
+                                    <br><br>Once you've read it, type <code>exit()</code> to return to the normal terminal.
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "exit()"
+                        }
+                    ]
+                },
+                {
                     id: "py-vars",
                     title: "Variables & Types",
                     workspaceType: "editor",
