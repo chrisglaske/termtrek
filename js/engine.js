@@ -1,9 +1,9 @@
 // ==========================================
-// THE TERMTREK ENGINE (v8.7 - Sandbox Freedom & Auto-Reset)
+// THE TERMTREK ENGINE (v9.0 - True Visual Hierarchy & LS-LA)
 // ==========================================
 
 const AppState = {
-    consent: localStorage.getItem('termtrek_consent') || null, // Privacy first!
+    consent: localStorage.getItem('termtrek_consent') || null,
     completedModules: JSON.parse(localStorage.getItem('termtrek_state')) || [],
     currentModuleId: 'welcome',
     activeModuleData: null,
@@ -14,7 +14,12 @@ const AppState = {
     gitFiles: { working: [], staging: [], repo: [] },
     cmdHistory: [],
     historyIndex: 0,
-    lsActivePath: null
+    lsActivePath: null,
+    showHiddenFiles: false,
+
+    gitUserName: 'Engineer',
+    gitUserEmail: 'dev@example.com',
+    sshEmail: 'dev@example.com'
 };
 
 const EXPLORER_REQ_MODULES = ['bash-basics', 'bash-files', 'git-mental-model', 'local-venv', 'proj-2'];
@@ -26,10 +31,12 @@ let lastExplorerWidth = '220px';
 
 const VFS = {
     currentPath: '/home/student/project',
-    files: { '/home/student/project': ['main.py', 'secrets.txt', 'README.md'] }
+    files: {
+        '/home/student/project': ['<span style="color: var(--primary)">.git</span>', 'main.py', 'secrets.txt', 'README.md'],
+        '/home/student/project/.git': []
+    }
 };
 
-// --- PRIVACY & CONSENT LOGIC ---
 function checkPrivacy() {
     if (!AppState.consent) {
         showPrivacyModal();
@@ -175,9 +182,24 @@ function buildTreeHTML(path, depth, animateItem, animationType) {
     const items = VFS.files[path] || [];
     const paddingLeft = depth * 16 + 10;
 
-    items.forEach(item => {
-        const isDir = item.includes('<span');
+    // Sorting: Folders top, Files bottom
+    const sortedItems = [...items].sort((a, b) => {
+        const cleanA = a.replace(/<[^>]*>?/gm, '');
+        const cleanB = b.replace(/<[^>]*>?/gm, '');
+        const isDirA = a.includes('<span') || VFS.files[`${path}/${cleanA}`] !== undefined;
+        const isDirB = b.includes('<span') || VFS.files[`${path}/${cleanB}`] !== undefined;
+        if (isDirA && !isDirB) return -1;
+        if (!isDirA && isDirB) return 1;
+        return cleanA.localeCompare(cleanB);
+    });
+
+    sortedItems.forEach(item => {
         const cleanName = item.replace(/<[^>]*>?/gm, '');
+
+        // Completely skip rendering hidden files if not active
+        if (cleanName.startsWith('.') && !AppState.showHiddenFiles) return;
+
+        const isDir = item.includes('<span') || VFS.files[`${path}/${cleanName}`] !== undefined;
         const itemPath = `${path}/${cleanName}`;
 
         let animClass = '';
@@ -187,22 +209,36 @@ function buildTreeHTML(path, depth, animateItem, animationType) {
 
         let activeClass = (itemPath === VFS.currentPath) ? 'active-dir' : '';
         let lsClass = (AppState.lsActivePath === path) ? 'ls-highlight' : '';
+        let hiddenClass = cleanName.startsWith('.') ? 'hidden-file' : '';
 
         if (isDir) {
-            html += `<div class="tree-item ${animClass} ${activeClass} ${lsClass}" style="padding-left: ${paddingLeft}px;">
-                        <span class="tree-folder-chevron">▼</span>
+            // Check if folder has visible children to determine Chevron status
+            let hasVisibleChildren = false;
+            if (VFS.files[itemPath]) {
+                hasVisibleChildren = VFS.files[itemPath].some(child => {
+                    const cName = child.replace(/<[^>]*>?/gm, '');
+                    return AppState.showHiddenFiles || !cName.startsWith('.');
+                });
+            }
+
+            // If empty, show a closed chevron so it doesn't look like files are inside it
+            const chevron = hasVisibleChildren ? '▼' : '▶';
+
+            html += `<div class="tree-item ${animClass} ${activeClass} ${lsClass} ${hiddenClass}" style="padding-left: ${paddingLeft}px;">
+                        <span class="tree-folder-chevron">${chevron}</span>
                         <span class="tree-icon">${ICONS.folder}</span>
                         <span class="tree-item-name">${cleanName}</span>
                         ${activeClass ? '<span style="margin-left: 8px; font-size: 0.65rem; background: var(--primary); color: #fff; padding: 2px 6px; border-radius: 4px;">current</span>' : ''}
                      </div>`;
-            if (VFS.files[itemPath]) {
+
+            if (VFS.files[itemPath] && AppState.showHiddenFiles && hasVisibleChildren) {
                 html += `<div class="tree-sub-items">`;
                 html += buildTreeHTML(itemPath, depth + 1, animateItem, animationType);
                 html += `</div>`;
             }
         } else {
-            html += `<div class="tree-item ${animClass} ${lsClass}" style="padding-left: ${paddingLeft}px;">
-                        <span class="tree-folder-chevron" style="opacity: 0;">▼</span>
+            html += `<div class="tree-item ${animClass} ${lsClass} ${hiddenClass}" style="padding-left: ${paddingLeft}px;">
+                        <span class="tree-folder-chevron" style="opacity: 0;">▶</span>
                         <span class="tree-icon">${getFileIcon(cleanName)}</span>
                         <span class="tree-item-name">${cleanName}</span>
                      </div>`;
@@ -337,10 +373,29 @@ function renderSidebar() {
             const isCompleted = AppState.completedModules.includes(mod.id);
             const isActive = AppState.currentModuleId === mod.id;
             html += `<div class="nav-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" onclick="loadModule('${mod.id}')"><span>${mod.title}</span><div class="status-indicator"></div></div>`;
+
+            if (isActive && mod.steps.length > 1) {
+                html += `<div class="nav-sub-items">`;
+                mod.steps.forEach((step, idx) => {
+                    const isStepActive = AppState.currentStepIndex === idx;
+                    const isStepCompleted = idx < AppState.currentStepIndex || isCompleted;
+                    html += `<div class="nav-sub-item ${isStepActive ? 'active' : ''}" onclick="goToStep(${idx})">
+                                <div class="step-dot ${isStepCompleted ? 'completed' : (isStepActive ? 'active' : '')}"></div>
+                                Step ${idx + 1}
+                             </div>`;
+                });
+                html += `</div>`;
+            }
         });
     });
     navTree.innerHTML = html;
 }
+
+window.goToStep = function (idx) {
+    AppState.currentStepIndex = idx;
+    renderSidebar();
+    loadStep();
+};
 
 function loadModule(moduleId) {
     AppState.currentModuleId = moduleId;
@@ -356,14 +411,17 @@ function loadModule(moduleId) {
     AppState.activeModuleData = foundModule;
     AppState.currentStepIndex = 0;
 
+    AppState.showHiddenFiles = false;
+
     if (EXPLORER_REQ_MODULES.includes(moduleId) && explorerCollapsed) {
         toggleExplorer(true);
     }
 
-    // --- Sandbox Reset --- 
-    // Wipes out user experiments when moving to a new module to start fresh
     VFS.currentPath = '/home/student/project';
-    VFS.files = { '/home/student/project': ['main.py', 'secrets.txt', 'README.md'] };
+    VFS.files = {
+        '/home/student/project': ['<span style="color: var(--primary)">.git</span>', 'main.py', 'secrets.txt', 'README.md'],
+        '/home/student/project/.git': []
+    };
     renderFileTree();
     updatePrompt();
 
@@ -479,6 +537,7 @@ function stepSuccess(isAutoLoad = false) {
         nextBtn.onclick = () => {
             AppState.currentStepIndex++;
             loadStep();
+            renderSidebar();
         };
     }
 }
@@ -521,8 +580,9 @@ function setupTerminalListeners() {
             }
             AppState.historyIndex = AppState.cmdHistory.length;
 
-            if (AppState.lsActivePath && cmd !== 'ls') {
+            if (AppState.lsActivePath && !cmd.startsWith('ls')) {
                 AppState.lsActivePath = null;
+                AppState.showHiddenFiles = false;
                 renderFileTree();
             }
 
@@ -534,12 +594,69 @@ function setupTerminalListeners() {
 
             if (cmd.startsWith('echo ')) response = cmd.substring(5).replace(/['"]/g, '');
             else if (cmd === 'pwd') response = VFS.currentPath;
-            else if (cmd === 'ls') {
-                const currentFiles = VFS.files[VFS.currentPath] || [];
-                response = currentFiles.join(' &nbsp;&nbsp;&nbsp; ').replace(/<[^>]*>?/gm, '');
 
-                AppState.lsActivePath = VFS.currentPath;
-                renderFileTree();
+            else if (cmd.startsWith('ls')) {
+                if (cmd === 'ls ~/.ssh' || cmd === 'ls -la ~/.ssh' || cmd === 'ls -a ~/.ssh') {
+                    if (cmd.includes('-l')) {
+                        response = `drwx------ &nbsp;&nbsp;student &nbsp;&nbsp;4096 &nbsp;&nbsp;.<br>` +
+                            `drwxr-xr-x &nbsp;&nbsp;student &nbsp;&nbsp;4096 &nbsp;&nbsp;..<br>` +
+                            `-rw------- &nbsp;&nbsp;student &nbsp;&nbsp;2602 &nbsp;&nbsp;id_ed25519<br>` +
+                            `-rw-r--r-- &nbsp;&nbsp;student &nbsp;&nbsp;568 &nbsp;&nbsp;&nbsp;id_ed25519.pub<br>` +
+                            `-rw-r--r-- &nbsp;&nbsp;student &nbsp;&nbsp;222 &nbsp;&nbsp;&nbsp;known_hosts`;
+                    } else {
+                        response = `id_ed25519 &nbsp;&nbsp;&nbsp;&nbsp; id_ed25519.pub &nbsp;&nbsp;&nbsp;&nbsp; known_hosts`;
+                    }
+                } else {
+                    const currentFiles = VFS.files[VFS.currentPath] || [];
+                    const showHidden = cmd.includes('-a') || cmd.includes('-al') || cmd.includes('-la');
+                    AppState.showHiddenFiles = showHidden;
+
+                    let visibleFiles = currentFiles;
+                    if (!showHidden) {
+                        visibleFiles = currentFiles.filter(f => {
+                            const cleanName = f.replace(/<[^>]*>?/gm, '');
+                            return !cleanName.startsWith('.');
+                        });
+                    }
+
+                    // Sort the internal mock response similarly to visual tree
+                    visibleFiles.sort((a, b) => {
+                        const cleanA = a.replace(/<[^>]*>?/gm, '');
+                        const cleanB = b.replace(/<[^>]*>?/gm, '');
+                        return cleanA.localeCompare(cleanB);
+                    });
+
+                    if (cmd.includes('-l')) {
+                        let details = '';
+                        const fakeDate = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) + ' 12:00';
+
+                        if (showHidden) {
+                            details += `drwxr-xr-x &nbsp;student &nbsp;student &nbsp;&nbsp;4096 ${fakeDate} &nbsp;.<br>`;
+                            details += `drwxr-xr-x &nbsp;student &nbsp;student &nbsp;&nbsp;4096 ${fakeDate} &nbsp;..<br>`;
+                        }
+
+                        visibleFiles.forEach(f => {
+                            const cleanName = f.replace(/<[^>]*>?/gm, '');
+                            const isDir = VFS.files[`${VFS.currentPath}/${cleanName}`] !== undefined;
+                            const perms = isDir ? 'drwxr-xr-x' : '-rw-r--r--';
+                            const size = isDir ? '4096' : (cleanName.length * 123 % 1000 + 100).toString();
+                            const paddedSize = size.padStart(4, '&nbsp;');
+                            const styledName = isDir ? `<span style="color: var(--primary)">${cleanName}</span>` : cleanName;
+
+                            details += `${perms} &nbsp;student &nbsp;student &nbsp;${paddedSize} ${fakeDate} &nbsp;${styledName}<br>`;
+                        });
+                        response = details;
+                    } else {
+                        response = visibleFiles.map(f => {
+                            const cleanName = f.replace(/<[^>]*>?/gm, '');
+                            const isDir = VFS.files[`${VFS.currentPath}/${cleanName}`] !== undefined;
+                            return isDir ? `<span style="color: var(--primary)">${cleanName}</span>` : cleanName;
+                        }).join(' &nbsp;&nbsp;&nbsp; ');
+                    }
+
+                    AppState.lsActivePath = VFS.currentPath;
+                    renderFileTree();
+                }
             }
             else if (cmd.startsWith('mkdir ')) {
                 const newDir = cmd.substring(6).trim();
@@ -593,10 +710,11 @@ function setupTerminalListeners() {
                 else if (file === 'api.py') response = 'def get_data():\n    return {"status": 200}';
                 else if (VFS.files[VFS.currentPath] && VFS.files[VFS.currentPath].includes(file)) {
                     response = `(Empty file or binary content)`;
-                } else if (cmd === 'cat ~/.gitconfig') {
-                    response = `[user]<br>&nbsp;&nbsp;&nbsp;&nbsp;name = Engineer<br>&nbsp;&nbsp;&nbsp;&nbsp;email = dev@example.com<br>[core]<br>&nbsp;&nbsp;&nbsp;&nbsp;editor = code --wait`;
+                }
+                else if (cmd === 'cat ~/.gitconfig') {
+                    response = `[user]<br>&nbsp;&nbsp;&nbsp;&nbsp;name = ${AppState.gitUserName}<br>&nbsp;&nbsp;&nbsp;&nbsp;email = ${AppState.gitUserEmail}<br>[core]<br>&nbsp;&nbsp;&nbsp;&nbsp;editor = code --wait`;
                 } else if (cmd === 'cat ~/.ssh/id_ed25519.pub') {
-                    response = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJkxG7... dev@example.com';
+                    response = `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJkxG7... ${AppState.sshEmail}`;
                 } else {
                     response = `cat: ${file}: No such file or directory`;
                     triggerErrorSystem = true;
@@ -659,7 +777,16 @@ function setupTerminalListeners() {
                 response = `Switched to branch 'main'`;
                 renderGitVisualizer();
             }
-            else if (cmd.startsWith('git config')) response = '';
+
+            else if (cmd.startsWith('git config --global user.name')) {
+                const match = cmd.match(/user\.name\s+["']?([^"']+)["']?/);
+                if (match) AppState.gitUserName = match[1];
+                response = '';
+            } else if (cmd.startsWith('git config --global user.email')) {
+                const match = cmd.match(/user\.email\s+["']?([^"']+)["']?/);
+                if (match) AppState.gitUserEmail = match[1];
+                response = '';
+            } else if (cmd.startsWith('git config')) response = '';
 
             else if (cmd.startsWith('help')) {
                 if (cmd === 'help --bash') {
@@ -731,10 +858,13 @@ function setupTerminalListeners() {
                 response = `Collecting ${pkg}<br>Downloading ${pkg}-2.31.0-py3-none-any.whl<br>Installing collected packages: ${pkg}<br><span style="color: var(--success)">Successfully installed ${pkg}-2.31.0</span>`;
             }
             else if (cmd === 'pip list' || cmd === 'pip3 list') response = `Package    Version<br>---------- -------<br>pip        24.0<br>requests   2.31.0`;
-            else if (cmd === 'ls ~/.ssh') response = `id_ed25519 &nbsp;&nbsp;&nbsp;&nbsp; id_ed25519.pub &nbsp;&nbsp;&nbsp;&nbsp; known_hosts`;
-            else if (cmd.startsWith('ssh-keygen')) response = 'Generating public/private ed25519 key pair...<br>Your identification has been saved in /home/student/.ssh/id_ed25519<br>Your public key has been saved in /home/student/.ssh/id_ed25519.pub';
+            else if (cmd.startsWith('ssh-keygen')) {
+                const match = cmd.match(/-C\s+["']?([^"']+)["']?/);
+                if (match) AppState.sshEmail = match[1];
+                response = 'Generating public/private ed25519 key pair...<br>Your identification has been saved in /home/student/.ssh/id_ed25519<br>Your public key has been saved in /home/student/.ssh/id_ed25519.pub';
+            }
             else if (cmd.startsWith('eval')) response = 'Agent pid 54321';
-            else if (cmd.startsWith('ssh-add')) response = 'Identity added: /home/student/.ssh/id_ed25519 (email@example.com)';
+            else if (cmd.startsWith('ssh-add')) response = `Identity added: /home/student/.ssh/id_ed25519 (${AppState.sshEmail})`;
             else if (cmd.startsWith('pbcopy') || cmd.startsWith('clip')) response = '';
             else if (cmd === 'ssh -T git@github.com') response = `Hi Engineer! You've successfully authenticated, but GitHub does not provide shell access.`;
             else if (cmd === 'clear') { termOutput.innerHTML = ''; newTermInput.value = ''; return; }
@@ -746,7 +876,6 @@ function setupTerminalListeners() {
 
             if (response) termOutput.innerHTML += `<div style="margin-bottom: 8px; color: #a3a3a3; font-family: var(--font-mono);">${response}</div>`;
 
-            // Evaluate if Mission Completed
             const currentStep = AppState.activeModuleData.steps[AppState.currentStepIndex];
             if (currentStep && currentStep.validateCommand) {
                 if (currentStep.validateCommand(cmd)) {
@@ -754,7 +883,6 @@ function setupTerminalListeners() {
                 }
             }
 
-            // Only throw generic typos for actual invalid bash commands
             if (triggerErrorSystem) {
                 termOutput.innerHTML += `<div style="color: var(--warning); margin-bottom: 8px;">[SYSTEM] Hint: Double-check your spelling!</div>`;
             }
@@ -770,7 +898,6 @@ async function executePython() {
     const currentStep = AppState.activeModuleData.steps[AppState.currentStepIndex];
     const code = monacoEditorInstance.getValue();
 
-    // Editor Mission Quick Exit
     if (currentStep && currentStep.validateCode && currentStep.validateCode(code)) {
         if (currentStep.isEditorMissionOnly) {
             switchWorkspace('terminal');
@@ -796,7 +923,6 @@ async function executePython() {
         termOutput.innerHTML += `<div style="color: var(--text-primary); white-space: pre-wrap;">${pythonOutput || "[No output printed]"}</div>`;
         termOutput.innerHTML += `<div style="color: var(--success); margin-bottom: 10px;">[Execution Finished]</div>`;
 
-        // Evaluate Code Success OR Throw Error
         if (currentStep && currentStep.validateCode) {
             if (currentStep.validateCode(code)) {
                 stepSuccess();
@@ -826,7 +952,11 @@ function resetCurrentLesson() {
     AppState.gitFiles = { working: [], staging: [], repo: [] };
 
     document.getElementById('term-output').innerHTML = '';
-    VFS.files[VFS.currentPath] = ['main.py', 'secrets.txt', 'README.md'];
+    VFS.currentPath = '/home/student/project';
+    VFS.files = {
+        '/home/student/project': ['<span style="color: var(--primary)">.git</span>', 'main.py', 'secrets.txt', 'README.md'],
+        '/home/student/project/.git': []
+    };
     renderFileTree();
     updatePrompt();
     if (monacoEditorInstance) monacoEditorInstance.setValue(AppState.activeModuleData.steps[0]?.editorDefaultValue || '# Write your Python code here...\n\n');
@@ -848,8 +978,11 @@ function resetAllProgress() {
         AppState.gitFiles = { working: [], staging: [], repo: [] };
 
         document.getElementById('term-output').innerHTML = '';
-        VFS.files = { '/home/student/project': ['main.py', 'secrets.txt', 'README.md'] };
         VFS.currentPath = '/home/student/project';
+        VFS.files = {
+            '/home/student/project': ['<span style="color: var(--primary)">.git</span>', 'main.py', 'secrets.txt', 'README.md'],
+            '/home/student/project/.git': []
+        };
         renderFileTree();
         updatePrompt();
         if (monacoEditorInstance) monacoEditorInstance.setValue('# Write your Python code here...\n\n');
@@ -858,9 +991,6 @@ function resetAllProgress() {
     }
 }
 
-// ==========================================
-// ONBOARDING TOUR ENGINE
-// ==========================================
 const TourSteps = [
     {
         targetId: "sidebar",
