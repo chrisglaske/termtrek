@@ -156,9 +156,10 @@ const curriculum = {
                 {
                     id: "git-mental-model",
                     title: "Git: The Mental Model",
-                    workspaceType: "visualizer",
+                    workspaceType: "terminal",
                     steps: [
                         {
+                            showVisualizer: true,
                             content: `
                                 <h2>What is Git, Actually?</h2>
                                 <p>Most beginners think Git is a cloud backup service. It isn't. <strong>Git is a local time-machine database.</strong> When initialized, it creates a hidden folder named <code>.git</code> that tracks every single keystroke you make.</p>
@@ -173,12 +174,13 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
-                                    Watch the Visualizer below. Move the file from the Working Directory to the Staging Area by typing <code>git add index.txt</code> (or <code>git add .</code> to stage everything).
+                                    Watch the Visualizer above your terminal. Move the file from the Working Directory to the Staging Area by typing <code>git add index.txt</code> (or <code>git add .</code> to stage everything).
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "git add index.txt" || cmd === "git add ."
                         },
                         {
+                            showVisualizer: true,
                             content: `
                                 <h2>The Commit Snapshot</h2>
                                 <p>Your file is on the loading dock. Now commit it to the vault. Every commit requires a "message" (the <code>-m</code> flag) explaining what changed. We will use a standard prefix (<code>feat:</code>) to denote a new feature.</p>
@@ -227,6 +229,7 @@ const curriculum = {
                             `
                         },
                         {
+                            showVisualizer: true,
                             content: `
                                 <h2>Why do we do this? (Automation)</h2>
                                 <p>By strictly enforcing these prefixes, companies can write robots that read the Git history and automatically generate "Release Notes" for the users. A robot knows that a <code>feat:</code> means a new version!</p>
@@ -251,6 +254,7 @@ const curriculum = {
                     workspaceType: "terminal",
                     steps: [
                         {
+                            showVisualizer: true,
                             content: `
                                 <h2>The Golden Rule: Protect Main</h2>
                                 <p>The <code>main</code> branch of your repository represents the code that is currently live and in production. <strong>You never write experimental code directly on main.</strong></p>
@@ -276,6 +280,7 @@ const curriculum = {
                     workspaceType: "terminal",
                     steps: [
                         {
+                            showVisualizer: true,
                             content: `
                                 <h2>The Inevitable Collision</h2>
                                 <p>When your feature is complete on the <code>dev</code> branch, you merge it back into <code>main</code>. Usually, Git combines the code automatically. But what happens if you and a teammate edit the <em>exact same line</em> of the <em>exact same file</em>?</p>
@@ -317,6 +322,7 @@ const curriculum = {
                         },
                         {
                             workspaceType: "terminal",
+                            showVisualizer: true,
                             content: `
                                 <h2>Finalizing the Merge</h2>
                                 <p>The text file is clean, but Git is still waiting in a paused "merging state." You have to explicitly tell Git that the conflict is resolved by staging the file and committing the final result.</p>
@@ -367,7 +373,7 @@ const curriculum = {
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Let's write a dynamic greeting in the editor.
+                                    Let's write a dynamic greeting in the <strong>editor.py</strong> tab to the right in the menu bar.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
                                         <li>Create a variable: <code>user = "Engineer"</code></li>
                                         <li>Print an f-string: <code>print(f"Welcome to the system, {user}")</code></li>
@@ -375,7 +381,7 @@ const curriculum = {
                                     Click <strong>Run Code ▶</strong> to compile it. Watch the terminal to see your output!
                                 </div>
                             `,
-                            validateCode: (code) => code.includes('user') && code.includes('f"') && code.includes('{user}') && code.includes('print(')
+                            validateCode: (code) => code.includes('user') && code.includes('{user}') && code.includes('print')
                         }
                     ]
                 },

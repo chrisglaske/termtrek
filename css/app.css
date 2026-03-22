@@ -813,21 +813,25 @@ h1 {
 @keyframes tab-glow {
     0% {
         background: rgba(0, 112, 243, 0.05);
+        box-shadow: inset 0 0 0 0 rgba(0, 112, 243, 0);
     }
 
     50% {
-        background: rgba(0, 112, 243, 0.2);
+        background: rgba(0, 112, 243, 0.25);
         color: #fff;
+        box-shadow: inset 0 20px 20px -10px rgba(0, 112, 243, 0.5);
     }
 
     100% {
         background: rgba(0, 112, 243, 0.05);
+        box-shadow: inset 0 0 0 0 rgba(0, 112, 243, 0);
     }
 }
 
 .tab.glow-attention:not(.active) {
-    animation: tab-glow 2s infinite;
+    animation: tab-glow 1.5s infinite;
     border-top: 2px solid var(--primary);
+    font-weight: bold;
 }
 
 .workspace-content {
@@ -842,7 +846,6 @@ h1 {
     display: none;
     flex: 1;
     flex-direction: column;
-    padding: 20px;
     font-family: var(--font-mono);
     font-size: 0.9rem;
     overflow: hidden;
@@ -858,13 +861,11 @@ h1 {
     box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
-    padding: 20px;
     cursor: text;
 }
 
 #term-output {
     flex: 1;
-    overflow-y: auto;
     color: #a3a3a3;
     display: block;
 }
@@ -946,13 +947,6 @@ h1 {
 }
 
 /* --- Visualizer Mode --- */
-#ui-visualizer {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    background: var(--bg-app);
-}
-
 .visualizer-container {
     flex: 1;
     display: grid;
@@ -1017,25 +1011,6 @@ h1 {
     border-color: var(--success);
     color: var(--success);
     background: rgba(16, 185, 129, 0.1);
-}
-
-.mini-terminal {
-    height: 120px;
-    background: #000;
-    border-top: 1px solid var(--border);
-    padding: 20px;
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    cursor: text;
-}
-
-#vis-term-input {
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-family: var(--font-mono);
-    flex: 1;
-    outline: none;
 }
 
 /* --- Step Indicator UI --- */
@@ -1236,4 +1211,16 @@ body[data-os="win"] .mac-only {
 .btn-tour-restart:hover {
     border-color: var(--primary);
     color: var(--primary);
+}
+
+/* --- LS HIGHLIGHT SYSTEM --- */
+.tree-item.ls-highlight {
+    background: rgba(0, 112, 243, 0.15);
+    border-left: 2px solid var(--primary);
+    color: #fff;
+}
+
+.tree-item.ls-highlight .tree-item-name {
+    color: #4fc1ff;
+    font-weight: 500;
 }
