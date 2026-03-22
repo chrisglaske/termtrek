@@ -1224,3 +1224,57 @@ body[data-os="win"] .mac-only {
     color: #4fc1ff;
     font-weight: 500;
 }
+
+/* --- SUB-NAVIGATION STYLES --- */
+.nav-sub-items {
+    display: flex;
+    flex-direction: column;
+    padding-left: 15px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    gap: 5px;
+}
+
+.nav-sub-item {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.nav-sub-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-sub-item.active {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.nav-sub-item .step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+.nav-sub-item .step-dot.active {
+    background: var(--primary);
+    box-shadow: 0 0 5px rgba(0, 112, 243, 0.8);
+}
+
+.nav-sub-item .step-dot.completed {
+    background: var(--success);
+}
+
+/* --- HIDDEN FILE UI (GUI EXPLORER) --- */
+.tree-item.hidden-file {
+    opacity: 0.5;
+}

@@ -10,6 +10,25 @@ const curriculum = {
                     steps: [
                         {
                             content: `
+                                <h2>Welcome to TermTrek! 👋</h2>
+                                <p>Hello and welcome! If you are reading this, you've taken your first step toward becoming a real software engineer. You aren't just going to watch videos here; you are going to write code, break things, and fix them.</p>
+                                <p>TermTrek is a fully interactive, browser-based engineering sandbox. We've built a real UNIX terminal, a virtual file system, and a Python compiler right into this web page so you can practice safely.</p>
+                            `
+                        },
+                        {
+                            content: `
+                                <h2>What You Will Learn</h2>
+                                <p>By the end of this simulation, you will have the muscle memory to operate like a professional developer. We will cover:</p>
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
+                                    <li><strong>Terminal Navigation (Bash):</strong> How to command a computer entirely through text, without ever touching a mouse.</li>
+                                    <li><strong>Version Control (Git):</strong> How to use the industry-standard "time machine" to save your code, create alternate timelines, and collaborate.</li>
+                                    <li><strong>Programming (Python):</strong> Core logic, variables, loops, object-oriented design, and how to build actual applications.</li>
+                                    <li><strong>Local Setup:</strong> How to leave this sandbox and properly configure your actual physical computer for professional development.</li>
+                                </ul>
+                            `
+                        },
+                        {
+                            content: `
                                 <h2>The Illusion of Competence</h2>
                                 <p>Watching a senior developer code on YouTube feels great. It makes you feel like you are learning. But the moment you open an empty text editor, your mind goes blank. This is called <strong>Tutorial Hell</strong>.</p>
                                 <p>Software engineering is not about memorizing syntax. It is about muscle memory, breaking things, reading error logs, and fixing them. You can only learn it by doing it.</p>
@@ -78,6 +97,20 @@ const curriculum = {
                                 </div>
                             `,
                             validateCommand: (cmd) => cmd === "ls"
+                        },
+                        {
+                            content: `
+                                <h2>Hidden Files</h2>
+                                <p>Not all files are visible by default. Files or folders that start with a dot (like <code>.git</code>) are intentionally hidden by the operating system to prevent accidental deletion or clutter.</p>
+                                <p>To see absolutely everything, you must pass the <strong>"all" flag</strong> to the list command.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-term">🎯 TERMINAL MISSION</span><br><br>
+                                    Reveal the hidden files in your project directory.
+                                    <br><br>Type <code>ls -a</code> (or <code>ls -la</code> for a detailed vertical list). Watch the explorer to see them appear!
+                                </div>
+                            `,
+                            validateCommand: (cmd) => cmd === "ls -a" || cmd === "ls -la" || cmd === "ls -al"
                         },
                         {
                             content: `
@@ -221,8 +254,7 @@ const curriculum = {
                                         <div style="background: rgba(0, 112, 243, 0.15); color: #4fc1ff; padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">docs:</div>
                                         <div style="font-size: 0.95rem; color: #d4d4d8;">Documentation <span style="color: var(--text-secondary); font-size: 0.85rem;">(e.g., <code>docs: update readme</code>)</span></div>
                                     </div>
-                                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 15px;">
-                                        <div style="background: rgba(245, 166, 35, 0.15); color: var(--warning); padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">chore:</div>
+                                    <div style="background: rgba(245, 166, 35, 0.15); color: var(--warning); padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; width: 65px; text-align: center;">chore:</div>
                                         <div style="font-size: 0.95rem; color: #d4d4d8;">Maintenance tasks <span style="color: var(--text-secondary); font-size: 0.85rem;">(e.g., <code>chore: update packages</code>)</span></div>
                                     </div>
                                 </div>
@@ -386,6 +418,66 @@ const curriculum = {
                     ]
                 },
                 {
+                    id: "py-math",
+                    title: "Math & Operators",
+                    workspaceType: "editor",
+                    editorDefaultValue: `# Calculate if 15 is even or odd using modulo\nnum = 15\n\n# Calculate the remainder and print it below:\n`,
+                    steps: [
+                        {
+                            content: `
+                                <h2>Beyond Basic Arithmetic</h2>
+                                <p>Python can do basic math like addition (<code>+</code>), subtraction (<code>-</code>), and multiplication (<code>*</code>) natively. But algorithms often require more advanced operators.</p>
+                                
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
+                                    <li><strong>Exponents (<code>**</code>):</strong> Calculates power. <code>3 ** 2</code> is 9.</li>
+                                    <li><strong>Floor Division (<code>//</code>):</strong> Divides and rounds down to the nearest whole integer. <code>10 // 3</code> is 3.</li>
+                                    <li><strong>Modulo (<code>%</code>):</strong> Returns only the remainder of a division. <code>10 % 3</code> is 1.</li>
+                                </ul>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Modulo is famously used to check if a number is even (if it divides by 2 with a remainder of 0).
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Create a variable to hold the remainder: <code>remainder = num % 2</code></li>
+                                        <li>Print it: <code>print(remainder)</code></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCode: (code) => code.includes('%') && code.includes('2') && code.includes('print(')
+                        }
+                    ]
+                },
+                {
+                    id: "py-strings",
+                    title: "String Manipulation",
+                    workspaceType: "editor",
+                    editorDefaultValue: `text = "hello world"\n\n# Capitalize the text and print it below:\n`,
+                    steps: [
+                        {
+                            content: `
+                                <h2>Text is an Array</h2>
+                                <p>Under the hood, a string is just an array of individual characters. Because of this, Python provides incredibly powerful built-in methods to manipulate text.</p>
+                                
+                                <ul style="margin-top: 10px; margin-bottom: 20px; padding-left: 20px; line-height: 1.6;">
+                                    <li><strong><code>.upper()</code> / <code>.lower()</code>:</strong> Forces text to a specific case. (Great for normalizing user input!).</li>
+                                    <li><strong><code>.replace(old, new)</code>:</strong> Swaps specific substrings.</li>
+                                    <li><strong><code>.split(" ")</code>:</strong> Chops a string into a List of smaller strings based on a separator (like a space).</li>
+                                </ul>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Format the text data using string methods.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Print the text in all caps: <code>print(text.upper())</code></li>
+                                        <li>Print the text with "world" swapped out: <code>print(text.replace("world", "engineer"))</code></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCode: (code) => code.includes('text.upper()') && code.includes('text.replace(')
+                        }
+                    ]
+                },
+                {
                     id: "py-logic",
                     title: "Conditional Logic",
                     workspaceType: "editor",
@@ -403,14 +495,6 @@ const curriculum = {
                                 
                                 <h2>If / Elif / Else</h2>
                                 <p>You can chain multiple conditions together using <code>elif</code> (else if). The computer checks them top-to-bottom. The first one that evaluates to True executes, and the rest are ignored.</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
-temp = 90
-if temp > 100:
-    print("Meltdown")
-elif temp > 80:
-    print("Warning")
-else:
-    print("Stable")</pre>
                             `
                         },
                         {
@@ -442,11 +526,6 @@ else:
                                 
                                 <h2>The While Loop & The Infinite Trap</h2>
                                 <p>A <code>while</code> loop runs continuously <em>as long as</em> a mathematical condition remains True. You must be extremely careful to ensure the condition eventually becomes False, otherwise you create an <strong>Infinite Loop</strong> that will consume all your CPU memory and freeze the program.</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
-hp = 3
-while hp > 0:
-    print("Still alive!")
-    hp = hp - 1  # Crucial: This eventually breaks the loop</pre>
                             `
                         },
                         {
@@ -469,41 +548,62 @@ while hp > 0:
                     ]
                 },
                 {
-                    id: "py-data",
-                    title: "Data Structures",
+                    id: "py-lists",
+                    title: "Deep Dive: Lists",
                     workspaceType: "editor",
-                    editorDefaultValue: `# Create a dictionary representing a server:\n\n\n# Print the status key:\n`,
+                    editorDefaultValue: `servers = ["web-1", "db-1"]\n\n# Add a new server 'cache-1' to the list:\n`,
                     steps: [
                         {
                             content: `
-                                <h2>Beyond Single Variables</h2>
-                                <p>Variables are great for storing one piece of data, but what if you need to load 10,000 users from a database? You cannot create 10,000 individual variables. You need Data Structures.</p>
-                                
-                                <h2>Lists (Arrays)</h2>
+                                <h2>Dynamic Arrays</h2>
                                 <p>A List is an ordered collection of items wrapped in square brackets <code>[]</code>. You retrieve items by calling their "Index" number. Because computers use <strong>Zero-Based Indexing</strong>, the first item is always at index 0.</p>
-                                <pre style="background: #000; padding: 15px; border-radius: 6px; margin-bottom: 20px; color: #a3a3a3; font-family: var(--font-mono);">
-users = ["Alice", "Bob", "Charlie"]
-print(users[0]) # Prints Alice
-print(users[-1]) # A Python trick to get the last item (Charlie)</pre>
+                                <p>Unlike lists in other languages, Python lists are dynamic. They can shrink, grow, and hold completely mixed data types simultaneously.</p>
+                                
+                                <h2>List Methods</h2>
+                                <p>You can dynamically modify a list using built in methods like <code>.append(item)</code> to stick a new item on the end, or <code>.remove(item)</code> to delete one.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Scale up your server infrastructure.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Append a new server: <code>servers.append("cache-1")</code></li>
+                                        <li>Print the entire list: <code>print(servers)</code></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCode: (code) => code.includes('.append') && code.includes('cache-1') && code.includes('print(servers)')
+                        }
+                    ]
+                },
+                {
+                    id: "py-dicts",
+                    title: "Deep Dive: Dictionaries",
+                    workspaceType: "editor",
+                    editorDefaultValue: `# Create a dictionary representing a server:\nserver = { "status": "Online", "ping": 42 }\n\n# Print the status key safely using .get():\n`,
+                    steps: [
+                        {
+                            content: `
+                                <h2>Key-Value Lookups (JSON)</h2>
+                                <p>While Lists are great for ordered data, they are terrible for lookups. If you want to find "Charlie's phone number", a List forces the computer to search through every single item until it finds him.</p>
+                                <p>A <strong>Dictionary</strong> stores data in Key-Value pairs using curly braces <code>{}</code>. It acts like a literal dictionary: you look up the "Key" (a word), and it instantly gives you the "Value".</p>
+                                <p>Dictionaries map perfectly to JSON, which is how 99% of all data is sent across the internet today.</p>
                             `
                         },
                         {
                             content: `
-                                <h2>Dictionaries (JSON Objects)</h2>
-                                <p>While Lists are great for ordered data, they are terrible for lookups. If you want to find "Charlie's phone number", a List forces the computer to search through every single item until it finds him.</p>
-                                <p>A <strong>Dictionary</strong> stores data in Key-Value pairs using curly braces <code>{}</code>. It acts like a literal dictionary: you look up the "Key" (a word), and it instantly gives you the "Value" without having to read the whole book.</p>
-                                <p>Dictionaries map perfectly to JSON, which is how 99% of all data is sent across the internet today.</p>
+                                <h2>The KeyError Trap</h2>
+                                <p>If you try to look up a key that doesn't exist (e.g. <code>server["region"]</code>), Python will crash with a massive <code>KeyError</code>. Professional developers use the <code>.get()</code> method instead, which allows you to supply a safe fallback value if the key is missing.</p>
                                 
                                 <div class="mission-box">
                                     <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
-                                    Create a network dictionary in the editor.
+                                    Safely retrieve data from the dictionary.
                                     <ol style="margin-top: 10px; padding-left: 20px;">
-                                        <li>Create the dict: <code>server = { "status": "Online", "ping": 42 }</code></li>
-                                        <li>Print the value by calling its key: <code>print(server["status"])</code></li>
+                                        <li>Print the ping safely: <code>print(server.get("ping"))</code></li>
+                                        <li>Try to print a missing key with a fallback: <code>print(server.get("region", "Unknown Region"))</code></li>
                                     </ol>
                                 </div>
                             `,
-                            validateCode: (code) => code.includes('server = {') && code.includes('"status"') && code.includes('print(server[')
+                            validateCode: (code) => code.includes('.get("ping")') && code.includes('.get("region"')
                         }
                     ]
                 },
@@ -578,6 +678,94 @@ except:
                                 </div>
                             `,
                             validateCode: (code) => code.includes('def add') && code.includes('return') && code.includes('total = add(') && code.includes('print(total)')
+                        }
+                    ]
+                },
+                {
+                    id: "py-imports",
+                    title: "Modules & Libraries",
+                    workspaceType: "editor",
+                    editorDefaultValue: `import random\n\n# Generate a random number between 1 and 100\n`,
+                    steps: [
+                        {
+                            content: `
+                                <h2>Standing on the Shoulders of Giants</h2>
+                                <p>You do not need to build everything from scratch. Python comes with a massive "Standard Library" of pre-written modules that handle complex math, dates, and network requests.</p>
+                                <p>To unlock these tools, you use the <code>import</code> keyword at the very top of your file. Once imported, you can access the module's tools using "Dot Notation".</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Use the built-in random module to generate a number.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>We've added <code>import random</code> to the top of the file.</li>
+                                        <li>Use dot notation to call the randint method and print it: <code>print(random.randint(1, 100))</code></li>
+                                    </ol>
+                                    <em>Run the code multiple times and watch the terminal output change!</em>
+                                </div>
+                            `,
+                            validateCode: (code) => code.includes('import random') && code.includes('random.randint') && code.includes('print')
+                        }
+                    ]
+                },
+                {
+                    id: "py-oop",
+                    title: "Object-Oriented Design",
+                    workspaceType: "editor",
+                    editorDefaultValue: `# 1. Define the class\nclass User:\n    def __init__(self, name):\n        self.name = name\n\n# 2. Add the login() method below:\n\n\n# 3. Create an instance and call the method:\n`,
+                    steps: [
+                        {
+                            content: `
+                                <h2>The Blueprint (Classes)</h2>
+                                <p>As programs get larger, floating variables and scattered functions become messy. <strong>Object-Oriented Programming (OOP)</strong> allows you to bundle related data (variables) and behaviors (functions) together into a single, structured <strong>Object</strong>.</p>
+                                <p>A <code>class</code> is the blueprint. It defines what an object *should* look like. When you actually build an object from that blueprint, it is called an <strong>Instance</strong>.</p>
+                            `
+                        },
+                        {
+                            content: `
+                                <h2>The Constructor (__init__)</h2>
+                                <p>When you create a new instance of a class, Python automatically runs a special hidden method called <code>__init__</code>. This method initializes the specific data for that specific object (like setting its name).</p>
+                                <p><strong>The "self" keyword:</strong> In Python, classes must pass a reference to themselves (<code>self</code>) into all of their internal methods so they can access their own data.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Finish building the User blueprint.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Add a method inside the class: <code>def login(self):</code></li>
+                                        <li>Indent and make it print: <code>print(f"{self.name} logged in.")</code></li>
+                                        <li>Un-indent to the root level. Create an instance: <code>admin = User("Engineer")</code></li>
+                                        <li>Call your method on the instance: <code>admin.login()</code></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCode: (code) => code.includes('def login(self):') && code.includes('admin = User') && code.includes('admin.login()')
+                        }
+                    ]
+                },
+                {
+                    id: "py-oop-2",
+                    title: "Inheritance",
+                    workspaceType: "editor",
+                    editorDefaultValue: `class User:\n    def __init__(self, name):\n        self.name = name\n\n# Create a SuperUser class that inherits from User:\n`,
+                    steps: [
+                        {
+                            content: `
+                                <h2>Sharing the Blueprint</h2>
+                                <p>What if you want to create a <code>SuperUser</code> class? It needs a name just like a normal user, but it also needs extra abilities. Instead of copying and pasting the code, you can use <strong>Inheritance</strong>.</p>
+                                <p>You pass the parent class into the parentheses of the new class: <code>class SuperUser(User):</code>. Now, the SuperUser instantly inherits all the data and methods of the normal User, while letting you define extra ones exclusively for the SuperUser.</p>
+                                
+                                <div class="mission-box">
+                                    <span class="badge-edit">📝 EDITOR MISSION</span><br><br>
+                                    Build an inherited class.
+                                    <ol style="margin-top: 10px; padding-left: 20px;">
+                                        <li>Define the child: <code>class SuperUser(User):</code></li>
+                                        <li>Indent and add a new method: <code>def sudo(self):</code></li>
+                                        <li>Indent and print: <code>print("Running as admin")</code></li>
+                                        <li>Un-indent to root. Create an instance: <code>root = SuperUser("Root")</code></li>
+                                        <li>Call the inherited property AND the new method: <code>print(root.name)</code> and <code>root.sudo()</code></li>
+                                    </ol>
+                                </div>
+                            `,
+                            validateCode: (code) => code.includes('class SuperUser(User):') && code.includes('def sudo(self):') && code.includes('SuperUser(') && code.includes('.sudo()')
                         }
                     ]
                 }
