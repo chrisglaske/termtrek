@@ -1346,3 +1346,23 @@
 .cc-extra {
   margin-left: 1px;
 }
+
+/* Something the last command made: a green "new" pill and a short note */
+.pf-tree-new-tag {
+  margin-left: auto;
+  color: var(--ok-ink);
+  background: var(--ok-t);
+  box-shadow: 0 0 0 1px var(--ok);
+  font-weight: 600;
+}
+.pf-tree-fresh {
+  animation: pf-tree-in 0.3s ease both;
+}
+.pf-tree-note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ok);
+  animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
