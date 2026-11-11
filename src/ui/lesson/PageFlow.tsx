@@ -85,7 +85,7 @@ function Visual({ page, state, done }: { page: ReadPage | DoPage; state: RunnerS
     const hot = done && v.hot ? NEXT_BOX[v.hot] : v.hot
     return <StageVisual world={state.world} show={v.show} hot={hot} tone={done ? 'ok' : 'accent'} compact={page.kind === 'do'} />
   }
-  if (v.kind === 'tree') return <TreeVisual world={state.world} />
+  if (v.kind === 'tree') return <TreeVisual world={state.world} last={state.ran[state.ran.length - 1]} />
   if (v.kind === 'rewind') return <RewindVisual world={state.world} />
   if (v.kind === 'conflict') return <ConflictVisual world={state.world} file={v.file} theirs={v.theirs} markers={v.markers} />
   if (v.kind === 'server') return <ServerVisual world={state.world} branch={v.branch} />

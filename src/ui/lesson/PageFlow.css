@@ -753,6 +753,45 @@
   border-radius: 999px;
   padding: 1px 8px;
 }
+/* After ls: mark what it listed (bar + weight + label), quiet the rest. */
+.pf-tree ul {
+  margin: 0 -8px;
+}
+.pf-tree li {
+  padding-right: 8px;
+  transition: color 0.25s ease, background-color 0.25s ease;
+}
+.pf-tree-hit {
+  background: var(--accent-t);
+  box-shadow: inset 3px 0 0 var(--accent);
+  border-radius: 4px;
+  animation: pf-tree-in 0.3s ease both;
+}
+.pf-tree-hit .pf-tree-dir,
+.pf-tree-hit .pf-tree-file {
+  font-weight: 600;
+  color: var(--ink);
+}
+.pf-tree-ls .pf-tree-dim,
+.pf-tree-ls .pf-tree-dim .pf-tree-dir {
+  color: var(--mute);
+}
+.pf-tree-ls-tag {
+  margin-left: auto;
+}
+@keyframes pf-tree-in {
+  from {
+    background-color: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-tree li {
+    transition: none;
+  }
+  .pf-tree-hit {
+    animation: none;
+  }
+}
 .pf-skip {
   margin: 0;
   font-size: 0.875rem;
