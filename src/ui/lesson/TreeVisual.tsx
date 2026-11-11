@@ -8,6 +8,8 @@ interface Row {
   here: boolean
 }
 
+const HOME_LABEL = (home: string): string => `~ ${home.split('/').pop() ?? 'home'} (home)`
+
 /** The folders and files under home, with a marker on the folder the learner is in. */
 function rows(world: World): Row[] {
   const out: Row[] = []
@@ -23,7 +25,7 @@ function rows(world: World): Row[] {
     }
     for (const f of files) out.push({ key: f, name: f.slice(prefix.length), dir: false, depth, here: false })
   }
-  out.push({ key: world.home, name: '~ (home)', dir: true, depth: 0, here: world.cwd === world.home })
+  out.push({ key: world.home, name: HOME_LABEL(world.home), dir: true, depth: 0, here: world.cwd === world.home })
   walk(world.home, 1)
   return out
 }
@@ -40,7 +42,7 @@ export function TreeVisual({ world }: { world: World }): React.JSX.Element {
             <span className="pf-tree-i" aria-hidden="true">
               {r.dir ? '▸' : '·'}
             </span>
-            <span className={r.dir ? 'pf-tree-dir' : 'pf-tree-file'}>{r.name}{r.dir && r.name !== '~ (home)' ? '/' : ''}</span>
+            <span className={r.dir ? 'pf-tree-dir' : 'pf-tree-file'}>{r.name}{r.dir && !r.name.startsWith('~ ') ? '/' : ''}</span>
             {r.here && <span className="pf-tree-tag">you are here</span>}
           </li>
         ))}

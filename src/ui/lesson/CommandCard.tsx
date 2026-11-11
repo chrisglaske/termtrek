@@ -32,6 +32,7 @@ function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Placed[] {
 export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null)
   const [placed, setPlaced] = useState<Placed[] | null>(null)
+  const [minW, setMinW] = useState(0)
   const full = parts.map((p) => p.text).join(' ')
 
   useLayoutEffect(() => {
@@ -42,6 +43,8 @@ export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Elem
       const toks = Array.from(box.querySelectorAll<HTMLElement>('.cc-tok')).map((el) => el.getBoundingClientRect())
       const widths = Array.from(box.querySelectorAll<HTMLElement>('.cc-say')).map((el) => el.offsetWidth)
       if (origin.width === 0) return
+      // A label wider than the command itself widens the box so it is never clipped.
+      setMinW(Math.max(0, ...widths))
       setPlaced(place(toks, widths, origin))
     }
     measure()
@@ -55,7 +58,7 @@ export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Elem
   return (
     <div className="cc">
       <p className="cc-k">Type this, then press Enter</p>
-      <div className="cc-box" ref={boxRef}>
+      <div className="cc-box" ref={boxRef} style={minW ? { minWidth: minW } : undefined}>
         <code className="cc-line" aria-label={full}>
           {parts.map((p, i) => (
             <Fragment key={i}>

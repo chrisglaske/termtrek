@@ -318,6 +318,7 @@
 .cc-box {
   position: relative;
   display: inline-block;
+  text-align: center;
   max-width: 100%;
   /* A long command (a server address) scrolls inside the card instead of widening the page. */
   overflow-x: auto;
