@@ -96,7 +96,7 @@ export const switchBranches: Lesson = {
       id: 'safe',
       kicker: 'Good news',
       title: 'Nothing was lost',
-      body: 'home.html is saved in the commit on **homepage**. It comes back whenever you switch there. That is why Git wants your changes committed before you switch.',
+      body: 'home.html is saved in the commit on **homepage**. It comes back whenever you switch there. Edits you have not committed are not safe like that, so Git is careful with them when you switch.',
       visual: { kind: 'graph', branches: true },
     },
     {
