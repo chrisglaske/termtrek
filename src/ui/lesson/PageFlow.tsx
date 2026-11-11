@@ -5,6 +5,7 @@ import type { RunnerState } from '../../lessons/runner'
 import { nextLesson } from '../../lessons/course'
 import { useLessonRunner } from '../../lessons/useLessonRunner'
 import { useProgress } from '../../progress/ProgressContext'
+import { savedNote } from '../../progress/store'
 import { activeRepo, headCommitId } from '../../engine/git/repoState'
 import { branchOf } from '../../engine/git/refs'
 import { displayPath } from '../../engine/paths'
@@ -341,7 +342,7 @@ function FinishBody({ page, lesson }: { page: FinishPage; lesson: Lesson }): Rea
       </h2>
       <div className="pf-lead">
         <RichText text={page.body} />
-        <p className="pf-saved">It's marked done in the course and saved in this browser.</p>
+        <p className="pf-saved">{savedNote()}</p>
         {!next && <p>You've finished every lesson that's out so far.</p>}
       </div>
       <DoneLinks lesson={lesson} next={next} className="pf-nav pf-finish-links" nextRef={nextRef} nextLabel={next ? `Next lesson: ${next.title}` : undefined} />

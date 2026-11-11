@@ -84,3 +84,24 @@ export function importBackup(
   if (!isProgress(data.progress)) return { ok: false, error: NOT_BACKUP }
   return { ok: true, progress: data.progress }
 }
+
+/** True when this browser lets the page store data (it can be blocked or full). */
+export function canSaveProgress(storage?: Storage): boolean {
+  try {
+    const s = storage ?? defaultStorage()
+    if (!s) return false
+    const key = `${STORAGE_KEY}.probe`
+    s.setItem(key, '1')
+    s.removeItem(key)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** The sentence on the finish pages about where progress lives. */
+export function savedNote(storage?: Storage): string {
+  return canSaveProgress(storage)
+    ? "It's marked done in the course and saved in this browser."
+    : "It's marked done for now. This browser is blocking storage, so progress will be lost when you close the tab. Use Backup to keep a copy."
+}

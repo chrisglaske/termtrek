@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react'
 import { Link } from 'react-router'
 import type { Lesson } from '../../lessons/schema'
+import { savedNote } from '../../progress/store'
 import '../buttons.css'
 import './LearnCard.css'
 
@@ -31,7 +32,7 @@ export function LessonDone({
         Lesson complete
       </h2>
       <p className="done-sub">
-        You finished <strong>{lesson.title}</strong>. It's marked done in the course and saved in this browser.
+        You finished <strong>{lesson.title}</strong>. {savedNote()}
       </p>
       {next ? (
         <p className="done-next">

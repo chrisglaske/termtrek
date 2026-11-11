@@ -6,6 +6,7 @@ import {
   importBackup,
   loadProgress,
   markComplete,
+  savedNote,
   saveProgress,
 } from './store'
 
@@ -103,5 +104,17 @@ describe('backup', () => {
       progress: { version: 1, completed: { a: { at: 5 } } },
     })
     expect(importBackup(t)).toEqual({ ok: false, error: NOT_BACKUP })
+  })
+})
+
+describe('savedNote', () => {
+  it('says saved when storage works', () => {
+    const m = new Map<string, string>()
+    const ok = { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), removeItem: (k: string) => void m.delete(k) } as unknown as Storage
+    expect(savedNote(ok)).toContain('saved in this browser')
+  })
+  it('warns when storage is blocked', () => {
+    const bad = { getItem: () => null, setItem: () => { throw new Error('blocked') }, removeItem: () => {} } as unknown as Storage
+    expect(savedNote(bad)).toContain('lost when you close the tab')
   })
 })
