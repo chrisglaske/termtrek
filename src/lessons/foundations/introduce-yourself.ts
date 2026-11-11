@@ -18,7 +18,7 @@ export const introduceYourself: Lesson = {
       id: 'name',
       title: 'Tell Git your name',
       learn:
-        "Git writes your name on every snapshot you save, so your team can see who changed what. You set it once per computer with `git config --global user.name \"Sam Rivera\"`.\n\nHere's what each part does:\n- `config` changes a Git setting.\n- `--global` saves it for every project on this computer.\n- `user.name` is the setting to change.\n- The text in quotes is your name. The quotes keep the first and last name together as one value.\n\nYou can use your own name or Sam Rivera. Nothing you type here leaves your device.",
+        "Git writes your name on every snapshot you save, so your team can see who changed what. You set it once per computer with `git config --global user.name \"Sam Rivera\"`.\n\nHere's what each part does:\n- `config` changes a Git setting.\n- `--global` saves it for every project on this computer.\n- `user.name` is the setting to change.\n- The text in quotes is your name. The quotes keep the first and last name together as one value.\n\nYou can use your own name or Sam Rivera. Nothing you type here leaves your device.\n\nOn your own computer, [this guide shows how to set your name](/guides/set-your-name).",
       task: 'Set your name in Git.',
       hints: [
         'This is a Git setting, so the command starts with **git** and then the word for settings.',

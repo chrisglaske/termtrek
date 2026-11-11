@@ -191,6 +191,9 @@ export function Landing(): React.JSX.Element {
               <p>
                 <b>Plus guides for your own computer.</b> Install Git, set your name, and sign in to GitHub on macOS or Windows, so your first real push just works.
               </p>
+              <Link className="btn btn-s btn-sm" to="/guides">
+                See the guides
+              </Link>
             </div>
           </div>
         </section>
@@ -242,6 +245,7 @@ export function Landing(): React.JSX.Element {
           <span>Free and open source under GPL-3.0</span>
           <nav aria-label="Footer">
             <a href="#course">Course</a>
+            <Link to="/playground">Playground</Link>
             <a href="#privacy">Privacy</a>
             <a href={SOURCE}>Source code</a>
           </nav>

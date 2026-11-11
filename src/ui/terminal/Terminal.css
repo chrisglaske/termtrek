@@ -11,6 +11,10 @@
   font-size: 13.5px;
   line-height: 1.6;
 }
+/* The input hides its own outline, so show focus on the whole terminal. */
+.term:has(.term-input:focus-visible) {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
 .term-bar {
   background: var(--t-bar);
   border-bottom: 1px solid var(--t-bd);
@@ -115,13 +119,15 @@
   line-height: 1;
 }
 .fb-ok .fb-icon {
-  background: var(--ok);
+  background: var(--ok-fill);
+  color: var(--on-fill);
 }
 .fb-tip .fb-icon {
   background: var(--accent);
 }
 .fb-warn .fb-icon {
-  background: var(--warn);
+  background: var(--warn-fill);
+  color: var(--on-fill);
 }
 .fb-body p {
   margin: 0;

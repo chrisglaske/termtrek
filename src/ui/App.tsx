@@ -4,6 +4,9 @@ import { allLessons, findLesson } from '../lessons/course'
 import { Landing } from './landing/Landing'
 import { NotFound } from './NotFound'
 import { LessonScreen } from './lesson/LessonScreen'
+import { Playground } from './playground/Playground'
+import { GuidesIndex } from './guides/GuidesIndex'
+import { GuidePage } from './guides/GuidePage'
 
 function LearnRedirect(): React.JSX.Element {
   const { progress } = useProgress()
@@ -20,6 +23,9 @@ export function AppRoutes(): React.JSX.Element {
       <Route path="/" element={<Landing />} />
       <Route path="/learn" element={<LearnRedirect />} />
       <Route path="/learn/:lessonId" element={<LessonScreen />} />
+      <Route path="/playground" element={<Playground />} />
+      <Route path="/guides" element={<GuidesIndex />} />
+      <Route path="/guides/:guideId" element={<GuidePage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

@@ -50,6 +50,11 @@ export function LessonDone({
         <Link className="btn btn-s btn-sm" to="/#course">
           Back to course
         </Link>
+        {lesson.section === 'team' && next?.section !== 'team' && (
+          <Link className="btn btn-s btn-sm" to="/playground">
+            Keep practicing in the Playground
+          </Link>
+        )}
       </div>
     </section>
   )

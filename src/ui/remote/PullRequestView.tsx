@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { PrComment, PullRequest, Remote, World } from '../../engine/types'
 import { behindBase, mergeState, prCommits, prFiles } from '../../engine/remote/pr'
 import { DiffView } from './DiffView'
@@ -156,6 +156,7 @@ export function PullRequestView({
   onDeleteBranch(name: string): void
 }): React.JSX.Element {
   const [tab, setTab] = useState<Tab>('conversation')
+  const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({})
   const me = world.config['user.name']
   const commits = prCommits(remote, pr)
   const files = prFiles(remote, pr)
@@ -165,6 +166,18 @@ export function PullRequestView({
     { id: 'commits', label: 'Commits', n: commits.length },
     { id: 'files', label: 'Files changed', n: files.length },
   ]
+  const onTabKey = (e: React.KeyboardEvent) => {
+    const i = tabs.findIndex((t) => t.id === tab)
+    let to: Tab | undefined
+    if (e.key === 'ArrowRight') to = tabs[(i + 1) % tabs.length]?.id
+    else if (e.key === 'ArrowLeft') to = tabs[(i - 1 + tabs.length) % tabs.length]?.id
+    else if (e.key === 'Home') to = tabs[0]?.id
+    else if (e.key === 'End') to = tabs[tabs.length - 1]?.id
+    if (!to) return
+    e.preventDefault()
+    setTab(to)
+    tabRefs.current[to]?.focus()
+  }
   return (
     <div className="rp-pr-view">
       <div className="rp-prh">
@@ -179,7 +192,7 @@ export function PullRequestView({
           <BranchChip name={pr.base} main={pr.base === def} />
         </div>
       </div>
-      <div className="rp-subtabs" role="tablist" aria-label="Pull request sections">
+      <div className="rp-subtabs" role="tablist" aria-label="Pull request sections" aria-orientation="horizontal" onKeyDown={onTabKey}>
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -187,7 +200,9 @@ export function PullRequestView({
             role="tab"
             id={`rp-tab-${t.id}`}
             aria-selected={tab === t.id}
-            aria-controls={`rp-panel-${t.id}`}
+            aria-controls="rp-panel"
+            tabIndex={tab === t.id ? 0 : -1}
+            ref={(el) => void (tabRefs.current[t.id] = el)}
             className={tab === t.id ? 'rp-tab on' : 'rp-tab'}
             onClick={() => setTab(t.id)}
           >
@@ -195,7 +210,7 @@ export function PullRequestView({
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`rp-panel-${tab}`} aria-labelledby={`rp-tab-${tab}`} className="rp-tabpanel">
+      <div role="tabpanel" id="rp-panel" tabIndex={0} aria-labelledby={`rp-tab-${tab}`} className="rp-tabpanel">
         {tab === 'conversation' && (
           <>
             <ul className="rp-thread">

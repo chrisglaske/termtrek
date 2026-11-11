@@ -576,13 +576,13 @@
   font-style: normal;
   font-size: 10px;
   font-weight: 800;
-  color: #fff;
+  color: var(--on-fill);
 }
 .rp-mark-ok i {
-  background: var(--ok);
+  background: var(--ok-fill);
 }
 .rp-mark-warn i {
-  background: var(--warn);
+  background: var(--warn-fill);
 }
 .rp-mbox {
   margin: 4px 16px 16px;
@@ -609,16 +609,17 @@
   place-items: center;
   font-size: 11px;
   font-weight: 800;
-  color: #fff;
+  color: var(--on-fill);
 }
 .rp-ic-ok {
-  background: var(--ok);
+  background: var(--ok-fill);
 }
 .rp-ic-warn {
-  background: var(--warn);
+  background: var(--warn-fill);
 }
 .rp-ic-tip {
   background: var(--accent);
+  color: var(--on-accent);
 }
 .rp-go {
   padding: 0 12px 12px;

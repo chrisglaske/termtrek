@@ -277,6 +277,19 @@ describe('course content', () => {
       .forEach((l) => expect(l.assumes, l.id).toBeTruthy())
   })
 
+  it('links the Foundations and Team sharing lessons to their guides', () => {
+    const last = (id: string, step: number): string => {
+      const l = lessonById(id)
+      return l.steps[step]!.learn
+    }
+    const intro = lessonById('introduce-yourself').steps.map((s) => s.learn).join('\n')
+    expect(intro).toContain('](/guides/set-your-name)')
+    const share = lessonById('share-a-project').steps.map((s) => s.learn).join('\n')
+    expect(share).toContain('](/guides/sign-in-to-github)')
+    expect(last('introduce-yourself', 0)).toMatch(/\[[^\]]+\]\(\/guides\/set-your-name\)\.$/)
+    expect(last('share-a-project', 0)).toMatch(/\[[^\]]+\]\(\/guides\/sign-in-to-github\)\.$/)
+  })
+
   it('puts every git command in backticks', () => {
     const bare = /(^|[^`])\bgit (init|status|add|commit|log|diff|config|restore|reset|reflog|revert|branch|switch|checkout|merge|stash)\b/
     for (const l of allLessons()) {

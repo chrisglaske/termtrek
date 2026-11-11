@@ -26,6 +26,13 @@ describe('Landing', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Learn Git by using it.' })).toBeInTheDocument()
   })
 
+  it('links the guides band to /guides and the footer to /playground', () => {
+    open()
+    expect(screen.getByRole('link', { name: 'See the guides' })).toHaveAttribute('href', '/guides')
+    const footer = screen.getByRole('navigation', { name: 'Footer' })
+    expect(within(footer).getByRole('link', { name: 'Playground' })).toHaveAttribute('href', '/playground')
+  })
+
   it('opens the demo with the practice-repo explanation and does not take focus', () => {
     open()
     expect(screen.getByText(/This is a practice repo\./)).toBeInTheDocument()

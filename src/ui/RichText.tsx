@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { Link } from 'react-router'
 import { CommandPill } from './CommandPill'
 import { registry } from '../engine/registry'
 
@@ -13,7 +14,7 @@ const runnable = (span: string): boolean => {
   return first === 'git' || Object.prototype.hasOwnProperty.call(registry, first)
 }
 
-type Token = { kind: 'text' | 'code' | 'bold' | 'br'; value: string }
+type Token = { kind: 'text' | 'code' | 'bold' | 'br' | 'link'; value: string; to?: string }
 
 function tokenize(s: string): Token[] {
   const out: Token[] = []
@@ -41,6 +42,16 @@ function tokenize(s: string): Token[] {
         i = end + 2
         continue
       }
+    } else if (c === '[') {
+      // [text](/internal/path): internal routes only, so lesson text can never link off the site.
+      // Links render a router Link, so RichText needs Router context when the text has one.
+      const m = /^\[([^\]\n]+)\]\((\/(?![\/\\])[^\s)\\]*)\)/.exec(s.slice(i))
+      if (m) {
+        flush()
+        out.push({ kind: 'link', value: m[1]!, to: m[2]! })
+        i += m[0].length
+        continue
+      }
     } else if (c === '\n') {
       flush()
       out.push({ kind: 'br', value: '' })
@@ -64,6 +75,7 @@ export function RichText({ text, onCommand }: { text: string; onCommand?: (cmd: 
             <Fragment key={k}>
               {t.kind === 'text' && t.value}
               {t.kind === 'br' && <br />}
+              {t.kind === 'link' && <Link to={t.to!} target="_blank" rel="noopener noreferrer">{t.value}</Link>}
               {t.kind === 'bold' && <strong>{t.value}</strong>}
               {t.kind === 'code' && <CommandPill cmd={t.value} onRun={runnable(t.value) ? onCommand : undefined} />}
             </Fragment>

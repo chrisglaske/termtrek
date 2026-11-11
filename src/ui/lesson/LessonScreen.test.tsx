@@ -6,7 +6,8 @@ import App from '../App'
 import { STORAGE_KEY } from '../../progress/store'
 import { allLessons, findLesson } from '../../lessons/course'
 import { buildWorld } from '../../engine/setup'
-import { RepoPanel } from './LessonScreen'
+import { RepoPanel, lessonDescription } from './LessonScreen'
+import { DEFAULT_DESCRIPTION } from '../layout/useDocumentTitle'
 
 const course = vi.hoisted(() => ({ lastOut: false }))
 vi.mock('../../lessons/course', async (orig) => {
@@ -61,6 +62,24 @@ describe('LessonScreen', () => {
   it('shows assumes', () => {
     open('see-what-changed')
     expect(screen.getByText('Assumes: You can stage and commit changes.')).toBeInTheDocument()
+  })
+
+  it('sets a per-lesson meta description and restores the default on leaving', () => {
+    const meta = document.createElement('meta')
+    meta.name = 'description'
+    meta.content = DEFAULT_DESCRIPTION
+    document.head.append(meta)
+    const { unmount } = open()
+    expect(meta.content).toBe(lessonDescription(lesson()))
+    expect(meta.content.length).toBeLessThanOrEqual(160)
+    expect(meta.content).toContain(step(0).title)
+    unmount()
+    expect(meta.content).toBe(DEFAULT_DESCRIPTION)
+    meta.remove()
+  })
+
+  it('keeps every lesson description within 160 characters', () => {
+    for (const l of allLessons()) expect(lessonDescription(l).length).toBeLessThanOrEqual(160)
   })
 
   it('leaves assumes out when a lesson has none', () => {
@@ -321,5 +340,22 @@ describe('RepoPanel Remote tab', () => {
     const theirs = { ...w, remote: { ...r, activity: [...yours.remote.activity, { seq: 9, who: 'teammate' as const, text: '**Alex Kim** pushed' }] } }
     rerender(<RepoPanel world={theirs} />)
     expect(screen.getByRole('img', { name: 'new activity' })).toBeInTheDocument()
+  })
+})
+
+describe('LessonScreen structure', () => {
+  it('has exactly one h1 and no skipped heading levels', () => {
+    open()
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    // The sidebar's h2 precedes the h1 in the DOM, so the outline starts at the h1.
+    const all = screen.getAllByRole('heading')
+    const levels = all.slice(all.indexOf(screen.getByRole('heading', { level: 1 }))).map((h) => Number(h.tagName[1]))
+    expect(levels[0]).toBe(1)
+    for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1)
+  })
+
+  it('repo tablist is horizontal', () => {
+    render(<RepoPanel world={buildWorld({ config: { 'user.name': 'Sam', 'user.email': 's@x.com' }, run: [] })} />)
+    expect(screen.getByRole('tablist', { name: 'Repository views' })).toHaveAttribute('aria-orientation', 'horizontal')
   })
 })

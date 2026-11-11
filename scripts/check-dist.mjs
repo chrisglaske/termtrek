@@ -21,6 +21,26 @@ if (existsSync(join(DIST, '404.html'))) {
   problems.push('dist/404.html exists and would break the SPA fallback')
 }
 
+const ALLOWED_ORIGINS = ['https://static.cloudflareinsights.com']
+
+if (existsSync(join(DIST, 'index.html'))) {
+  const html = readFileSync(join(DIST, 'index.html'), 'utf8')
+  if (!html.includes('<meta name="description"')) problems.push('dist/index.html lacks a meta description')
+  if (!html.includes('<meta property="og:title"')) problems.push('dist/index.html lacks og:title')
+  // A canonical link names this page; it loads nothing.
+  const refs = [...html.matchAll(/<(?:script|link)\b(?![^>]*\brel="canonical")[^>]*?\b(?:src|href)="([^"]+)"/g)].map((m) => m[1])
+  for (const ref of refs) {
+    if (/^(?:https?:)?\/\//.test(ref) && !ALLOWED_ORIGINS.some((o) => ref.startsWith(o))) {
+      problems.push(`dist/index.html loads ${ref} from a foreign origin`)
+    }
+  }
+}
+if (existsSync(join(DIST, '_headers'))) {
+  if (!readFileSync(join(DIST, '_headers'), 'utf8').includes('Content-Security-Policy')) {
+    problems.push('dist/_headers lacks Content-Security-Policy')
+  }
+}
+
 if (existsSync(DIST)) {
   let total = 0
   for (const file of walk(DIST)) {

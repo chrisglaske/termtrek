@@ -98,7 +98,8 @@ export function Terminal({
       cursor.current = null
       setOptions([])
       onRun('clear')
-    } else if (e.key === 'Tab') {
+    } else if (e.key === 'Tab' && !e.shiftKey && value.trim() !== '') {
+      // Tab completes; on an empty line, and always with Shift, it moves focus so the terminal is no keyboard trap.
       e.preventDefault()
       cursor.current = null
       const r = onComplete(value)

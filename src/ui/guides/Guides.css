@@ -1,0 +1,157 @@
+.guides-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+  color: var(--ink);
+}
+.guides-main:focus {
+  outline: none;
+}
+.guides-main h1 {
+  margin: 0 0 12px;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+.guides-main p {
+  color: var(--ink2);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+.guides-main a {
+  color: var(--accent-ink);
+}
+.guides-note {
+  font-weight: 600;
+}
+.guides-list {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.guides-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-decoration: none;
+}
+.guides-card:hover {
+  border-color: var(--accent);
+}
+.guides-card span {
+  display: block;
+}
+.guides-card-title {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 18px;
+}
+.guides-card-sum {
+  color: var(--ink2);
+  margin-top: 4px;
+}
+.guides-card-min {
+  color: var(--mute);
+  font-size: 13px;
+  margin-top: 8px;
+}
+.guide-os {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0 20px;
+}
+.guide-os-btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 18px;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink2);
+  cursor: pointer;
+}
+.guide-os-btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+}
+.guide-os-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+.guide-steps {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.guide-steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.guide-steps li.is-done {
+  opacity: 0.7;
+}
+.guide-steps input[type='checkbox'] {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  accent-color: var(--accent);
+}
+.guide-step-body {
+  min-width: 0;
+  flex: 1;
+}
+.guide-step-title {
+  display: block;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.guide-step-body p {
+  margin: 0 0 8px;
+}
+.guide-cmd {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  max-width: 100%;
+}
+.guide-cmd .cmd {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.guide-check {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.guide-check .cmd {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.guide-check h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.guide-group {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent-ink);
+}

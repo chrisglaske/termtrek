@@ -191,3 +191,38 @@ describe('pull request view', () => {
     expect(await axe(a.container, noaxe)).toHaveNoViolations()
   })
 })
+
+describe('PR sub-tabs keyboard support', () => {
+  it('use roving tabindex and arrow keys, and aria-controls resolves', async () => {
+    show(withPr())
+    await openFirst()
+    const tabs = screen.getAllByRole('tab', { name: /Conversation|Commits|Files changed/ })
+    expect(screen.getByRole('tablist', { name: 'Pull request sections' })).toHaveAttribute('aria-orientation', 'horizontal')
+    const idx = () => tabs.map((t) => t.tabIndex)
+    expect(idx()).toEqual([0, -1, -1])
+    tabs[0]!.focus()
+    await userEvent.keyboard('{ArrowRight}')
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
+    expect(tabs[1]).toHaveFocus()
+    expect(idx()).toEqual([-1, 0, -1])
+    await userEvent.keyboard('{End}')
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'true')
+    await userEvent.keyboard('{ArrowRight}')
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    await userEvent.keyboard('{ArrowLeft}')
+    expect(tabs[2]).toHaveAttribute('aria-selected', 'true')
+    await userEvent.keyboard('{Home}')
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    for (const t of tabs) expect(document.getElementById(t.getAttribute('aria-controls')!)).not.toBeNull()
+  })
+
+  it('has headings that do not skip levels in the conversation panel', async () => {
+    show(withPr())
+    await openFirst()
+    const levels = screen.getAllByRole('heading').map((h) => Number(h.tagName[1]))
+    // RemotePanel sits under the lesson's h2, so the PR title starts at h3.
+    expect(levels[0]).toBe(3)
+    for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1)
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('tabindex', '0')
+  })
+})

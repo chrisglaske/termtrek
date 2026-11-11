@@ -369,7 +369,7 @@ html {
 }
 .shot .now i {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .shot .todo i {
   border: 1.5px solid var(--line2);
@@ -459,8 +459,8 @@ html {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: var(--ok);
-  color: #fff;
+  background: var(--ok-fill);
+  color: var(--on-fill);
   font-size: 8px;
   font-style: normal;
   margin-right: 5px;
@@ -614,7 +614,7 @@ html {
   display: grid;
   place-items: center;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
@@ -642,6 +642,21 @@ html {
   margin: 0;
   color: var(--ink2);
   font-size: 15.5px;
+}
+.landing .guides .btn {
+  margin-left: auto;
+  flex: none;
+}
+@media (max-width: 640px) {
+  .landing .guides {
+    flex-wrap: wrap;
+  }
+  .landing .guides p {
+    flex: 1 1 200px;
+  }
+  .landing .guides .btn {
+    margin-left: 54px;
+  }
 }
 .landing .guides b {
   color: var(--ink);
@@ -694,8 +709,8 @@ html {
 .landing .priv dt .tick {
   width: 20px;
   height: 20px;
-  background: var(--ok);
-  color: #fff;
+  background: var(--ok-fill);
+  color: var(--on-fill);
 }
 .landing .priv dd {
   margin: 0 0 0 30px;

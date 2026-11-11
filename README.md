@@ -1,64 +1,71 @@
 <div align="center">
 
-# 🚀 TermTrek
+# TermTrek
 
-**Stop watching tutorials. Start engineering.**
+**Learn Git by using it.**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](#)
-[![JavaScript](https://img.shields.io/badge/JavaScript-323330?style=flat-square&logo=javascript&logoColor=F7DF1E)](#)
 
-TermTrek is a fully interactive, browser-based engineering sandbox. It teaches developers how to use Bash, Git, and Python by dropping them into a simulated UNIX terminal and forcing them to build muscle memory. 
-
-No backend servers. No configuration headaches. Just pure logic running directly in the browser via WebAssembly.
-
-[**Start Learning Now at termtrek.work**](https://termtrek.work)
+[**Start learning at termtrek.work**](https://termtrek.work)
 
 </div>
 
 ---
 
-## 🛑 The Problem: Tutorial Hell & The AI Trap
+## What it is
 
-Modern developer education is broken.
-1. **Video Tutorials:** Passive consumption gives you the illusion of competence—until you open an empty text editor and your mind goes blank.
-2. **The AI Trap:** ChatGPT is an amazing tool, but if it writes your code while you are learning, *it* builds the muscle memory, not you. You are left helpless when the AI hallucinates.
+TermTrek is a free, hands-on Git course that runs entirely in your browser. You type real Git commands into a simulated terminal and watch your repository change as you go. It is for people who have never used Git, people who want to get properly good at it, and non-developers who write code with AI tools and want a safety net.
 
-## ⚡ The Solution: The TermTrek Engine
+- **No account.** Open the site and start.
+- **Nothing saved about you.** There is no backend and no sign-in. Your lesson progress and theme choice stay in your own browser (localStorage) and are never sent anywhere.
+- **Free and open source**, under GPL-3.0.
 
-TermTrek operates on a strict **Read -> Execute -> Validate** loop. You are given a brief, you type the real commands, and the engine validates your work in real-time.
+## Features
 
-### ✨ Key Features
-* 💻 **Interactive UNIX Terminal:** A robust emulator supporting directory navigation (`cd ../`), file manipulation (`touch`, `rm`, `mkdir`), file reading (`cat`), and an active Virtual File System.
-* 🌿 **Live Git Visualizer:** Git is invisible; we made it visible. Watch your files physically move between the Working Directory, Staging Area, and Vault as you type commands.
-* 🐍 **WebAssembly Python IDE:** Powered by **Monaco Editor** (the engine behind VS Code) and **Pyodide** (a C-engine compiled to WebAssembly). Write, run, and break real Python code entirely in the browser.
-* 📂 **Dynamic File Explorer:** A VS Code-style recursive file tree that automatically syncs with terminal commands and features cinematic creation/deletion animations.
-* 🛡️ **Zero-Tracking Privacy:** TermTrek respects developers. No analytical cookies, no server tracking. Everything saves to your browser's local storage.
+- **Interactive terminal.** Type commands yourself and get feedback that mirrors real Git, including helpful explanations when something goes wrong.
+- **Live repo map.** A diagram of your commits, branches and working files that updates after every command.
+- **Simulated team server and pull requests.** Clone, push, pull, open a pull request and merge it, with a teammate who pushes changes while you work.
+- **Playground.** A free sandbox with a sample project and server, with no lesson steps to follow.
+- **Guides.** Short reference pages for setting up Git on your own machine, with a macOS/Windows switch.
 
----
+## The course
 
-## 🗺️ The Curriculum
+The launch course has four sections and 34 lessons:
 
-TermTrek currently features a 5-phase curriculum designed to take absolute beginners from zero to local environment configuration:
-* **Phase 0: Groundwork** (Navigating UNIX without a mouse)
-* **Phase 1: Git Mastery** (Mental models, conventional commits, branching, and merge conflicts)
-* **Phase 2: Python Core** (Variables, loops, data structures, and error handling)
-* **Phase 3: Capstone** (Building a CLI calculator, local file vault, and rescuing sabotaged Git repos)
-* **Phase 4: Going Local** (Installing VS Code, Python, Virtual Environments, and generating SSH Keys)
+| Section | Lessons |
+| --- | --- |
+| Foundations | 10 |
+| Fixing mistakes | 7 |
+| Branching | 8 |
+| Working with a team | 9 |
 
----
+Two more sections, Pro skills and Automation, are planned.
 
-## 🌐 Getting Started
+## Run it locally
 
-The recommended way to use TermTrek is directly through the official website. There is no setup, installation, or configuration required. 
+```sh
+npm install
+npm run dev      # start the dev server
+npm run verify   # typecheck, tests, production build and dist checks
+```
 
-**Jump right in:** [termtrek.work](https://termtrek.work)
+## How it is built
 
-### 🛠️ Running Locally (Optional)
+TermTrek is a React and TypeScript app built with Vite and tested with Vitest. There is no server: everything runs in the browser.
 
-While the hosted version is the easiest way to learn, TermTrek is built with vanilla HTML, CSS, and JavaScript, meaning getting it running locally takes about 3 seconds if you prefer to host it yourself or contribute to the project.
+- `src/engine` is a simulated Git engine. It implements a small shell, an in-memory file system, repositories, merging, and a fake remote server.
+- `src/lessons` holds the course. `course.ts` lists the sections and the lessons in each, and `schema.ts` defines the `Lesson` and `Step` types. Each lesson is one file in a section folder (`foundations`, `fixing`, `branching`, `team`).
+- A lesson has a starting `setup` (files, config, remote) and a list of steps. Each step has `learn` text, a `task`, `hints`, a `solution`, and a `check` function that inspects the world after each command. See an existing lesson such as `src/lessons/foundations/what-is-git.ts` for a worked example.
+- `src/ui` contains the interface (terminal, repo map, remote panel, lesson view, Playground, landing page), and `src/guides` holds the guide pages.
 
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/chrisglaske/termtrek.git](https://github.com/chrisglaske/termtrek.git)
+## Contributing
+
+Please open an issue before starting work, so we can agree on the change first. Before you open a pull request, `npm run verify` must pass.
+
+## Privacy
+
+TermTrek sets no tracking cookies. It uses Cloudflare Web Analytics for anonymous page counts only. Your lesson progress and theme choice are stored only in your own browser (localStorage); nothing is sent anywhere.
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).

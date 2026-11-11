@@ -60,6 +60,26 @@ describe('Terminal', () => {
     expect(input).toHaveFocus()
   })
 
+  it('lets Tab leave an empty line and Shift+Tab always leave, so focus is never trapped', async () => {
+    const onComplete = vi.fn(noComplete)
+    render(
+      <>
+        <button type="button">before</button>
+        <Terminal entries={[]} cwdLabel="~/project" branch="main" onRun={vi.fn()} onComplete={onComplete} />
+        <button type="button">after</button>
+      </>,
+    )
+    const input = screen.getByLabelText('Terminal input')
+    await userEvent.click(input)
+    await userEvent.tab()
+    expect(screen.getByText('after')).toHaveFocus()
+    await userEvent.click(input)
+    await userEvent.type(input, 'git s')
+    await userEvent.tab({ shift: true })
+    expect(screen.getByText('before')).toHaveFocus()
+    expect(onComplete).not.toHaveBeenCalled()
+  })
+
   it('shows options when ambiguous and hides them on next key', async () => {
     const onComplete = () => ({ line: 'git s', options: ['status', 'stash'] })
     const { input } = setup({ onComplete })

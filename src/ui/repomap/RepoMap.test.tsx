@@ -206,7 +206,11 @@ describe('RepoMap', () => {
       const { w, repo } = ahead()
       const { rerender } = render(<RepoMap world={w} />)
       expect(screen.getByText('↑1 to push')).toBeInTheDocument()
-      expect(screen.getByTitle(/as of your last fetch/)).toBeInTheDocument()
+      const chip = document.querySelector('.repomap-sync')!
+      expect(chip).toHaveAttribute('title', expect.stringMatching(/as of your last fetch/))
+      expect(screen.getByText('↑1 to push')).toHaveAttribute('aria-hidden', 'true')
+      expect(chip.querySelectorAll('.sr-only')).toHaveLength(1)
+      expect(chip.querySelector('.sr-only')).toHaveTextContent(/↑1 to push, compared with .*as of your last fetch/)
       const base = repo.remoteRefs['origin/main']!
       const parent = repo.commits[repo.branches.main as string]!.parents[0]!
       expect(parent).toBe(base)

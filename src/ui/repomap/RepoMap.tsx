@@ -127,8 +127,8 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
         {repo.stash.length > 0 && <span className="repomap-chip repomap-stash">{`Stash: ${repo.stash.length}`}</span>}
         {sync && (
           <span className="repomap-chip repomap-sync" title={`Compared with ${sync.upstream} as of your last fetch`}>
-            {syncText(sync)}
-            <span className="sr-only">{` compared with ${sync.upstream}, as of your last fetch`}</span>
+            <span aria-hidden="true">{syncText(sync)}</span>
+            <span className="sr-only">{`${syncText(sync)}, compared with ${sync.upstream}, as of your last fetch`}</span>
           </span>
         )}
         <span className="repomap-branch">

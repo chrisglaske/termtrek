@@ -1,9 +1,48 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { RichText } from './RichText'
 import { ThemeToggle } from './ThemeToggle'
 
 describe('RichText', () => {
+  it('renders an internal [text](/path) link as a router link', () => {
+    render(
+      <MemoryRouter>
+        <RichText text="See [the guide](/guides/install-git) first" />
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('link', { name: 'the guide' })).toHaveAttribute('href', '/guides/install-git')
+  })
+
+  it('opens internal links in a new tab so the lesson keeps its state', () => {
+    render(
+      <MemoryRouter>
+        <RichText text="See [the guide](/guides/install-git)" />
+      </MemoryRouter>,
+    )
+    const a = screen.getByRole('link', { name: 'the guide' })
+    expect(a).toHaveAttribute('target', '_blank')
+    expect(a).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
+  it.each(['[x](//evil.com)', '[x](javascript:alert(1))', '[x](/\\evil.com)'])('renders %s as plain text', (text) => {
+    const { container } = render(<RichText text={text} />)
+    expect(container.querySelector('a')).toBeNull()
+    expect(container.textContent).toBe(text)
+  })
+
+  it('leaves a bare [ok] unchanged', () => {
+    const { container } = render(<RichText text="Press [ok] now" />)
+    expect(container.querySelector('a')).toBeNull()
+    expect(container.textContent).toBe('Press [ok] now')
+  })
+
+  it('leaves an external [text](https://...) as plain text', () => {
+    render(<RichText text="See [x](https://example.com) now" />)
+    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.getByText('See [x](https://example.com) now')).toBeInTheDocument()
+  })
+
   it('renders a button pill when onCommand is given', async () => {
     const onCommand = vi.fn()
     render(<RichText text="Run `git status` now" onCommand={onCommand} />)

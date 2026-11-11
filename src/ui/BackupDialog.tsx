@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { exportBackup, importBackup } from '../progress/store'
 import { useProgress } from '../progress/ProgressContext'
+import { useFocusTrap } from './useFocusTrap'
 import './BackupDialog.css'
 
 function localDate(d: Date): string {
@@ -12,7 +13,13 @@ function lessons(n: number): string {
   return `${n} ${n === 1 ? 'lesson' : 'lessons'}`
 }
 
-export function BackupDialog({ onClose }: { onClose: () => void }): React.JSX.Element {
+export function BackupDialog({
+  onClose,
+  returnFocusTo,
+}: {
+  onClose: () => void
+  returnFocusTo?: React.RefObject<HTMLElement | null>
+}): React.JSX.Element {
   const { progress, replace } = useProgress()
   const titleId = useId()
   const fileId = useId()
@@ -20,13 +27,7 @@ export function BackupDialog({ onClose }: { onClose: () => void }): React.JSX.El
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const count = Object.keys(progress.completed).length
 
-  useEffect(() => {
-    const before = document.activeElement
-    ref.current?.querySelector('button')?.focus()
-    return () => {
-      if (before instanceof HTMLElement) before.focus()
-    }
-  }, [])
+  useFocusTrap(ref, true, returnFocusTo)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

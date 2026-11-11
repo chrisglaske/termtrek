@@ -14,6 +14,7 @@
 button.cmd {
   border: 0;
   margin: 0;
+  text-align: start;
   cursor: pointer;
 }
 button.cmd:hover {

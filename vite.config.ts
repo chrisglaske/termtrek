@@ -9,5 +9,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['src/test/setup.ts'],
+    // theme.test.ts reads tokens.css?raw to check token contrast.
+    css: { include: [/tokens\.css/] },
   },
 })

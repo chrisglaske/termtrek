@@ -106,3 +106,31 @@ describe('BackupDialog', () => {
     click.mockRestore()
   })
 })
+
+describe('BackupDialog focus', () => {
+  it('traps focus, closes on Escape and returns focus to the opener', async () => {
+    const opener = document.createElement('button')
+    document.body.appendChild(opener)
+    opener.focus()
+    const onClose = vi.fn()
+    const { unmount } = render(
+      <ProgressProvider storage={fakeStorage()}>
+        <BackupDialog onClose={onClose} />
+      </ProgressProvider>,
+    )
+    const dialog = screen.getByRole('dialog')
+    const items = Array.from(dialog.querySelectorAll<HTMLElement>('button, input'))
+    const first = items[0]!
+    const last = items[items.length - 1]!
+    expect(first).toHaveFocus()
+    await userEvent.tab({ shift: true })
+    expect(last).toHaveFocus()
+    await userEvent.tab()
+    expect(first).toHaveFocus()
+    await userEvent.keyboard('{Escape}')
+    expect(onClose).toHaveBeenCalled()
+    unmount()
+    expect(opener).toHaveFocus()
+    opener.remove()
+  })
+})

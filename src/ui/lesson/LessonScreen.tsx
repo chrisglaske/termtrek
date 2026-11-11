@@ -16,13 +16,9 @@ import { LessonHeader } from './LessonHeader'
 import { LearnCard } from './LearnCard'
 import { LessonDone } from './LessonDone'
 import { Workspace } from './Workspace'
+import { isWide } from './isWide'
 import type { WorkspaceHandle } from './Workspace'
 import './LessonScreen.css'
-
-// Phones and narrow tablets: don't pop the on-screen keyboard or jump the page on load.
-function isWide(): boolean {
-  return typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 980px)').matches
-}
 
 type RepoTab = 'repo' | 'remote'
 
@@ -66,7 +62,7 @@ export function RepoPanel({ world, remoteError = null, onOpenPr = noop, onMergeP
 
   return (
     <section className="lesson-repo" aria-label="Repository">
-      <div className="repo-tabs" role="tablist" aria-label="Repository views" onKeyDown={onKeyDown}>
+      <div className="repo-tabs" role="tablist" aria-label="Repository views" aria-orientation="horizontal" onKeyDown={onKeyDown}>
         <button type="button" role="tab" id={ids.repo} ref={(el) => void (refs.current.repo = el)} aria-selected={tab === 'repo'} aria-controls={panelId} tabIndex={tab === 'repo' ? 0 : -1} onClick={() => setPicked('repo')}>
           Your repo
         </button>
@@ -163,9 +159,17 @@ function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
   )
 }
 
+export function lessonDescription(lesson: Lesson): string {
+  const first = lesson.steps[0]?.title
+  const text = first
+    ? `${first}: step 1 of ${lesson.title}, a hands-on Git lesson you do in your browser.`
+    : `${lesson.title}, a hands-on Git lesson you do in your browser.`
+  return text.length <= 160 ? text : `${text.slice(0, 157).trimEnd()}...`
+}
+
 function LessonPage({ lesson }: { lesson: Lesson }): React.JSX.Element {
   const { setLast } = useProgress()
-  useDocumentTitle(`${lesson.title} · TermTrek`)
+  useDocumentTitle(`${lesson.title} · TermTrek`, lessonDescription(lesson))
   const setLastRef = useRef(setLast)
   setLastRef.current = setLast
   useEffect(() => {

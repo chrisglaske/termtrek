@@ -17,7 +17,7 @@ export const shareAProject: Lesson = {
       id: 'remote-add',
       title: 'Point your repo at the server',
       learn:
-        `This project started on your computer, and someone made an empty repo for it on the server. Tell Git where it is: \`git remote add origin ${PROJECT_URL}\`.\n- \`remote add\` saves an address under a nickname.\n- \`origin\` is the nickname. It is the usual name for the main server.\n- The last part is the address.`,
+        `This project started on your computer, and someone made an empty repo for it on the server. Tell Git where it is: \`git remote add origin ${PROJECT_URL}\`.\n- \`remote add\` saves an address under a nickname.\n- \`origin\` is the nickname. It is the usual name for the main server.\n- The last part is the address.\n\nPushing to a real GitHub server asks you to sign in first, and [this guide walks you through it](/guides/sign-in-to-github).`,
       task: 'Add the server as origin.',
       hints: ['It starts with `git remote add`, then the nickname, then the address.', `Type \`git remote add origin ${PROJECT_URL}\` and press Enter.`],
       solution: [`git remote add origin ${PROJECT_URL}`],

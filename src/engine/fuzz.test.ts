@@ -2,6 +2,7 @@ import { createWorld } from './world';
 import { runLine } from './interpreter';
 import { buildWorld } from './setup';
 import { teammatePush } from './remote/teammate';
+import { CLONED } from '../lessons/team/setups';
 import type { PullRequest, RemoteSetup, World } from './types';
 
 function rng(seed: number) {
@@ -96,5 +97,9 @@ describe('fuzz', () => {
     const pr: PullRequest = { number: 1, title: 'Add f', body: '', head: 'feature', base: 'main', author: 'Sam', state: 'open', comments: [], openedAt: pushed.seq };
     const withPr: World = { ...pushed, remote: { ...pushed.remote!, prs: [pr] } };
     check([cloned, diverged, midRebase, withPr], randomLines(11, REMOTE_PIECES));
+  });
+
+  it('playground fuzz', () => {
+    check([buildWorld(CLONED)], randomLines(23, REMOTE_PIECES));
   });
 });

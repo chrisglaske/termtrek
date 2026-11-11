@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from './App'
 import { STORAGE_KEY } from '../progress/store'
+import { allLessons } from '../lessons/course'
+import { PLAYGROUND } from '../lessons/playground'
 
 function at(path: string) {
   return render(
@@ -19,6 +21,31 @@ describe('routes', () => {
     expect(screen.getByRole('heading', { name: "We couldn't find that page." })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Go to the course' })).toHaveAttribute('href', '/learn')
     expect(document.title).toBe('Page not found · TermTrek')
+  })
+
+  it('opens the playground', () => {
+    at('/playground')
+    expect(screen.queryByRole('heading', { name: "We couldn't find that page." })).toBeNull()
+    expect(document.title).toBe('Playground · TermTrek')
+    expect(allLessons().some((l) => l.id === PLAYGROUND.id)).toBe(false)
+  })
+
+  it('lists the guides', () => {
+    at('/guides')
+    expect(screen.getAllByRole('link', { name: /minutes/ })).toHaveLength(3)
+    expect(document.title).toBe('Guides · TermTrek')
+  })
+
+  it('opens a guide and shows not found for an unknown one', () => {
+    at('/guides/install-git')
+    expect(screen.getByRole('heading', { level: 1, name: 'Install Git' })).toBeInTheDocument()
+    expect(document.title).toBe('Install Git · TermTrek')
+    expect(screen.getByText('xcode-select --install')).toBeInTheDocument()
+  })
+
+  it('shows not found for an unknown guide', () => {
+    at('/guides/nope')
+    expect(screen.getByRole('heading', { name: "We couldn't find that page." })).toBeInTheDocument()
   })
 
   it('shows not found for an unknown path', () => {
