@@ -8,7 +8,7 @@ interface Row {
   here: boolean
 }
 
-const HOME_LABEL = (home: string): string => `~ ${home.split('/').pop() ?? 'home'} (home)`
+const HOME_LABEL = (): string => '~ home'
 
 /** The folders and files under home, with a marker on the folder the learner is in. */
 function rows(world: World): Row[] {
@@ -25,7 +25,7 @@ function rows(world: World): Row[] {
     }
     for (const f of files) out.push({ key: f, name: f.slice(prefix.length), dir: false, depth, here: false })
   }
-  out.push({ key: world.home, name: HOME_LABEL(world.home), dir: true, depth: 0, here: world.cwd === world.home })
+  out.push({ key: world.home, name: HOME_LABEL(), dir: true, depth: 0, here: world.cwd === world.home })
   walk(world.home, 1)
   return out
 }

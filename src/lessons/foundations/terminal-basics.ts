@@ -131,7 +131,7 @@ export const terminalBasics: Lesson = {
       visual: { kind: 'tree' },
       step: 0,
       command: [{ text: 'pwd', say: 'print where I am' }],
-      done: '**That is your home folder.** Its full address is `/home/you`: the folder `you` inside `home`. The `~` is a short way to write it.',
+      done: '**That is your home folder.** Its full address is `/home/you`, and `~` is the short way to write it.',
     },
     {
       kind: 'do',
