@@ -475,25 +475,33 @@ export function PageRun({
         {page.kind === 'finish' ? (
           <FinishBody key={page.id} page={page} lesson={lesson} />
         ) : (
-          <div className="pf-page" key={page.id}>
-            <Head page={page} headRef={headRef} />
-            <Visual page={page} state={state} done={page.kind === 'do' && ok} />
-            {page.kind === 'do' && page.on === 'server' && (
-              <ServerBody page={page} state={state} remote={{ onOpenPr: openPr, onMergePr: mergePr, onDeleteBranch: deleteRemoteBranch }} />
-            )}
-            {page.kind === 'do' && page.on !== 'server' && (
-              <DoBody
-                page={page}
-                state={state}
-                liveAtStart={liveAtStart}
-                entryStart={starts.current[page.step] ?? 0}
-                run={run}
-                editorDone={editorDone}
-                saveFile={saveFile}
-                closeFile={closeFile}
-                doneAt={doneSeq}
-              />
-            )}
+          <div className={`pf-page${page.kind === 'do' ? ' pf-do' : ''}`} key={page.id}>
+            {/* On a wide, short screen the lesson text and picture sit beside the command and terminal, so a page fits without scrolling. */}
+            <div className="pf-body">
+              <div className="pf-left">
+                <Head page={page} headRef={headRef} />
+                <Visual page={page} state={state} done={page.kind === 'do' && ok} />
+              </div>
+              {page.kind === 'do' && (
+                <div className="pf-right">
+                  {page.on === 'server' ? (
+                    <ServerBody page={page} state={state} remote={{ onOpenPr: openPr, onMergePr: mergePr, onDeleteBranch: deleteRemoteBranch }} />
+                  ) : (
+                    <DoBody
+                      page={page}
+                      state={state}
+                      liveAtStart={liveAtStart}
+                      entryStart={starts.current[page.step] ?? 0}
+                      run={run}
+                      editorDone={editorDone}
+                      saveFile={saveFile}
+                      closeFile={closeFile}
+                      doneAt={doneSeq}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
             <Buttons nav={nav} />
             {ok && <p className="pf-key">or press Enter</p>}
             {lesson.skippable && index === 0 && skipTo && (
