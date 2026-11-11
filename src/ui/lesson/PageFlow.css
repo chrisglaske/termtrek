@@ -551,6 +551,9 @@
 }
 
 @media (max-width: 560px) {
+  .pf-graph {
+    padding: 16px 14px;
+  }
   .pf-top {
     flex-wrap: wrap;
     padding: 10px 16px 0;
@@ -753,7 +756,9 @@
 .pf-rewind-scroll svg {
   display: block;
   margin: 0 auto;
-  max-width: none;
+  /* On a phone the line shrinks to fit instead of hiding its newest commits off to the right. */
+  max-width: 100%;
+  height: auto;
 }
 .pf-rewind .rw-node,
 .pf-rewind .rw-lost {

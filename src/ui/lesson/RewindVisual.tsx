@@ -2,8 +2,8 @@ import type { Commit, Repo, World } from '../../engine/types'
 import { headCommitId } from '../../engine/git/repoState'
 import { reachableFromRefs } from '../../engine/git/refs'
 
-const GAP = 78
-const PAD_X = 58
+const GAP = 76
+const PAD_X = 44
 const MAX_SHOWN = 5
 const Y = 56
 const LABEL_H = 22
@@ -105,7 +105,7 @@ export function RewindVisual({ world }: { world: World }): React.JSX.Element | n
                   {id7(n.c)}
                 </text>
                 {n.lost && (
-                  <text x={x(i)} y={Y + 48} textAnchor="middle" fontFamily="var(--mono)" fontSize="11" fontWeight="600" fill="var(--ink2)">
+                  <text x={x(i)} y={Y + 48} textAnchor="middle" fontFamily="var(--mono)" fontSize="10" fontWeight="600" fill="var(--ink2)">
                     recoverable
                   </text>
                 )}
