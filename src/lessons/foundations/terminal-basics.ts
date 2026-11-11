@@ -32,7 +32,7 @@ export const terminalBasics: Lesson = {
       hints: ['The command is three letters, short for "print working directory".', 'Type `pwd` and press Enter.'],
       solution: ['pwd'],
       check: (c) => ran(c, 'pwd'),
-      success: '**That is your home folder.** `/home/you` is its full address, and the `~` in the prompt is short for it.',
+      success: '**That is your home folder.** Its full address is the line above (on your own computer it looks a little different, like `/Users/yourname` on a Mac), and the `~` in the prompt is short for it.',
     },
     {
       id: 'look',
@@ -131,7 +131,7 @@ export const terminalBasics: Lesson = {
       visual: { kind: 'tree' },
       step: 0,
       command: [{ text: 'pwd', say: 'print where I am' }],
-      done: '**That is your home folder.** Its full address is `/home/you`, and `~` is the short way to write it.',
+      done: '**That is your home folder.** Its full address is shown above. On your own computer it looks a little different, like `/Users/yourname` on a Mac. `~` is the short way to write it.',
     },
     {
       kind: 'do',
