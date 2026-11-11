@@ -117,7 +117,7 @@ export const switchBranches: Lesson = {
       step: 2,
       command: [
         { text: 'git switch', say: 'move to a branch' },
-        { text: '-c', say: 'make it first' },
+        { text: '-c', say: 'create it, then switch' },
         { text: 'contact-page', say: 'with this name' },
       ],
       done: '**Three branches now.** contact-page starts at the tip of main, and you are on it.',
