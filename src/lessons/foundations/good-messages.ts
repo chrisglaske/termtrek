@@ -44,7 +44,7 @@ export const goodMessages: Lesson = {
       id: 'message',
       title: 'Write a message your team can read',
       learn:
-        "Months from now, someone will scroll through the history to find out when and why something changed. That someone is often you. A message like \"Fix stuff\" tells them nothing. This matters even more when an AI tool writes code for you: the messages are how you keep track of what changed.\n\nA good message:\n- says what the commit does, in a few words\n- is written as a command, like \"Add\", \"Fix\" or \"Remove\", not \"Added\" or \"Fixing\"\n- stays under 72 characters\n\nFor example: `git commit -m \"Explain how to name meeting files\"`. A handy test: \"If applied, this commit will…\" should lead into your message.",
+        "Months from now, someone will scroll through the history to find out when and why something changed. That someone is often you. A message like \"Fix stuff\" tells them nothing. This matters even more when an AI tool writes code for you: the messages are how you keep track of what changed.\n\nA good message:\n- says what the commit does, in a few words\n- is written as a command, like \"Add\", \"Fix\" or \"Remove\", not \"Added\" or \"Fixing\"\n- keeps the first line short, about 50 characters\n\nFor example: `git commit -m \"Explain how to name meeting files\"`. A handy test: \"If applied, this commit will…\" should lead into your message.",
       task: 'Commit the `README.md` change with a clear message.',
       hints: [
         'Say what the change does, starting with a verb like "Add" or "Explain".',
@@ -126,7 +126,7 @@ export const goodMessages: Lesson = {
       id: 'short',
       kicker: 'Rule 3 of 3',
       title: 'Keep it short',
-      body: 'Stay under 72 characters, so it fits on one line in the history.',
+      body: 'Aim for about 50 characters on the first line, so it fits on one line in the history. Git tools also wrap longer detail lines at around 72.',
       visual: { kind: 'none' },
     },
     {
