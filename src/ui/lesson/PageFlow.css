@@ -1366,3 +1366,79 @@
   color: var(--ok);
   animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+/* Commits that just travelled between your computer and the server */
+.sv-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.sv-link small {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ok-ink);
+}
+.sv-link-go {
+  color: var(--ok);
+  font-weight: 700;
+  animation: pf-nudge-r 0.9s ease-in-out 2;
+}
+.sv-link-toYou {
+  animation-name: pf-nudge-l;
+}
+.sv-new {
+  color: var(--ok-ink);
+  background: var(--ok-t);
+}
+.sv-fresh {
+  animation: pf-arrive-r 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.sv-fresh-you {
+  animation-name: pf-arrive-l;
+}
+.sv-fresh .sv-msg {
+  font-weight: 600;
+}
+.sv-moved {
+  display: block;
+  font-weight: 600;
+  color: var(--ok);
+}
+.sv-state {
+  display: block;
+}
+@keyframes pf-arrive-r {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+}
+@keyframes pf-arrive-l {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+}
+@keyframes pf-nudge-r {
+  50% {
+    transform: translateX(6px);
+  }
+}
+@keyframes pf-nudge-l {
+  50% {
+    transform: translateX(-6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sv-fresh,
+  .sv-link-go {
+    animation: none;
+  }
+}
+@media (max-width: 560px) {
+  .sv-link-go small {
+    transform: rotate(-90deg);
+  }
+}
