@@ -14,18 +14,34 @@ const ROW_H = 24
 const GAP = 10
 const LINE = 12
 
-/** Places each label under its token, pushing a label to a lower row when it would touch the one before. */
-function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Placed[] {
-  const rowEnds: number[] = []
-  return tokens.map((t, i) => {
+/**
+ * Places each label under its token, pushing a label to a lower row when it would touch another label
+ * or when a connector line would have to run through a label.
+ */
+export function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Placed[] {
+  const done: Array<Placed & { w: number }> = []
+  tokens.forEach((t, i) => {
     const w = labels[i] ?? 0
     const x = t.left - origin.left + t.width / 2
     const left = Math.max(0, Math.min(x - w / 2, origin.width - w))
     let row = 0
-    while ((rowEnds[row] ?? -Infinity) + GAP > left) row++
-    rowEnds[row] = left + w
-    return { x, left, row }
+    let free = -1
+    // Rows past the number of labels placed so far cannot help.
+    for (; row <= done.length; row++) {
+      const touches = done.some((d) => d.row === row && left < d.left + d.w + GAP && d.left < left + w + GAP)
+      if (touches) continue
+      if (free < 0) free = row
+      // This connector runs through every row above its label; it must miss the labels there.
+      const wireHits = done.some((d) => d.row < row && x > d.left - 4 && x < d.left + d.w + 4)
+      // An earlier, lower connector must not run through this label.
+      const lowerWire = done.some((d) => d.row > row && d.x > left - 4 && d.x < left + w + 4)
+      if (!wireHits && !lowerWire) break
+    }
+    // When no row is clear of every connector, take the nearest row that at least keeps labels apart.
+    if (row > done.length) row = free
+    done.push({ x, left, row, w })
   })
+  return done.map(({ x, left, row }) => ({ x, left, row }))
 }
 
 /** The command exactly as it is typed, on one line, with what each part means written under it. */
