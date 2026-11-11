@@ -620,6 +620,11 @@
     margin-left: 0;
     padding: 0 4px;
     font-size: 10px;
+    /* Stay inside the file chip on the narrowest phones: wrap instead of poking out. */
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .sv-compact .sv-arrow {
     font-size: 13px;
