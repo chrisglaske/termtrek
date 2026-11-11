@@ -3,7 +3,7 @@ import { axe } from 'vitest-axe'
 import { createWorld } from '../../engine/world'
 import { buildWorld } from '../../engine/setup'
 import { runLine } from '../../engine/interpreter'
-import { RepoMap } from './RepoMap'
+import { RepoMap, tightIds } from './RepoMap'
 
 const config = { 'user.name': 'Sam', 'user.email': 's@x.com' }
 const built = (run: string[]) =>
@@ -235,5 +235,13 @@ describe('RepoMap', () => {
       expect(container.querySelectorAll('.label-remote')).toHaveLength(1)
       expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
     })
+  })
+})
+
+describe('tightIds', () => {
+  it('drops every other id in a tight run and leaves spaced ids alone', () => {
+    const row = (xs: number[]) => xs.map((x) => ({ id: `c${x}`, x, y: 0 }))
+    expect([...tightIds(row([0, 46, 92, 138]))]).toEqual(['c46', 'c138'])
+    expect(tightIds(row([0, 80, 160])).size).toBe(0)
   })
 })

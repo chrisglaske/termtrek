@@ -9,6 +9,50 @@ import './RepoMap.css'
 const MAX_SHOWN = 3
 // Half the width of a 7-character id at 11px, plus a little air.
 const ID_HALF = 28
+// Where the id text sits under its commit: baseline and the top of its letters.
+const ID_BASE = 31
+const ID_TOP = 23
+// Ids on one row closer than this would run together, so every other one drops a line.
+const ID_STAGGER = 13
+
+/** True when any curved edge passes through the spot where `n`'s short id is printed. */
+function curveCrossesId(n: { x: number; y: number }, edges: { from: string; to: string }[], byId: Map<string, { x: number; y: number }>): boolean {
+  const [x0, x1, y0, y1] = [n.x - ID_HALF + 4, n.x + ID_HALF - 4, n.y + ID_TOP - 2, n.y + ID_BASE + 2]
+  return edges.some((e) => {
+    const a = byId.get(e.from)
+    const b = byId.get(e.to)
+    if (!a || !b || a.y === b.y) return false
+    const mid = (a.x + b.x) / 2
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40
+      const u = 1 - t
+      // Cubic Bezier with the same control points as the drawn edge.
+      const x = u * u * u * a.x + 3 * u * u * t * mid + 3 * u * t * t * mid + t * t * t * b.x
+      const y = u * u * u * a.y + 3 * u * u * t * a.y + 3 * u * t * t * b.y + t * t * t * b.y
+      if (x >= x0 && x <= x1 && y >= y0 && y <= y1) return true
+    }
+    return false
+  })
+}
+
+/** Commits whose id would touch the previous id on the same row: every other one in a tight run. */
+export function tightIds(nodes: { id: string; x: number; y: number; lost?: boolean }[]): Set<string> {
+  const out = new Set<string>()
+  const rows = new Map<number, { id: string; x: number }[]>()
+  for (const n of nodes) if (n.id !== '…' && !n.lost) rows.set(n.y, [...(rows.get(n.y) ?? []), n])
+  for (const row of rows.values()) {
+    row.sort((a, b) => a.x - b.x)
+    let dropped = false
+    row.forEach((n, i) => {
+      const prev = row[i - 1]
+      if (prev && n.x - prev.x < ID_HALF * 2 && !dropped) {
+        out.add(n.id)
+        dropped = true
+      } else dropped = false
+    })
+  }
+  return out
+}
 
 function listOf(names: string[]): string {
   return names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
@@ -126,6 +170,7 @@ export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: R
   const head = g.nodes.find((n) => n.isHead)
   const stubX = head ? head.x + (gap ?? DEFAULT_GAP) : 0
   const frame = box ?? own
+  const staggered = tightIds(g.nodes)
   const dy = box ? box.trunkY - own.trunkY : 0
   return (
     <div className="repomap-graph">
@@ -178,13 +223,13 @@ export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: R
           )}
           {ids &&
             g.nodes
-              .filter((n) => n.id !== '…' && !n.lost && !g.labels.some((l) => {
+              .filter((n) => n.id !== '…' && !n.lost && !curveCrossesId(n, g.edges, nodeById) && !g.labels.some((l) => {
                 // a label below a commit on the same row would cover the id
                 const at = nodeById.get(l.commitId)
                 return l.slot === 0 && !!at && at.y === n.y && Math.abs(at.x - n.x) < labelWidth(labelText(l)) / 2 + ID_HALF
               }))
               .map((n) => (
-                <text key={`id-${n.id}`} className="g-id" x={n.x} y={n.y + 31} textAnchor="middle" fontFamily="var(--mono)" fontSize="11" fill="var(--mute)">
+                <text key={`id-${n.id}`} className="g-id" x={n.x} y={n.y + ID_BASE + (staggered.has(n.id) ? ID_STAGGER : 0)} textAnchor="middle" fontFamily="var(--mono)" fontSize="11" fill="var(--mute)">
                   {n.id.slice(0, 7)}
                 </text>
               ))}
