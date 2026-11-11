@@ -83,6 +83,7 @@ describe('routes', () => {
 
   it('lists every launch lesson, with the current section open and the others collapsed', () => {
     at('/learn')
+    expect(document.title).toBe('Your course · TermTrek')
     expect(screen.getByRole('button', { name: /Foundations/ })).toHaveAttribute('aria-expanded', 'true')
     expect(screen.getByRole('button', { name: /Branching/ })).toHaveAttribute('aria-expanded', 'false')
     expect(screen.getByRole('link', { name: 'Terminal basics' })).toHaveAttribute('href', '/learn/terminal-basics')

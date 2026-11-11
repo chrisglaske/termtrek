@@ -309,6 +309,13 @@
   .home-cont {
     flex-wrap: wrap;
   }
+  .home-cont-t {
+    flex: 1 1 160px;
+  }
+  .home-cont .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
   .home-bar {
     display: none;
   }

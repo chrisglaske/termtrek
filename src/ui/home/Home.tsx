@@ -45,7 +45,7 @@ function pickNext(done: Record<string, unknown>, last?: string): Lesson | undefi
 }
 
 export function Home(): React.JSX.Element {
-  useDocumentTitle('TermTrek: learn Git by using it', 'Learn Git by typing real commands in a practice terminal and watching your project history change. Free, no account.')
+  useDocumentTitle('Your course · TermTrek', 'Learn Git by typing real commands in a practice terminal and watching your project history change. Free, no account.')
   const { progress } = useProgress()
   const all = allLessons()
   const total = all.filter((l) => course.some((s) => s.status === 'launch' && s.lessons.includes(l))).length
