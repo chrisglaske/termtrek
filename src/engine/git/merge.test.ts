@@ -30,6 +30,28 @@ const head = (w: World) => w.repo!.branches.main!;
 const MARKED = '<<<<<<< HEAD\nours\n=======\ntheirs\n>>>>>>> feature\n';
 
 describe('git merge', () => {
+  it('--ff-only fast-forwards when it can', () => {
+    const w = ffWorld();
+    const r = go(w, 'git merge --ff-only feature');
+    expect(r.exitCode).toBe(0);
+    expect(head(r.world)).toBe(w.repo!.branches.feature);
+  });
+
+  it('--ff-only refuses diverged branches and changes nothing', () => {
+    const w = cleanWorld();
+    const r = go(w, 'git merge --ff-only feature');
+    expect(r.exitCode).toBe(128);
+    expect(text(r)).toEqual(['fatal: Not possible to fast-forward, aborting.']);
+    expect(head(r.world)).toBe(head(w));
+    expect(r.world.repo!.op).toBeNull();
+  });
+
+  it('the last of --ff-only and --no-ff wins', () => {
+    const w = cleanWorld();
+    expect(go(w, 'git merge --ff-only --no-ff --no-edit feature').exitCode).toBe(0);
+    expect(go(w, 'git merge --no-ff --ff-only feature').exitCode).toBe(128);
+  });
+
   it('fast-forward output and reflog', () => {
     const w = ffWorld();
     const from = head(w);

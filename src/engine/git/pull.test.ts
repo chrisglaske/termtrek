@@ -124,6 +124,10 @@ describe('git pull', () => {
     // but a plain fast-forward is fine
     expect(runLine(mate(cloned()), 'git pull --ff-only').exitCode).toBe(0);
   });
+  it('pull --ff-only --no-ff lets the last flag win', () => {
+    const w = cloned();
+    expect(runLine(mate(w), 'git pull --ff-only --no-ff --no-edit').exitCode).toBe(0);
+  });
   it('pull --no-ff creates a merge commit even when fast-forward is possible', () => {
     const w = mate(cloned());
     const mine = w.repo!.branches.main!;

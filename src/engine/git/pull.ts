@@ -64,13 +64,17 @@ export const gitPull: CommandFn = (world, args) => {
   let flag: 'rebase' | 'merge' | 'ff-only' | null = null;
   let noFf = false;
   let quiet = false;
+  let noEdit = false;
   const pos: string[] = [];
   for (const a of args) {
     if (a === '--rebase' || a === '-r' || a === '--rebase=true') flag = 'rebase';
     else if (a === '--no-rebase' || a === '--rebase=false') flag = 'merge';
-    else if (a === '--ff-only') flag = 'ff-only';
-    else if (a === '--no-ff') noFf = true;
-    else if (a === '--ff') noFf = false;
+    // Like Git, the last of --ff, --no-ff and --ff-only wins.
+    else if (a === '--ff-only') [flag, noFf] = ['ff-only', false];
+    else if (a === '--no-ff') [flag, noFf] = [flag === 'ff-only' ? null : flag, true];
+    else if (a === '--ff') [flag, noFf] = [flag === 'ff-only' ? null : flag, false];
+    else if (a === '--no-edit') noEdit = true;
+    else if (a === '--edit') noEdit = false;
     else if (a === '-q' || a === '--quiet') quiet = true;
     else if (a === '-v' || a === '--verbose') quiet = false;
     else if (a.startsWith('-') && a.length > 1) return { lines: [err(`error: unknown option \`${a.replace(/^-+/, '')}'`), out(USAGE)], exitCode: 129 };
@@ -143,7 +147,7 @@ export const gitPull: CommandFn = (world, args) => {
   }
 
   const message = `Merge branch '${wanted}' of ${fromUrl(r1.remotes[remoteName]!)}${branch === 'main' || branch === 'master' ? '' : ` into ${branch}`}`;
-  const merge = (): RunResult => done(startMerge(w1, tip, ref, message, { noFf }));
+  const merge = (): RunResult => done(startMerge(w1, tip, ref, message, { noFf, noEdit }));
 
   if (headId === null) return merge();
   if (mode === 'rebase') return done(startRebase(w1, tip, ref));

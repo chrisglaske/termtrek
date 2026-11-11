@@ -78,6 +78,7 @@ export const gitMerge: CommandFn = (world, args, io) => {
   const repo = activeRepo(world);
   if (!repo) return { lines: [], exitCode: 128 };
   let noFf = false;
+  let ffOnly = false;
   let noEdit = false;
   let doAbort = false;
   let doContinue = false;
@@ -85,8 +86,10 @@ export const gitMerge: CommandFn = (world, args, io) => {
   const pos: string[] = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
-    if (a === '--no-ff') noFf = true;
-    else if (a === '--ff') noFf = false;
+    // Like Git, the last of --ff, --no-ff and --ff-only wins.
+    if (a === '--no-ff') [noFf, ffOnly] = [true, false];
+    else if (a === '--ff') [noFf, ffOnly] = [false, false];
+    else if (a === '--ff-only') [noFf, ffOnly] = [false, true];
     else if (a === '--no-edit') noEdit = true;
     else if (a === '--abort') doAbort = true;
     else if (a === '--continue') doContinue = true;
@@ -120,14 +123,14 @@ export const gitMerge: CommandFn = (world, args, io) => {
   if (theirs === null) return { lines: [err(`merge: ${name} - not something we can merge`)], exitCode: 1 };
   const current = branchOf(repo);
   const title = `Merge ${hasBranch(repo, name) ? 'branch' : 'commit'} '${name}'${current === 'main' || current === 'master' ? '' : ` into ${current ?? 'HEAD'}`}`;
-  return startMerge(world, theirs, name, messages.length ? messages.join('\n\n') : title, { noFf, noEdit: noEdit || messages.length > 0 });
+  return startMerge(world, theirs, name, messages.length ? messages.join('\n\n') : title, { noFf, ffOnly, noEdit: noEdit || messages.length > 0 });
 };
 
 /**
  * Merge commit `theirs` into the current branch: fast-forward, true merge with the editor, or conflicts.
  * `message` is the merge commit message; `noEdit` skips the editor. Callers check that no operation is running.
  */
-export function startMerge(world: World, theirs: string, theirsLabel: string, message: string, opts: { noFf?: boolean; noEdit?: boolean } = {}): RunResult {
+export function startMerge(world: World, theirs: string, theirsLabel: string, message: string, opts: { noFf?: boolean; ffOnly?: boolean; noEdit?: boolean } = {}): RunResult {
   const repo = world.repo!;
   const noFf = opts.noFf ?? false;
   const name = theirsLabel;
@@ -168,6 +171,15 @@ export function startMerge(world: World, theirs: string, theirsLabel: string, me
       ],
       explain: { kind: 'ok', text: `**${current ?? 'HEAD'}** just slid forward to **${name}**'s commit; no new commit was needed.` },
       exitCode: 0,
+    };
+  }
+
+  if (opts.ffOnly) {
+    return {
+      world,
+      lines: [err('fatal: Not possible to fast-forward, aborting.')],
+      explain: { kind: 'warn', text: `**${current ?? 'HEAD'}** and **${name}** each have commits the other lacks, so Git can't just slide forward. Run \`git merge ${name}\` to join them with a merge commit, or \`git rebase ${name}\`.` },
+      exitCode: 128,
     };
   }
 
