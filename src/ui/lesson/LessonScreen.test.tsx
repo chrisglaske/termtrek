@@ -5,6 +5,14 @@ import { axe } from 'vitest-axe'
 import App from '../App'
 import { STORAGE_KEY } from '../../progress/store'
 import { allLessons, findLesson } from '../../lessons/course'
+import { buildWorld } from '../../engine/setup'
+import { RepoPanel } from './LessonScreen'
+
+const course = vi.hoisted(() => ({ lastOut: false }))
+vi.mock('../../lessons/course', async (orig) => {
+  const m = await orig<typeof import('../../lessons/course')>()
+  return { ...m, nextLesson: (id: string) => (course.lastOut ? undefined : m.nextLesson(id)) }
+})
 
 const ID = 'first-commit'
 
@@ -32,7 +40,10 @@ const input = () => screen.getByRole('textbox', { name: 'Terminal input' })
 const nextBtn = () => screen.getByRole('button', { name: 'Next step' })
 
 describe('LessonScreen', () => {
-  beforeEach(() => localStorage.clear())
+  beforeEach(() => {
+    localStorage.clear()
+    course.lastOut = false
+  })
 
   it('shows the lesson header, step and sidebar', () => {
     open()
@@ -131,7 +142,9 @@ describe('LessonScreen', () => {
   })
 
   it('says so when the last lesson out is finished', async () => {
-    const last = allLessons().at(-1)!
+    // Typing the Show me lines only works for a lesson with no editor or Remote panel steps.
+    const last = allLessons().filter((l) => l.steps.every((s) => !s.solve && s.solution.length > 0)).at(-1)!
+    course.lastOut = true
     const { user } = open(last.id)
     const steps = last.steps
     for (const [i, s] of steps.entries()) {
@@ -253,5 +266,60 @@ describe('LessonScreen', () => {
   it('has no axe violations', async () => {
     const { container } = open()
     expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
+  })
+})
+
+describe('RepoPanel Remote tab', () => {
+  const config = { 'user.name': 'Sam', 'user.email': 's@x.com' }
+  const SERVER = { slug: 'team/notes', commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }] }
+
+  it('no Remote tab without a server', () => {
+    render(<RepoPanel world={buildWorld({ config, run: [] })} />)
+    expect(screen.getAllByRole('tab')).toHaveLength(1)
+    expect(screen.queryByRole('tab', { name: /Remote/ })).toBeNull()
+  })
+
+  it('Remote tab with arrow-key navigation', async () => {
+    const user = userEvent.setup()
+    render(<RepoPanel world={buildWorld({ config, remote: SERVER, run: [] })} />)
+    const repo = screen.getByRole('tab', { name: 'Your repo' })
+    const remote = screen.getByRole('tab', { name: 'Remote' })
+    expect(repo).toHaveAttribute('tabindex', '0')
+    expect(remote).toHaveAttribute('tabindex', '-1')
+    repo.focus()
+    await user.keyboard('{ArrowRight}')
+    expect(remote).toHaveFocus()
+    expect(remote).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByText('team/notes')).toBeInTheDocument()
+    await user.keyboard('{ArrowRight}')
+    expect(repo).toHaveFocus()
+    await user.keyboard('{ArrowLeft}')
+    expect(remote).toHaveFocus()
+  })
+
+  it('activity dot appears after a step event and clears when the tab is opened', async () => {
+    const user = userEvent.setup()
+    const w = buildWorld({ config, remote: SERVER, run: [] })
+    const { rerender } = render(<RepoPanel world={w} />)
+    expect(screen.queryByRole('img', { name: 'new activity' })).toBeNull()
+    const r = w.remote!
+    const next = { ...w, remote: { ...r, activity: [...r.activity, { seq: 9, who: 'teammate' as const, text: '**Alex Kim** pushed' }] } }
+    rerender(<RepoPanel world={next} />)
+    expect(screen.getByRole('img', { name: 'new activity' })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: /Remote/ }))
+    expect(screen.queryByRole('img', { name: 'new activity' })).toBeNull()
+    expect(screen.getByText('Alex Kim', { selector: 'strong' })).toBeInTheDocument()
+  })
+
+  it('activity dot ignores the learner\'s own events', () => {
+    const w = buildWorld({ config, remote: SERVER, run: [] })
+    const { rerender } = render(<RepoPanel world={w} />)
+    const r = w.remote!
+    const yours = { ...w, remote: { ...r, activity: [...r.activity, { seq: 8, who: 'you' as const, text: 'You pushed' }] } }
+    rerender(<RepoPanel world={yours} />)
+    expect(screen.queryByRole('img', { name: 'new activity' })).toBeNull()
+    const theirs = { ...w, remote: { ...r, activity: [...yours.remote.activity, { seq: 9, who: 'teammate' as const, text: '**Alex Kim** pushed' }] } }
+    rerender(<RepoPanel world={theirs} />)
+    expect(screen.getByRole('img', { name: 'new activity' })).toBeInTheDocument()
   })
 })

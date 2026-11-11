@@ -7,6 +7,7 @@ import { branchOf } from '../engine/git/refs'
 import { finishEditor, withoutWaiting } from '../engine/git/editor'
 import { writeFile } from '../engine/shell/fs'
 import type { TermEntry } from '../ui/terminal/Terminal'
+import { deleteRemoteBranch, mergePr, openPr } from '../engine/remote/pr'
 import type { Lesson } from './schema'
 
 export interface RunnerState {
@@ -24,6 +25,8 @@ export interface RunnerState {
   lastOpened: { path: string; seq: number } | null
   /** The success or nudge from the last `save-file`, shown in that file's editor tab. Cleared by `run`, `next` and `reset`. */
   notice: { path: string; explain: Explain } | null
+  /** The last Remote panel action's error. Cleared by `run`, `next`, `reset` and any successful remote action. */
+  remoteError: string | null
 }
 
 export type RunnerAction =
@@ -33,12 +36,15 @@ export type RunnerAction =
   | { type: 'reset' }
   | { type: 'save-file'; path: string; text: string }
   | { type: 'close-file'; path: string }
+  | { type: 'pr-open'; head: string; base: string; title: string; body: string }
+  | { type: 'pr-merge'; number: number }
+  | { type: 'remote-delete-branch'; name: string }
   /** `undefined` saves the session's text unchanged; `null` closes without saving. */
   | { type: 'editor-done'; text?: string | null }
 
 export function initRunner(lesson: Lesson): RunnerState {
   const world = buildWorld(lesson.setup)
-  return {
+  const state: RunnerState = {
     lesson,
     stepIndex: 0,
     stepStart: world,
@@ -50,7 +56,23 @@ export function initRunner(lesson: Lesson): RunnerState {
     open: [],
     lastOpened: null,
     notice: null,
+    remoteError: null,
   }
+  if (!lesson.steps[0]?.event) return state
+  const started = applyEvent(state)
+  const v = evaluate(started, started.world, null)
+  if (!v.passed) return started
+  const entry: TermEntry = { prompt: promptOf(started.world), input: '', lines: [], explain: v.explain ?? undefined, note: true }
+  return { ...started, status: v.status, entries: [...started.entries, entry] }
+}
+
+/** Runs the current step's event (if any) and notes it, then checks the step as `next` does. */
+function applyEvent(s: RunnerState): RunnerState {
+  const event = s.lesson.steps[s.stepIndex]?.event
+  if (!event) return s
+  const world = event.apply(s.world)
+  const tip: TermEntry = { prompt: promptOf(world), input: '', lines: [], explain: { kind: 'tip', text: event.note }, note: true }
+  return { ...s, world, stepStart: world, entries: [...s.entries, tip] }
 }
 
 function promptOf(world: World): TermEntry['prompt'] {
@@ -72,7 +94,7 @@ function evaluate(s: RunnerState, world: World, last: RunResult | null): Verdict
   const ctx = { start: s.stepStart, world, ran: s.ran, last }
   if (step.check(ctx)) {
     const status = s.stepIndex >= s.lesson.steps.length - 1 ? 'lesson-done' : 'step-done'
-    return { passed: true, status, explain: { kind: 'ok', text: step.success } }
+    return { passed: true, status, explain: { kind: 'ok', text: step.successFor?.(ctx) ?? step.success } }
   }
   return { passed: false, status: s.status, explain: step.nudge?.(ctx) ?? null }
 }
@@ -89,7 +111,7 @@ export function runnerReducer(s: RunnerState, a: RunnerAction): RunnerState {
       // While the editor is open, the waiting hint sits on the terminal's live line instead.
       const lines = result.world.pending && !s.world.pending ? withoutWaiting(result.lines) : result.lines
       const entry: TermEntry = { prompt, input: a.line, lines, explain: v.explain ?? result.explain }
-      const next: RunnerState = { ...s, notice: null, world: result.world, ran, status: v.status, entries: result.clear ? [] : [...s.entries, entry] }
+      const next: RunnerState = { ...s, notice: null, remoteError: null, world: result.world, ran, status: v.status, entries: result.clear ? [] : [...s.entries, entry] }
       if (!result.open) return next
       const open = s.open.includes(result.open) ? s.open : [...s.open, result.open]
       return { ...next, open, lastOpened: { path: result.open, seq: (s.lastOpened?.seq ?? 0) + 1 } }
@@ -101,12 +123,13 @@ export function runnerReducer(s: RunnerState, a: RunnerAction): RunnerState {
     case 'next': {
       if (s.status !== 'step-done') return s
       const stepIndex = s.stepIndex + 1
-      const moved: RunnerState = { ...s, notice: null, stepIndex, stepStart: s.world, ran: [], hintLevel: 0, status: 'working' }
+      const started: RunnerState = { ...s, notice: null, remoteError: null, stepIndex, stepStart: s.world, ran: [], hintLevel: 0, status: 'working' }
+      const moved = applyEvent(started)
       // A learner who ran ahead may already have done what this step asks.
-      const v = evaluate(moved, s.world, null)
+      const v = evaluate(moved, moved.world, null)
       if (!v.passed) return moved
-      const entry: TermEntry = { prompt: promptOf(s.world), input: '', lines: [], explain: v.explain ?? undefined, note: true }
-      return { ...moved, status: v.status, entries: [...s.entries, entry] }
+      const entry: TermEntry = { prompt: promptOf(moved.world), input: '', lines: [], explain: v.explain ?? undefined, note: true }
+      return { ...moved, status: v.status, entries: [...moved.entries, entry] }
     }
     case 'save-file': {
       const world = writeFile(s.world, a.path, a.text)
@@ -115,6 +138,22 @@ export function runnerReducer(s: RunnerState, a: RunnerAction): RunnerState {
       if (!v.passed) return { ...s, world, notice }
       const entry: TermEntry = { prompt: promptOf(world), input: '', lines: [], explain: v.explain ?? undefined, note: true }
       return { ...s, world, notice, status: v.status, entries: [...s.entries, entry] }
+    }
+    case 'pr-open':
+    case 'pr-merge':
+    case 'remote-delete-branch': {
+      const r =
+        a.type === 'pr-open'
+          ? openPr(s.world, a)
+          : a.type === 'pr-merge'
+            ? mergePr(s.world, a.number)
+            : deleteRemoteBranch(s.world, a.name)
+      if (!r.ok) return { ...s, remoteError: r.error }
+      const v = evaluate(s, r.world, null)
+      const base: RunnerState = { ...s, world: r.world, remoteError: null }
+      if (!v.passed) return base
+      const entry: TermEntry = { prompt: promptOf(r.world), input: '', lines: [], explain: v.explain ?? undefined, note: true }
+      return { ...base, status: v.status, entries: [...s.entries, entry] }
     }
     case 'close-file':
       return { ...s, open: s.open.filter((p) => p !== a.path) }

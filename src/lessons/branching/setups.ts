@@ -17,7 +17,7 @@ const TWO_COMMITS: SetupCommit[] = [
 ]
 
 /** An `echo` that writes (`>`) or appends (`>>`) one line of `home.html`, built from the same constants the checks use. */
-const echoHome = (line: string, op: '>' | '>>'): string => `echo "${line.trimEnd()}" ${op} home.html`
+export const echoHome = (line: string, op: '>' | '>>'): string => `echo "${line.trimEnd()}" ${op} home.html`
 const ADD_WELCOME = echoHome(WELCOME, '>>')
 
 const ADD_HOME_PAGE = [echoHome(HOME_PAGE, '>'), 'git add home.html', 'git commit -m "Add a home page"']

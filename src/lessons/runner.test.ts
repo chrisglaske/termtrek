@@ -1,7 +1,10 @@
+import type { World } from '../engine/types'
 import { createWorld } from '../engine/world'
 import type { Lesson } from './schema'
 import { commitCount, inRepo } from './checks'
 import { initRunner, runnerReducer } from './runner'
+import { teammatePush } from '../engine/remote/teammate'
+import { TEAMMATE } from './sample'
 import type { RunnerAction, RunnerState } from './runner'
 
 const lesson: Lesson = {
@@ -195,5 +198,96 @@ describe('runnerReducer', () => {
     let s = initRunner(lesson)
     s = play(s, { type: 'hint' }, { type: 'hint' }, { type: 'hint' })
     expect(s.hintLevel).toBe(2)
+  })
+
+  describe('team actions', () => {
+    const teamLesson: Lesson = {
+      id: 'team',
+      section: 'team',
+      title: 'Team',
+      level: 'Intermediate',
+      minutes: 1,
+      setup: {
+        config: { 'user.name': 'Sam', 'user.email': 's@x.io' },
+        remote: { slug: 'team/notes', commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }] },
+        run: [teammatePush({ branch: 'topic', message: 'Topic', files: { 'a.txt': '1' }, author: TEAMMATE })],
+      },
+      steps: [
+        { id: 'a', title: 'Open', learn: '', task: '', hints: ['h'], solution: [], check: (c) => (c.world.remote?.prs.length ?? 0) === 1, success: 'Opened.' },
+        {
+          id: 'b',
+          title: 'Event',
+          learn: '',
+          task: '',
+          hints: ['h'],
+          solution: [],
+          event: {
+            apply: teammatePush({ branch: 'main', message: 'Hello', files: { 'h.txt': '1' }, author: TEAMMATE }),
+            note: 'Alex pushed to main.',
+          },
+          check: (c) => c.world.remote?.prs[0]?.state === 'merged',
+          success: 'Merged.',
+        },
+      ],
+    }
+    const open: RunnerAction = { type: 'pr-open', head: 'topic', base: 'main', title: 'T', body: '' }
+
+    it('pr-open action passes a step', () => {
+      const s = play(initRunner(teamLesson), open)
+      expect(s.status).toBe('step-done')
+      expect(s.remoteError).toBeNull()
+      const entry = s.entries.at(-1)!
+      expect(entry.note).toBe(true)
+      expect(entry.explain).toEqual({ kind: 'ok', text: 'Opened.' })
+    })
+    it('pr-open error sets remoteError and run clears it', () => {
+      let s = play(initRunner(teamLesson), { ...open, head: 'nope' } as RunnerAction)
+      expect(s.remoteError).toBe("Push **nope** first: the server doesn't have that branch yet.")
+      expect(s.status).toBe('working')
+      s = play(s, run('pwd'))
+      expect(s.remoteError).toBeNull()
+    })
+    it('next and reset clear remoteError', () => {
+      let s = play(initRunner(teamLesson), open, { type: 'pr-open', head: 'x', base: 'main', title: 'T', body: '' })
+      expect(s.remoteError).not.toBeNull()
+      expect(play(s, { type: 'next' }).remoteError).toBeNull()
+      expect(play(s, { type: 'reset' }).remoteError).toBeNull()
+    })
+    it('step event applies on start and on next', () => {
+      let s = play(initRunner(teamLesson), open)
+      const mainBefore = s.world.remote!.branches['main']
+      s = play(s, { type: 'next' })
+      expect(s.world.remote!.branches['main']).not.toBe(mainBefore)
+      expect(s.stepStart.remote!.branches['main']).toBe(s.world.remote!.branches['main'])
+      const entry = s.entries.at(-1)!
+      expect(entry.note).toBe(true)
+      expect(entry.explain).toEqual({ kind: 'tip', text: 'Alex pushed to main.' })
+      expect(s.status).toBe('working')
+    })
+    it('pr-merge and remote-delete-branch actions', () => {
+      let s = play(initRunner(teamLesson), open, { type: 'next' }, { type: 'pr-merge', number: 1 })
+      expect(s.status).toBe('lesson-done')
+      s = play(s, { type: 'remote-delete-branch', name: 'main' })
+      expect(s.remoteError).toBe('**main** is the default branch.')
+      s = play(s, { type: 'remote-delete-branch', name: 'topic' })
+      expect(s.remoteError).toBeNull()
+      expect(s.world.remote!.branches['topic']).toBeUndefined()
+    })
+    it('step 0 event that already satisfies the check passes the step', () => {
+      const step = { ...teamLesson.steps[1]!, id: 'y', check: (c: { world: World }) => c.world.remote!.activity.length > 0 }
+      const s = initRunner({ ...teamLesson, steps: [step, teamLesson.steps[0]!] })
+      expect(s.status).toBe('step-done')
+      expect(s.entries.map((e) => e.explain)).toEqual([{ kind: 'tip', text: 'Alex pushed to main.' }, { kind: 'ok', text: 'Merged.' }])
+    })
+    it('reset replays step 0 event', () => {
+      const first: Lesson = { ...teamLesson, steps: [{ ...teamLesson.steps[1]!, id: 'z' }, teamLesson.steps[0]!] }
+      const s = initRunner(first)
+      expect(s.world.remote!.activity.at(-1)!.text).toBe('**Alex Kim** pushed 1 commit to **main**')
+      expect(s.stepStart).toBe(s.world)
+      expect(s.entries[0]!.explain).toEqual({ kind: 'tip', text: 'Alex pushed to main.' })
+      const r = play(s, { type: 'reset' })
+      expect(r.world.remote!.activity).toEqual(s.world.remote!.activity)
+      expect(r.entries).toHaveLength(1)
+    })
   })
 })

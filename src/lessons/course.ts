@@ -24,6 +24,15 @@ import { mergeCommit } from './branching/merge-commit'
 import { mergeConflicts } from './branching/merge-conflicts'
 import { stash } from './branching/stash'
 import { scenarioUrgentFix } from './branching/scenario-urgent-fix'
+import { cloneARepo } from './team/clone-a-repo'
+import { pushYourWork } from './team/push-your-work'
+import { shareAProject } from './team/share-a-project'
+import { fetchAndPull } from './team/fetch-and-pull'
+import { pushABranch } from './team/push-a-branch'
+import { openAPullRequest } from './team/open-a-pull-request'
+import { mergeAndCleanUp } from './team/merge-and-clean-up'
+import { updateYourBranch } from './team/update-your-branch'
+import { scenarioPushedFirst } from './team/scenario-pushed-first'
 
 export const course: Section[] = [
   {
@@ -68,7 +77,7 @@ export const course: Section[] = [
     summary: "Push and pull, open a pull request, respond to review, and keep your branch up to date with everyone else's work.",
     commands: ['git clone', 'git push', 'git pull', 'git fetch', 'git rebase'],
     status: 'launch',
-    lessons: [],
+    lessons: [cloneARepo, pushYourWork, shareAProject, fetchAndPull, pushABranch, openAPullRequest, mergeAndCleanUp, updateYourBranch, scenarioPushedFirst],
   },
   {
     id: 'pro',

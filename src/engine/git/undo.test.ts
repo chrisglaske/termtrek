@@ -151,6 +151,23 @@ describe('git reset', () => {
     expect(r.world.files[P + 'notes.txt']).toBe(merging.files[P + 'notes.txt']);
     expect(r.world.repo!.op).toEqual(merging.repo!.op);
   });
+  it('restore --staged on a conflicted path unstages it and leaves the folder alone', () => {
+    const w0 = buildWorld({
+      cwd: 'p',
+      config: { 'user.name': 'Sam', 'user.email': 's@x.com' },
+      repo: { at: 'p' },
+      files: { 'p/notes.txt': 'base\n' },
+      run: ['git add .', 'git commit -m "c1"', 'git switch -c feature', 'echo theirs > notes.txt', 'git commit -am "f1"', 'git switch main', 'echo ours > notes.txt', 'git commit -am "m1"'],
+    });
+    const merging = runLine(w0, 'git merge feature').world;
+    const r = runLine(merging, 'git restore --staged notes.txt');
+    expect(text(r)).toEqual([]);
+    expect(r.exitCode).toBe(0);
+    expect(r.world.files[P + 'notes.txt']).toBe(merging.files[P + 'notes.txt']);
+    expect(r.world.repo!.op?.conflicts).toEqual([]);
+    const head = r.world.repo!.commits[r.world.repo!.branches.main!]!.tree;
+    expect(r.world.repo!.index['notes.txt']).toBe(head['notes.txt']);
+  });
   it('reset --hard during a revert clears the revert', () => {
     const w0 = buildWorld({
       cwd: 'p',

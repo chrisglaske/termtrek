@@ -147,6 +147,11 @@
 .done-next {
   margin-top: 8px !important;
 }
+.learn .cmd {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .showme .cmd {
   max-width: 100%;
   padding: 0.4em 0.75em;

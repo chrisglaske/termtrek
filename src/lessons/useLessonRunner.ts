@@ -21,6 +21,10 @@ export function useLessonRunner(
   saveFile(path: string, text: string): void
   closeFile(path: string): void
   editorDone(text?: string | null): void
+  openPr(input: { head: string; base: string; title: string; body: string }): void
+  mergePr(number: number): void
+  deleteRemoteBranch(name: string): void
+  remoteError: string | null
   visibleHint: string | null
   showMe: string | null
 } {
@@ -50,8 +54,12 @@ export function useLessonRunner(
   const closeFile = useCallback((path: string) => dispatch({ type: 'close-file', path }), [])
   const editorDone = useCallback((text?: string | null) => dispatch({ type: 'editor-done', text }), [])
 
+  const openPr = useCallback((input: { head: string; base: string; title: string; body: string }) => dispatch({ type: 'pr-open', ...input }), [])
+  const mergePr = useCallback((number: number) => dispatch({ type: 'pr-merge', number }), [])
+  const deleteRemoteBranch = useCallback((name: string) => dispatch({ type: 'remote-delete-branch', name }), [])
+
   const step = state.lesson.steps[state.stepIndex]
   const visibleHint = step && state.hintLevel > 0 ? (step.hints[state.hintLevel - 1] ?? null) : null
-  const showMe = step && state.hintLevel === step.hints.length ? step.solution.join(' && ') : null
-  return { state, run, hint, next, reset, saveFile, closeFile, editorDone, visibleHint, showMe }
+  const showMe = step && step.solution.length > 0 && state.hintLevel === step.hints.length ? step.solution.join(' && ') : null
+  return { state, run, hint, next, reset, saveFile, closeFile, editorDone, openPr, mergePr, deleteRemoteBranch, remoteError: state.remoteError, visibleHint, showMe }
 }

@@ -1,7 +1,8 @@
 import { createWorld } from './world';
 import { runLine } from './interpreter';
 import { buildWorld } from './setup';
-import type { World } from './types';
+import { teammatePush } from './remote/teammate';
+import type { PullRequest, RemoteSetup, World } from './types';
 
 function rng(seed: number) {
   return () => {
@@ -17,6 +18,10 @@ const BUSY_PIECES = [...BASE_PIECES,
   'git restore', 'git reset', 'git reflog', 'git branch', 'git switch', 'git checkout', 'git merge', 'git stash', 'git revert',
   '--hard', '--soft', '--abort', '--continue', '-c', '-d', '-D', '--no-edit', '--amend',
   'HEAD~1', 'HEAD@{1}', 'main', 'feature', 'notes.txt'];
+
+const REMOTE_PIECES = [...BUSY_PIECES,
+  'git clone', 'git remote', 'git fetch', 'git push', 'git pull', 'git rebase', 'git remote add', 'git remote -v',
+  '-u', '--rebase', '--no-rebase', '--ff-only', '--continue', '--abort', '--skip', '--force-with-lease', '--prune', 'origin', 'upstream', 'origin/main', 'https://git.example.com/team/notes.git', 'FETCH_HEAD'];
 
 function randomLines(seed: number, pieces: string[]): string[] {
   const rand = rng(seed);
@@ -72,5 +77,24 @@ describe('fuzz', () => {
     }), 'git stash -u').world;
     expect(stashed.repo!.stash).toHaveLength(1);
     check([branched, conflicted, pending, stashed], randomLines(7, BUSY_PIECES));
+  });
+
+  it('fuzz: remote worlds', () => {
+    const URL = 'https://git.example.com/team/notes.git';
+    const remote: RemoteSetup = { slug: 'team/notes', commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }, { message: 'Add readme', files: { 'README.md': '# hi\n' } }] };
+    const ALEX = { name: 'Alex Kim', email: 'alex@example.com' };
+    const mate = (files: Record<string, string>) => teammatePush({ branch: 'main', message: 'Alex edit', files, author: ALEX });
+    const base = (run: (string | ((w: World) => World))[]) => buildWorld({ config: { 'user.name': 'Sam', 'user.email': 's@x.com' }, remote, run: [`git clone ${URL}`, 'cd notes', ...run] });
+    const cloned = base([]);
+    const diverged = base([mate({ 'alex.txt': 'hi\n' }), 'echo mine > mine.txt', 'git add .', 'git commit -m "My edit"']);
+    const clash = base([mate({ 'notes.txt': 'alex\n' }), 'echo mine > notes.txt', 'git add .', 'git commit -m "My notes"']);
+    const midRebase = runLine(clash, 'git pull --rebase').world;
+    expect(midRebase.repo!.op?.kind).toBe('rebase');
+    expect(midRebase.repo!.op!.conflicts).toEqual(['notes.txt']);
+    // an open pull request, built by hand: a pushed branch plus its PR on the server
+    const pushed = base(['git switch -c feature', 'echo f > f.txt', 'git add .', 'git commit -m "Add f"', 'git push -u origin feature']);
+    const pr: PullRequest = { number: 1, title: 'Add f', body: '', head: 'feature', base: 'main', author: 'Sam', state: 'open', comments: [], openedAt: pushed.seq };
+    const withPr: World = { ...pushed, remote: { ...pushed.remote!, prs: [pr] } };
+    check([cloned, diverged, midRebase, withPr], randomLines(11, REMOTE_PIECES));
   });
 });

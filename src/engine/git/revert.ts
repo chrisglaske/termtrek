@@ -7,7 +7,7 @@ import { EDITOR_WAITING, messageTemplate } from './editor';
 import { abortOp, autoMerged, conflictLine } from './merge';
 import { branchOf } from './refs';
 import { activeRepo, headCommitId, headTree } from './repoState';
-import { badRevision, resolveRev } from './rev';
+import { resolveRev, unresolved } from './rev';
 import { moveTree } from './worktree';
 
 const plain = (t: string): OutLine => [{ text: t }];
@@ -42,7 +42,7 @@ export const gitRevert: CommandFn = (world, args, io) => {
 
   const spec = pos[0]!;
   const id = resolveRev(repo, spec);
-  if (id === null) return { lines: badRevision(spec), exitCode: 128 };
+  if (id === null) return { lines: unresolved(repo, spec), exitCode: 128 };
   const commit = repo.commits[id]!;
   if (commit.parents.length > 1) {
     return { lines: [err(`error: commit ${id} is a merge but no -m option was given.`), FAILED], exitCode: 128 };

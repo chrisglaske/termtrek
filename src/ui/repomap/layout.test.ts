@@ -1,6 +1,6 @@
 import { createWorld } from '../../engine/world'
 import { buildWorld } from '../../engine/setup'
-import { LABEL_H, labelOffset, layoutGraph, type GraphNode } from './layout'
+import { LABEL_H, labelOffset, labelText, labelWidth, layoutGraph, type GraphNode } from './layout'
 import type { Commit, Repo } from '../../engine/types'
 
 const config = { 'user.name': 'Sam', 'user.email': 's@x.com' }
@@ -23,7 +23,7 @@ describe('layoutGraph', () => {
     expect(g.nodes.every((n) => n.lane === 0)).toBe(true)
     expect(g.nodes.map((n) => n.isHead)).toEqual([false, false, true])
     expect(g.edges).toHaveLength(2)
-    expect(g.labels).toEqual([{ name: 'main', commitId: g.nodes[2]!.id, lane: 0, current: true, slot: 0 }])
+    expect(g.labels).toEqual([{ name: 'main', commitId: g.nodes[2]!.id, lane: 0, current: true, slot: 0, remote: false }])
   })
 
   it('truncates with a marker node', () => {
@@ -137,5 +137,75 @@ describe('layoutGraph', () => {
       expect(top).toBeGreaterThanOrEqual(0)
       expect(top + LABEL_H).toBeLessThanOrEqual(g.height)
     }
+  })
+
+  describe('remote labels', () => {
+    const SERVER = { slug: 'team/notes', commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }] }
+    const cloned = (run: string[] = []): Repo =>
+      buildWorld({ config, remote: SERVER, run: ['git clone https://git.example.com/team/notes.git', 'cd notes', ...run] }).repo as Repo
+
+    it('layout emits remote labels after local ones', () => {
+      const g = layoutGraph(cloned())
+      expect(g.labels.map((l) => [l.name, l.remote, l.slot])).toEqual([['main', false, 0], ['origin/main', true, 1]])
+    })
+
+    it('fetched commit sits on its branch lane', () => {
+      const repo = cloned(['echo a > a.txt', 'git add .', 'git commit -m "a"'])
+      const tip = repo.branches.main as string
+      const behind = { ...repo, branches: { main: repo.commits[tip]!.parents[0]! }, remoteRefs: { ...repo.remoteRefs, 'origin/main': tip } }
+      const g = layoutGraph(behind)
+      expect(g.nodes.every((n) => n.lane === 0)).toBe(true)
+      expect(g.labels.find((l) => l.name === 'origin/main')).toMatchObject({ commitId: tip, lane: 0, remote: true })
+    })
+
+    it('labels on neighbouring commits do not overlap', () => {
+      const repo = cloned(['git switch -c topic', 'echo t > t.txt', 'git add .', 'git commit -m "t"', 'echo u > u.txt', 'git add .', 'git commit -m "u"'])
+      const tip = repo.branches.topic as string
+      const behind = { ...repo, branches: { ...repo.branches, topic: repo.commits[tip]!.parents[0]! }, remoteRefs: { ...repo.remoteRefs, 'origin/topic': tip } }
+      const g = layoutGraph(behind)
+      const topic = g.labels.find((l) => l.name === 'topic · HEAD' || l.name === 'topic')!
+      const remote = g.labels.find((l) => l.name === 'origin/topic')!
+      expect(remote.slot).not.toBe(topic.slot)
+    })
+
+    it('no label covers a commit node', () => {
+      const repo = cloned(['git switch -c topic', 'echo t > t.txt', 'git add .', 'git commit -m "t"'])
+      const g = layoutGraph(repo)
+      expect(g.labels.find((l) => l.name === 'origin/main')).toBeTruthy()
+      for (const l of g.labels) {
+        const a = g.nodes.find((n) => n.id === l.commitId)!
+        const w = labelWidth(labelText(l))
+        const top = a.y + labelOffset(l.slot)
+        for (const n of g.nodes) {
+          const dx = Math.max(Math.abs(n.x - a.x) - w / 2, 0)
+          const dy = Math.max(top - n.y, n.y - (top + LABEL_H), 0)
+          expect(Math.hypot(dx, dy), `${l.name} vs ${n.id}`).toBeGreaterThanOrEqual(13)
+        }
+      }
+    })
+
+    it('labels never overlap each other', () => {
+      const repo = cloned(['git switch -c topic', 'echo t > t.txt', 'git add .', 'git commit -m "t"'])
+      const g = layoutGraph({ ...repo, remoteRefs: { ...repo.remoteRefs, 'origin/other': repo.branches.topic as string } })
+      const rects = g.labels.map((l) => {
+        const a = g.nodes.find((n) => n.id === l.commitId)!
+        const w = labelWidth(labelText(l))
+        return { name: l.name, x0: a.x - w / 2, x1: a.x + w / 2, y0: a.y + labelOffset(l.slot), y1: a.y + labelOffset(l.slot) + LABEL_H }
+      })
+      for (const a of rects) for (const b of rects) {
+        if (a === b) continue
+        expect(a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1, `${a.name} vs ${b.name}`).toBe(false)
+      }
+    })
+
+    it('origin-only branch gets its own amber lane', () => {
+      const repo = cloned(['git switch -c topic', 'echo t > t.txt', 'git add .', 'git commit -m "t"', 'git switch main'])
+      const tip = repo.branches.topic as string
+      const { topic: _drop, ...rest } = repo.branches
+      const g = layoutGraph({ ...repo, branches: rest, remoteRefs: { ...repo.remoteRefs, 'origin/topic': tip } })
+      const node = g.nodes.find((n) => n.id === tip) as GraphNode
+      expect(node.lane).toBe(1)
+      expect(g.labels.find((l) => l.name === 'origin/topic')).toMatchObject({ lane: 1, remote: true })
+    })
   })
 })

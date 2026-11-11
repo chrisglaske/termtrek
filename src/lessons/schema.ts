@@ -22,8 +22,12 @@ export interface Step {
   solve?: RunnerAction[]
   check: (ctx: StepContext) => boolean
   success: string
+  /** Replaces `success` when it returns text, for steps that can pass by more than one path. */
+  successFor?: (ctx: StepContext) => string | null
   /** Called while the check fails; a returned Explain replaces the command's own feedback. */
   nudge?: (ctx: StepContext) => Explain | null
+  /** Something that happens on the server when the step starts, e.g. a teammate pushes. `note` is shown as a tip. */
+  event?: { apply: (w: World) => World; note: string }
 }
 
 export interface Lesson {

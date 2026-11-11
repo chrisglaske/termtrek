@@ -67,12 +67,23 @@
   border-radius: 7px;
   background: transparent;
   color: var(--mute);
-  cursor: default;
+  cursor: pointer;
 }
 .repo-tabs [role='tab'][aria-selected='true'] {
   background: var(--raised);
   color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--line);
+}
+.repo-tabs [role='tab'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.repo-tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 .repo-tabs [role='tab']:focus-visible {
   outline: 2px solid var(--accent);

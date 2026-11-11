@@ -15,3 +15,23 @@ describe('buildWorld', () => {
     expect(buildWorld(s).repo).toMatchObject({ stash: [], op: null });
   });
 });
+
+describe('buildWorld run functions', () => {
+  it('setup run accepts functions in order', () => {
+    const w = buildWorld({
+      config: { 'user.name': 'Sam', 'user.email': 's@x.com' },
+      cwd: 'p',
+      repo: { at: 'p', commits: [] },
+      run: ['echo a > a.txt', (x) => ({ ...x, files: { ...x.files, '/home/you/p/b.txt': 'b' } }), 'ls > out.txt'],
+    });
+    expect(w.files['/home/you/p/out.txt']).toContain('b.txt');
+  });
+  it('creates world.remote before run', () => {
+    const w = buildWorld({ remote: { slug: 'team/notes' }, run: [(x) => ({ ...x, config: { ...x.config, saw: String(!!x.remote) } })] });
+    expect(w.config['saw']).toBe('true');
+  });
+  it('fresh repos have empty remote state', () => {
+    const w = buildWorld({ repo: { at: 'p', commits: [] } });
+    expect(w.repo).toMatchObject({ remotes: {}, remoteRefs: {}, upstream: {}, originHead: null });
+  });
+});

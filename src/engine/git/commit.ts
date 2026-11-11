@@ -8,6 +8,9 @@ import { logRef } from './refs';
 import { formatDate } from './log';
 import { EDITOR_WAITING, messageTemplate } from './editor';
 import { gitStatus } from './status';
+import { rebaseMessage } from './rebase';
+
+const stripComments = (m: string): string => m.split('\n').filter((l) => !l.startsWith('#')).join('\n').trim();
 
 /** Reflog message prefix for an amended commit (used by `git commit --amend`). */
 export const AMEND_REFLOG = 'commit (amend)';
@@ -92,7 +95,7 @@ export function makeCommit(world: World, message: string, edit: CommitEdit): Run
   const headId = headCommitId(repo0);
   const old = headId ? repo0.commits[headId] : undefined;
   if (edit.amend && !old) return { world, lines: [err('fatal: You have nothing to amend.')], exitCode: 128 };
-  if (edit.amend && op) return { world, lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
+  if (edit.amend && op && op.kind !== 'rebase') return { world, lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
 
   const index = commitIndex(world, edit);
   const base = baseTree(world, edit);
@@ -113,7 +116,7 @@ export function makeCommit(world: World, message: string, edit: CommitEdit): Run
   const repo = logRef({
     ...repo0,
     index,
-    op: null,
+    op: op?.kind === 'rebase' ? op : null, // a commit during a rebase stop keeps the rebase going
     commits: { ...repo0.commits, [id]: commit },
     branches: branch ? { ...repo0.branches, [branch]: id } : repo0.branches,
     head: branch ? repo0.head : { kind: 'detached' as const, id },
@@ -186,9 +189,12 @@ export const gitCommit: CommandFn = (world, args, io) => {
   const headId = headCommitId(repo0);
   const old = headId ? repo0.commits[headId] : undefined;
   if (edit.amend && !old) return { lines: [err('fatal: You have nothing to amend.')], exitCode: 128 };
-  if (edit.amend && op) return { lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
+  if (edit.amend && op && op.kind !== 'rebase') return { lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
+  const rebasing = op?.kind === 'rebase';
+  // During a rebase stop Git offers the stopped commit's message (MERGE_MSG) until a commit is made by hand.
+  const opMessage = !op ? '' : rebasing ? rebaseMessage(repo0) : op.message;
 
-  if (!edit.amend && !op && !allowEmpty) {
+  if (!edit.amend && (!op || rebasing) && !allowEmpty) {
     const head = headTree(repo0);
     const index = commitIndex(world, edit);
     const paths = new Set([...Object.keys(head), ...Object.keys(index)]);
@@ -203,12 +209,12 @@ export const gitCommit: CommandFn = (world, args, io) => {
     return makeCommit(world, messages.join('\n\n'), edit);
   }
   if (noEdit) {
-    const kept = op ? op.message : edit.amend ? old!.message : '';
+    const kept = edit.amend && (!op || rebasing) ? old!.message : op ? stripComments(opMessage) : '';
     if (kept.trim() === '') return { lines: [err('Aborting commit due to empty commit message.')], exitCode: 1 };
     return makeCommit(world, kept, edit);
   }
   if (op && op.conflicts.length > 0) return makeCommit(world, op.message, edit); // refuses with Git's conflict message
-  const first = op ? op.message : edit.amend ? old!.message : '';
+  const first = edit.amend && (!op || rebasing) ? old!.message : op ? opMessage : '';
   const text = messageTemplate(world, first, edit);
   return {
     world: { ...world, pending: { file: '.git/COMMIT_EDITMSG', text, action: edit } },

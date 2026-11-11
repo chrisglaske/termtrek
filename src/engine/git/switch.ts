@@ -1,13 +1,15 @@
 import type { CommandFn } from '../registry';
-import type { Explain, OutLine, Repo, RunResult, World } from '../types';
+import type { Explain, OutLine, Repo, RunResult, Upstream, World } from '../types';
 import { err } from '../shell/fs';
 import { logRef } from './refs';
-import { badRevision, resolveRev } from './rev';
+import { resolveRev, unresolved } from './rev';
+import { guessRemoteBranch, setUpstream, TRACK_LINE } from './tracking';
 import { hasBranch, validBranchName, invalidBranchName } from './branch';
 import { activeRepo, headCommitId, workingFiles } from './repoState';
 import { matchPathspecs, moveTree, writeWork } from './worktree';
+import { SWITCH_REBASING } from './rebase';
 
-type Target = { kind: 'branch'; name: string; create: boolean; start: string | null } | { kind: 'detach'; id: string; spec: string; advice?: boolean };
+type Target = { kind: 'branch'; name: string; create: boolean; start: string | null; track?: Upstream } | { kind: 'detach'; id: string; spec: string; advice?: boolean };
 
 const treeOf = (repo: Repo, id: string | null): Record<string, string> => (id ? { ...repo.commits[id]!.tree } : {});
 const firstLine = (repo: Repo, id: string) => repo.commits[id]!.message.split('\n')[0]!;
@@ -42,9 +44,17 @@ function carriedReport(world: World, repo: Repo, to: Record<string, string>): Ou
   return rows;
 }
 
-function opGuard(repo: Repo): Omit<RunResult, 'world'> | null {
+function opGuard(repo: Repo, verb: 'switch' | 'checkout'): Omit<RunResult, 'world'> | null {
   const op = repo.op;
   if (!op) return null;
+  if (op.kind === 'rebase') {
+    const explain = { kind: 'warn' as const, text: 'A rebase is still in progress. Finish it with `git rebase --continue`, or cancel it with `git rebase --abort`, before you change branches.' };
+    // `git switch` always refuses; `git checkout` refuses while files are unmerged (TermTrek also keeps it out afterwards).
+    if (verb === 'checkout' && op.conflicts.length > 0) {
+      return { lines: [err('error: you need to resolve your current index first'), ...[...op.conflicts].sort().map((p) => [{ text: `${p}: needs merge` }])], explain, exitCode: 1 };
+    }
+    return { lines: SWITCH_REBASING, explain, exitCode: 128 };
+  }
   if (op.conflicts.length > 0) {
     return {
       lines: [err('error: you need to resolve your current index first'), ...op.conflicts.map((p) => [{ text: '\t' + p }])],
@@ -56,8 +66,8 @@ function opGuard(repo: Repo): Omit<RunResult, 'world'> | null {
 }
 
 /** Move HEAD (and the folder) to `target`. Shared by switch and checkout. */
-function go(world: World, repo: Repo, target: Target, dashSpec: string): RunResult {
-  const guard = opGuard(repo);
+function go(world: World, repo: Repo, target: Target, dashSpec: string, verb: 'switch' | 'checkout'): RunResult {
+  const guard = opGuard(repo, verb);
   if (guard) return { world, ...guard };
   const here = headCommitId(repo);
   const fromName = repo.head.kind === 'branch' ? repo.head.name : null;
@@ -88,6 +98,8 @@ function go(world: World, repo: Repo, target: Target, dashSpec: string): RunResu
     index: res.index,
     head: target.kind === 'detach' ? { kind: 'detached', id: target.id } : { kind: 'branch', name: target.name },
   };
+  const track = target.kind === 'branch' && target.create ? target.track : undefined;
+  if (track && target.kind === 'branch') next = setUpstream(next, target.name, track);
   if (toId !== null) next = logRef(next, toId, `checkout: moving from ${fromName ?? here ?? 'HEAD'} to ${label}`);
 
   const lines: OutLine[] = [...carriedReport(res.world, next, to)];
@@ -103,8 +115,11 @@ function go(world: World, repo: Repo, target: Target, dashSpec: string): RunResu
     lines.push([{ text: `Already on '${target.name}'` }]);
     explain = { kind: 'tip', text: `You are already on **${target.name}**, so nothing moved.` };
   } else if (newName) {
+    if (track) lines.push([{ text: TRACK_LINE(newName, track) }]);
     lines.push([{ text: `Switched to a new branch '${newName}'` }]);
-    explain = { kind: 'ok', text: `Created **${newName}** at this commit and moved onto it. New commits now go on **${newName}**, and **${fromName ?? 'the old branch'}** stays where it was.` };
+    explain = track
+      ? { kind: 'ok', text: `There was no local **${newName}**, so Git made one from **${track.remote}/${newName}** and set it to track that. Now \`git pull\` and \`git push\` know where to go.` }
+      : { kind: 'ok', text: `Created **${newName}** at this commit and moved onto it. New commits now go on **${newName}**, and **${fromName ?? 'the old branch'}** stays where it was.` };
   } else {
     lines.push([{ text: `Switched to branch '${target.name}'` }]);
     explain = { kind: 'ok', text: `Your folder now shows the files from **${target.name}**, and new commits will go on **${target.name}**.` };
@@ -139,14 +154,16 @@ export const gitSwitch: CommandFn = (world, args) => {
     else pos.push(a);
   }
   if (pos.length === 0) return { lines: [err('fatal: missing branch or commit argument')], exitCode: 128 };
-  if (create) return go(world, repo, { kind: 'branch', name: pos[0]!, create: true, start: pos[1] ?? null }, '');
+  if (create) return go(world, repo, { kind: 'branch', name: pos[0]!, create: true, start: pos[1] ?? null }, '', 'switch');
   const spec = pos[0]!;
   if (detach) {
     const id = resolveRev(repo, spec);
-    return id === null ? { lines: [err(`fatal: invalid reference: ${spec}`)], exitCode: 128 } : go(world, repo, { kind: 'detach', id, spec }, spec);
+    return id === null ? { lines: [err(`fatal: invalid reference: ${spec}`)], exitCode: 128 } : go(world, repo, { kind: 'detach', id, spec }, spec, 'switch');
   }
   const name = spec === '-' ? previous(repo) : spec;
-  if (name !== null && hasBranch(repo, name)) return go(world, repo, { kind: 'branch', name, create: false, start: null }, spec);
+  if (name !== null && hasBranch(repo, name)) return go(world, repo, { kind: 'branch', name, create: false, start: null }, spec, 'switch');
+  const guess = name !== null && name === spec ? guessRemoteBranch(repo, name) : null;
+  if (guess) return go(world, repo, { kind: 'branch', name: spec, create: true, start: `${guess.remote}/${guess.branch}`, track: guess }, spec, 'switch');
   const id = resolveRev(repo, name ?? spec);
   if (id !== null) {
     return {
@@ -177,7 +194,7 @@ export const gitCheckout: CommandFn = (world, args) => {
     else if (a.startsWith('-') && a.length > 1) return { lines: [err(`error: unknown option \`${a.replace(/^-+/, '')}'`)], exitCode: 129 };
     else pos.push(a);
   }
-  if (create) return go(world, repo, { kind: 'branch', name: newName!, create: true, start: pos[0] ?? null }, '');
+  if (create) return go(world, repo, { kind: 'branch', name: newName!, create: true, start: pos[0] ?? null }, '', 'checkout');
 
   // `checkout <rev> -- <paths>` and `checkout -- <paths>`.
   if (dashAt >= 0) {
@@ -191,16 +208,18 @@ export const gitCheckout: CommandFn = (world, args) => {
 
   const spec = pos[0]!;
   const name = spec === '-' ? previous(repo) : spec;
-  if (!detach && name !== null && hasBranch(repo, name) && pos.length === 1) return go(world, repo, { kind: 'branch', name, create: false, start: null }, spec);
+  if (!detach && name !== null && hasBranch(repo, name) && pos.length === 1) return go(world, repo, { kind: 'branch', name, create: false, start: null }, spec, 'checkout');
+  const guess = !detach && pos.length === 1 && spec !== '-' ? guessRemoteBranch(repo, spec) : null;
+  if (guess) return go(world, repo, { kind: 'branch', name: spec, create: true, start: `${guess.remote}/${guess.branch}`, track: guess }, spec, 'checkout');
   const id = spec === '-' ? (name === null ? null : resolveRev(repo, name)) : resolveRev(repo, spec);
   if (id !== null && (detach || pos.length === 1)) {
     if (spec === 'HEAD' && !detach) {
-      const r = go(world, repo, repo.head.kind === 'branch' ? { kind: 'branch', name: repo.head.name, create: false, start: null } : { kind: 'detach', id, spec }, spec);
+      const r = go(world, repo, repo.head.kind === 'branch' ? { kind: 'branch', name: repo.head.name, create: false, start: null } : { kind: 'detach', id, spec }, spec, 'checkout');
       return r.exitCode === 0 ? { ...r, lines: r.lines.filter((l) => !/^(Already on|HEAD is now at|Note:)/.test(l[0]!.text)), explain: undefined } : r;
     }
-    return go(world, repo, { kind: 'detach', id, spec: name ?? spec, advice: !detach }, name ?? spec);
+    return go(world, repo, { kind: 'detach', id, spec: name ?? spec, advice: !detach }, name ?? spec, 'checkout');
   }
-  if (detach) return { lines: badRevision(spec), exitCode: 128 };
+  if (detach) return { lines: unresolved(repo, spec), exitCode: 128 };
   if (spec === '-') return { lines: [err("error: pathspec '-' did not match any file(s) known to git")], exitCode: 1 };
   if (id !== null && pos.length > 1) return restorePaths(world, repo, pos.slice(1), treeOf(repo, id));
   // Not a branch or revision: treat everything as paths to restore from the index.

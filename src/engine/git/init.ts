@@ -41,6 +41,10 @@ export const gitInit: CommandFn = (world, args) => {
       reflog: [],
       stash: [],
       op: null,
+      remotes: {},
+      remoteRefs: {},
+      upstream: {},
+      originHead: null,
     },
   };
   return {

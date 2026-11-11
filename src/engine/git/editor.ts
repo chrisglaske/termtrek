@@ -5,6 +5,7 @@ import { concludeMerge } from './merge';
 import { branchOf } from './refs';
 import { activeRepo, headCommitId } from './repoState';
 import { LABEL, relFromCwd } from './status';
+import { continueWithMessage, rebaseStatusLines } from './rebase';
 
 /** What Git prints while it waits for the commit-message editor. */
 export const EDITOR_WAITING = 'hint: Waiting for your editor to close the file...';
@@ -25,7 +26,8 @@ export function messageTemplate(world: World, first: string, edit: CommitEdit = 
   ];
   if (repo) {
     const branch = branchOf(repo);
-    lines.push(branch ? `# On branch ${branch}` : `# HEAD detached at ${headCommitId(repo) ?? ''}`);
+    if (repo.op?.kind === 'rebase') lines.push(...rebaseStatusLines(repo, false).map((l) => `# ${l}`), '#');
+    else lines.push(branch ? `# On branch ${branch}` : `# HEAD detached at ${headCommitId(repo) ?? ''}`);
     const base = baseTree(world, edit);
     const index = commitIndex(world, edit);
     const cwdRel = world.cwd === repo.root ? '' : world.cwd.slice(repo.root.length + 1);
@@ -67,7 +69,10 @@ export function finishEditor(world: World, text: string | null): RunResult {
     : text.split('\n').filter((l) => !l.startsWith('#')).map((l) => l.trimEnd()).join('\n').trim();
   if (message === '') {
     const op = activeRepo(world)?.op ?? null;
-    if (!op) return { world: cleared, lines: [err('Aborting commit due to empty commit message.')], exitCode: 1 };
+    if (session?.rebase) {
+      return { world: cleared, lines: [err('Aborting commit due to empty commit message.'), err('error: could not commit staged changes.')], exitCode: 1 };
+    }
+    if (!op || op.kind === 'rebase') return { world: cleared, lines: [err('Aborting commit due to empty commit message.')], exitCode: 1 };
     if (op.kind === 'merge') {
       return { world: cleared, lines: [[{ text: "Not committing merge; use 'git commit' to complete the merge." }]], exitCode: 1 };
     }
@@ -78,5 +83,6 @@ export function finishEditor(world: World, text: string | null): RunResult {
     };
   }
   if (session?.merge && activeRepo(cleared)?.op?.kind === 'merge') return concludeMerge(cleared, message);
+  if (session?.rebase && activeRepo(cleared)?.op?.kind === 'rebase') return continueWithMessage(cleared, message, session.action);
   return makeCommit(cleared, message, session?.action ?? { amend: false, all: false });
 }

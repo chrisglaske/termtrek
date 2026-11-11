@@ -2,6 +2,9 @@
 
 export const IDENTITY = { 'user.name': 'Sam Rivera', 'user.email': 'sam@example.com' }
 
+/** The teammate who pushes to the shared server. */
+export const TEAMMATE = { name: 'Alex Kim', email: 'alex@example.com' }
+
 export const NOTES = 'Team meeting, Monday\nPick a name for the new site.\nSam drafts the home page.\n'
 
 export const NOTES_V2 = NOTES + 'We launch on Friday.\n'

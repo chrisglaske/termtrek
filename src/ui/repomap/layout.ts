@@ -4,7 +4,7 @@ import { reachableFromRefs } from '../../engine/git/refs'
 
 export interface GraphNode { id: string; x: number; y: number; lane: number; isHead: boolean; message: string; lost: boolean }
 export interface GraphEdge { from: string; to: string }
-export interface GraphLabel { name: string; commitId: string; lane: number; current: boolean; slot: number }
+export interface GraphLabel { name: string; commitId: string; lane: number; current: boolean; slot: number; remote: boolean }
 export interface GraphLayout { nodes: GraphNode[]; edges: GraphEdge[]; labels: GraphLabel[]; width: number; height: number }
 
 export const DEFAULT_GAP = 46
@@ -12,6 +12,16 @@ export const LABEL_H = 22
 const PADDING = 8
 const RING = 13
 const LABEL_ROOM = 120
+const LABEL_CHAR = 7.4
+const LABEL_PAD = 18
+
+export function labelText(l: Pick<GraphLabel, 'name' | 'current'>): string {
+  return l.current && l.name !== 'HEAD' ? `${l.name} · HEAD` : l.name
+}
+
+export function labelWidth(text: string): number {
+  return text.length * LABEL_CHAR + LABEL_PAD
+}
 
 /** Top of a label relative to its node: slot 0 sits below, the rest stack above. */
 export function labelOffset(slot: number): number {
@@ -55,10 +65,30 @@ export function branchOrder(repo: Repo): string[] {
   return trunk ? [trunk, ...names.filter((n) => n !== trunk)] : names
 }
 
+const has = (obj: object, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key)
+
+/** Remote-tracking names (`origin/feature`) in a stable order, never the symbolic `origin/HEAD`. */
+function remoteNames(repo: Repo): string[] {
+  return Object.keys(repo.remoteRefs).filter((r) => r !== 'origin/HEAD').sort()
+}
+
+/** The local branch an `origin/<b>` ref lines up with, or null when none exists. */
+function localTwin(repo: Repo, ref: string): string | null {
+  const b = ref.slice(ref.indexOf('/') + 1)
+  return has(repo.branches, b) && repo.branches[b] ? b : null
+}
+
+/** A remote branch is "default" (slate) when it is the remote's default branch or, failing that, main/master. */
+export function isDefaultRemote(repo: Repo, ref: string): boolean {
+  const b = ref.slice(ref.indexOf('/') + 1)
+  return repo.originHead !== null ? b === repo.originHead : b === 'main' || b === 'master'
+}
+
 function assignLanes(repo: Repo, names: string[], reachable: Set<string>): Record<string, number> {
   const lanes: Record<string, number> = {}
+  const tipOf = (name: string): string | null | undefined => (has(repo.branches, name) ? repo.branches[name] : repo.remoteRefs[name])
   names.forEach((name, lane) => {
-    let id: string | null | undefined = repo.branches[name]
+    let id: string | null | undefined = tipOf(name)
     while (id && !(id in lanes)) {
       const commit: Commit | undefined = repo.commits[id]
       if (!commit) break
@@ -70,7 +100,7 @@ function assignLanes(repo: Repo, names: string[], reachable: Set<string>): Recor
   const claimed = new Set(Object.values(lanes))
   names.forEach((name, lane) => {
     if (claimed.has(lane)) return
-    const stack = [repo.branches[name]]
+    const stack = [tipOf(name)]
     const seen = new Set<string>()
     while (stack.length) {
       const id = stack.pop()
@@ -80,6 +110,21 @@ function assignLanes(repo: Repo, names: string[], reachable: Set<string>): Recor
       stack.push(...repo.commits[id].parents)
     }
   })
+  // Commits only a fetched `origin/<b>` reaches join local `<b>`'s lane.
+  for (const ref of remoteNames(repo)) {
+    const twin = localTwin(repo, ref)
+    if (!twin) continue
+    const lane = names.indexOf(twin)
+    const stack = [repo.remoteRefs[ref]]
+    const seen = new Set<string>()
+    while (stack.length) {
+      const id = stack.pop()
+      if (!id || seen.has(id) || !repo.commits[id]) continue
+      seen.add(id)
+      lanes[id] ??= lane
+      stack.push(...repo.commits[id].parents)
+    }
+  }
   for (const id of reachable) lanes[id] ??= names.length
   return lanes
 }
@@ -88,7 +133,9 @@ export function layoutGraph(repo: Repo, opts: { gap?: number; laneGap?: number; 
   const gap = opts.gap ?? DEFAULT_GAP
   const laneGap = opts.laneGap ?? 66
   const maxCommits = opts.maxCommits ?? 8
-  const names = branchOrder(repo)
+  const local = branchOrder(repo)
+  const remotes = remoteNames(repo)
+  const names = [...local, ...remotes.filter((r) => !localTwin(repo, r))]
   const reachable = reachableFromRefs(repo)
   const lostSet = new Set(repo.reflog.map((e) => e.id).filter((id) => id in repo.commits && !reachable.has(id)))
   const order = topoOrder(repo, new Set([...reachable, ...lostSet]))
@@ -122,17 +169,38 @@ export function layoutGraph(repo: Repo, opts: { gap?: number; laneGap?: number; 
   if (truncated) edges.push({ from: '…', to: shown[0] as string })
 
   const labels: GraphLabel[] = []
-  const slots: Record<string, number> = {}
-  const place = (name: string, commitId: string, current: boolean, trunk: boolean) => {
-    const slot = trunk ? 0 : Math.max(1, slots[commitId] ?? 1)
-    if (!trunk) slots[commitId] = slot + 1
-    labels.push({ name, commitId, lane: laneById.get(commitId) ?? 0, current, slot })
+  // Stacked labels climb until they clear every label already placed at that height, so neighbours never overlap.
+  const taken: { top: number; x: number; w: number }[] = []
+  const place = (name: string, commitId: string, current: boolean, trunk: boolean, remote = false) => {
+    const x = (nodes.find((n) => n.id === commitId)?.x ?? 0)
+    const w = labelWidth(labelText({ name, current }))
+    let slot = 0
+    const anchor = nodes.find((n) => n.id === commitId)?.y ?? 0
+    if (!trunk) {
+      slot = 1
+      const hitsNode = (sl: number) => {
+        const top = anchor + labelOffset(sl)
+        return nodes.some((n) => {
+          if (n.id === '…') return false
+          const dx = Math.max(Math.abs(n.x - x) - w / 2, 0)
+          const dy = Math.max(top - n.y, n.y - (top + LABEL_H), 0)
+          return Math.hypot(dx, dy) < RING + 2
+        })
+      }
+      while (slot < 30 && (hitsNode(slot) || taken.some((t) => Math.abs(t.top - (anchor + labelOffset(slot))) < LABEL_H + 2 && Math.abs(t.x - x) < (t.w + w) / 2 + 4))) slot++
+    }
+    taken.push({ top: anchor + labelOffset(slot), x, w })
+    labels.push({ name, commitId, lane: laneById.get(commitId) ?? 0, current, slot, remote })
   }
-  names.forEach((name, i) => {
+  local.forEach((name, i) => {
     const tip = repo.branches[name]
     if (tip && shownSet.has(tip)) place(name, tip, repo.head.kind === 'branch' && repo.head.name === name, i === 0)
   })
   if (repo.head.kind === 'detached' && headId && shownSet.has(headId)) place('HEAD', headId, true, false)
+  for (const ref of remotes) {
+    const tip = repo.remoteRefs[ref]
+    if (tip && shownSet.has(tip)) place(ref, tip, false, false, true)
+  }
 
   // Fit the drawing to every node ring and label, so nothing clips.
   let minY = -RING

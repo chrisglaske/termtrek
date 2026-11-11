@@ -29,7 +29,7 @@ export const gitRestore: CommandFn = (world, args) => {
 
   const unmerged = repo.op?.conflicts ?? [];
   const stuck = m.paths.find((p) => unmerged.includes(p));
-  if (stuck !== undefined) return { lines: [err(`error: path '${stuck}' is unmerged`)], exitCode: 1 };
+  if (stuck !== undefined && !(staged && !worktree)) return { lines: [err(`error: path '${stuck}' is unmerged`)], exitCode: 1 };
 
   const source = staged ? head : repo.index;
   const index = { ...repo.index };
@@ -53,7 +53,7 @@ export const gitRestore: CommandFn = (world, args) => {
   else if (staged) text = `Unstaged ${what}. The file in your folder is untouched, so your edits are safe, they just aren't in the next commit.`;
   else text = `Put ${what} back to how it was in the staging area. The edit you discarded is gone for good, because Git never saved it.`;
   return {
-    world: { ...next, repo: { ...repo, index } },
+    world: { ...next, repo: { ...repo, index, op: repo.op && unmerged.length ? { ...repo.op, conflicts: unmerged.filter((p) => !m.paths.includes(p)) } : repo.op } },
     lines: [],
     explain: { kind: staged && !worktree ? 'ok' : 'warn', text },
     exitCode: 0,

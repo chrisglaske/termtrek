@@ -1,4 +1,4 @@
-import type { World } from '../engine/types'
+import type { PullRequest, World } from '../engine/types'
 import { resolvePath } from '../engine/paths'
 import { tokenize } from '../engine/tokenize'
 import { activeRepo, getStatus, headCommitId, headTree } from '../engine/git/repoState'
@@ -89,6 +89,13 @@ export function segmentsOf(line: string): string[][] {
 export const ranGit = (ctx: StepContext, sub: string): boolean =>
   ctx.ran.some((line) => segmentsOf(line).some((s) => s[0] === 'git' && s[1] === sub))
 
+/** True when `git <then>` was run after a `git <first>` (across lines and `&&` segments). */
+export const ranAfter = (ctx: StepContext, first: string, then: string): boolean => {
+  const subs = ctx.ran.flatMap((line) => segmentsOf(line).flatMap((s) => (s[0] === 'git' ? [s[1]] : [])))
+  const at = subs.indexOf(first)
+  return at !== -1 && subs.indexOf(then, at) !== -1
+}
+
 /** True when any ran line has a `&&`- or `;`-separated segment whose first word is `cmd`, e.g. `ls`. */
 export const ran = (ctx: StepContext, cmd: string): boolean =>
   ctx.ran.some((line) => segmentsOf(line).some((s) => s[0] === cmd))
@@ -112,4 +119,62 @@ export function messageQuality(msg: string): { ok: true } | { ok: false; reason:
     return { ok: false, reason: 'Write it as a command: `Add`, not `Added`.' }
   }
   return { ok: true }
+}
+
+/** The commit the server's `branch` points at, or null when the server or branch doesn't exist. */
+export const serverTip = (w: World, branch: string): string | null =>
+  w.remote && Object.hasOwn(w.remote.branches, branch) ? (w.remote.branches[branch] ?? null) : null
+
+/** Where your repo last saw `ref` (e.g. `origin/main`) on the server, or null. */
+export const trackingTip = (w: World, ref: string): string | null =>
+  w.repo && Object.hasOwn(w.repo.remoteRefs, ref) ? (w.repo.remoteRefs[ref] ?? null) : null
+
+/** The upstream of a local branch as `origin/main`, or null when none is set. */
+export function upstreamOf(w: World, branch: string): string | null {
+  const up = w.repo && Object.hasOwn(w.repo.upstream, branch) ? w.repo.upstream[branch] : undefined
+  return up ? `${up.remote}/${up.branch}` : null
+}
+
+/** True when the local `branch` tip equals the server's tip. */
+export function inSync(w: World, branch: string): boolean {
+  const server = serverTip(w, branch)
+  const local = w.repo && Object.hasOwn(w.repo.branches, branch) ? w.repo.branches[branch] : null
+  return !!server && !!local && server === local
+}
+
+/** True when `ancestor` can be reached from `ref` (both resolve in your repo). */
+export function contains(w: World, ref: string, ancestor: string): boolean {
+  const repo = w.repo
+  if (!repo) return false
+  const target = resolveRev(repo, ancestor)
+  const start = resolveRev(repo, ref)
+  if (!target || !start) return false
+  const seen = new Set<string>()
+  const todo = [start]
+  while (todo.length) {
+    const id = todo.pop()!
+    if (id === target) return true
+    if (seen.has(id)) continue
+    seen.add(id)
+    todo.push(...(repo.commits[id]?.parents ?? []))
+  }
+  return false
+}
+
+/** The head commit of a merged pull request (its branch's tip when it was merged), or null. */
+export const mergedPrTip = (w: World, prNumber: number): string | null => {
+  const pr = w.remote?.prs.find((p) => p.number === prNumber)
+  return pr?.state === 'merged' ? (pr.headTip ?? null) : null
+}
+
+/** The newest pull request whose head is `head`. */
+export const prFor = (w: World, head: string): PullRequest | undefined =>
+  w.remote?.prs.filter((p) => p.head === head).sort((a, b) => b.number - a.number)[0]
+
+export const rebaseInProgress = (w: World): boolean => w.repo?.op?.kind === 'rebase'
+
+/** True when the last line ran `git <sub>` and exited non-zero. */
+export const lastFailed = (c: StepContext, sub: string): boolean => {
+  const line = c.ran.at(-1)
+  return !!line && c.last !== null && c.last.exitCode !== 0 && segmentsOf(line).some((s) => s[0] === 'git' && s[1] === sub)
 }

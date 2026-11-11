@@ -12,6 +12,7 @@ import { activeRepo, headCommitId, headTree, workingFiles } from './repoState';
 import { hasBranch } from './branch';
 import { resolveRev } from './rev';
 import { moveTree } from './worktree';
+import { rebaseBusy } from './rebase';
 
 type Result = ReturnType<CommandFn>;
 
@@ -106,6 +107,7 @@ export const gitMerge: CommandFn = (world, args, io) => {
   }
   if (repo.op) {
     if (repo.op.conflicts.length > 0) return { lines: UNMERGED, exitCode: 128 };
+    if (repo.op.kind === 'rebase') return { lines: rebaseBusy('merge'), exitCode: 128 };
     return {
       lines: [err('fatal: You have not concluded your merge (MERGE_HEAD exists).'), plain('Please, commit your changes before you merge.')],
       exitCode: 128,
@@ -116,11 +118,24 @@ export const gitMerge: CommandFn = (world, args, io) => {
   const name = pos[0]!;
   const theirs = resolveRev(repo, name);
   if (theirs === null) return { lines: [err(`merge: ${name} - not something we can merge`)], exitCode: 1 };
+  const current = branchOf(repo);
+  const title = `Merge ${hasBranch(repo, name) ? 'branch' : 'commit'} '${name}'${current === 'main' || current === 'master' ? '' : ` into ${current ?? 'HEAD'}`}`;
+  return startMerge(world, theirs, name, messages.length ? messages.join('\n\n') : title, { noFf, noEdit: noEdit || messages.length > 0 });
+};
+
+/**
+ * Merge commit `theirs` into the current branch: fast-forward, true merge with the editor, or conflicts.
+ * `message` is the merge commit message; `noEdit` skips the editor. Callers check that no operation is running.
+ */
+export function startMerge(world: World, theirs: string, theirsLabel: string, message: string, opts: { noFf?: boolean; noEdit?: boolean } = {}): RunResult {
+  const repo = world.repo!;
+  const noFf = opts.noFf ?? false;
+  const name = theirsLabel;
   const headId = headCommitId(repo);
   const current = branchOf(repo);
   const ours = headTree(repo);
   const target = treeOf(repo, theirs);
-  const refuse = (lines: OutLine[]): Result => ({ lines: [...lines, plain('Merge with strategy ort failed.')], exitCode: 2 });
+  const refuse = (lines: OutLine[]): RunResult => ({ world, lines: [...lines, plain('Merge with strategy ort failed.')], exitCode: 2 });
   const setHead = (r: Repo, id: string): Repo =>
     current ? { ...r, branches: { ...r.branches, [current]: id } } : { ...r, head: { kind: 'detached', id } };
 
@@ -133,6 +148,7 @@ export const gitMerge: CommandFn = (world, args, io) => {
 
   if (isAncestor(repo, theirs, headId)) {
     return {
+      world,
       lines: [plain('Already up to date.')],
       explain: { kind: 'tip', text: `**${current ?? 'HEAD'}** already has every commit from **${name}**, so there was nothing to merge.` },
       exitCode: 0,
@@ -173,9 +189,7 @@ export const gitMerge: CommandFn = (world, args, io) => {
     else delete index[c.path];
   }
 
-  const isBranch = hasBranch(repo, name);
-  const title = `Merge ${isBranch ? 'branch' : 'commit'} '${name}'${current === 'main' || current === 'master' ? '' : ` into ${current ?? 'HEAD'}`}`;
-  const op: RepoOp = { kind: 'merge', theirs, theirsLabel: name, message: messages.length ? messages.join('\n\n') : title, conflicts: merged.conflicts.map((c) => c.path) };
+  const op: RepoOp = { kind: 'merge', theirs, theirsLabel: name, message, conflicts: merged.conflicts.map((c) => c.path) };
   const mergedWorld: World = { ...res.world, repo: { ...repo, index, op } };
 
   const lines: OutLine[] = [];
@@ -198,12 +212,12 @@ export const gitMerge: CommandFn = (world, args, io) => {
     };
   }
 
-  if (messages.length > 0 || noEdit) return concludeMerge(mergedWorld, op.message, lines, world);
+  if (opts.noEdit) return concludeMerge(mergedWorld, op.message, lines, world);
 
   return {
-    world: { ...mergedWorld, pending: { file: '.git/COMMIT_EDITMSG', text: mergeTemplate(title), action: { amend: false, all: false }, merge: true } },
+    world: { ...mergedWorld, pending: { file: '.git/COMMIT_EDITMSG', text: mergeTemplate(message), action: { amend: false, all: false }, merge: true } },
     lines: [...lines, [{ text: EDITOR_WAITING, tone: 'muted' }]],
     explain: { kind: 'tip', text: 'Git opened an editor for the merge commit message. The suggested message is fine: save and close the file to make the merge commit.' },
     exitCode: 0,
   };
-};
+}

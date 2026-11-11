@@ -2,13 +2,19 @@ import type { CommandFn } from '../registry';
 import { err, out } from '../shell/fs';
 import { gitAdd } from './add';
 import { gitBranch } from './branch';
+import { gitClone } from './clone';
 import { gitCommit } from './commit';
 import { gitConfig } from './config';
 import { gitDiff } from './diff';
+import { gitFetch } from './fetch';
 import { gitInit } from './init';
 import { gitLog } from './log';
 import { gitMerge } from './merge';
+import { gitPull } from './pull';
+import { gitPush } from './push';
+import { gitRebase } from './rebase';
 import { gitReflog } from './reflog';
+import { gitRemote } from './remote';
 import { gitReset } from './reset';
 import { gitRestore } from './restore';
 import { gitRevert } from './revert';
@@ -21,6 +27,7 @@ interface Sub { run: CommandFn; needsRepo: boolean }
 
 const subs: Record<string, Sub> = {
   init: { run: gitInit, needsRepo: false },
+  clone: { run: gitClone, needsRepo: false },
   config: { run: gitConfig, needsRepo: false },
   status: { run: gitStatus, needsRepo: true },
   add: { run: gitAdd, needsRepo: true },
@@ -34,8 +41,13 @@ const subs: Record<string, Sub> = {
   switch: { run: gitSwitch, needsRepo: true },
   checkout: { run: gitCheckout, needsRepo: true },
   merge: { run: gitMerge, needsRepo: true },
+  rebase: { run: gitRebase, needsRepo: true },
   revert: { run: gitRevert, needsRepo: true },
   stash: { run: gitStash, needsRepo: true },
+  remote: { run: gitRemote, needsRepo: true },
+  fetch: { run: gitFetch, needsRepo: true },
+  pull: { run: gitPull, needsRepo: true },
+  push: { run: gitPush, needsRepo: true },
 };
 
 /** Single source of truth for known subcommands (used by did-you-mean and Tab). */
@@ -46,6 +58,7 @@ const USAGE = [
   '',
   'Commands available here:',
   '   init      Create an empty Git repository',
+  '   clone     Clone a repository into a new directory',
   '   config    Get and set options',
   '   status    Show the working tree status',
   '   add       Add file contents to the index',
@@ -59,8 +72,13 @@ const USAGE = [
   '   switch    Switch branches',
   '   checkout  Switch branches or restore working tree files',
   '   merge     Join two or more development histories together',
+  '   rebase    Reapply commits on top of another base tip',
   '   revert    Revert some existing commits',
   '   stash     Stash the changes in a dirty working directory away',
+  '   remote    Manage set of tracked repositories',
+  '   fetch     Download objects and refs from another repository',
+  '   pull      Fetch from and integrate with another repository',
+  '   push      Update remote refs along with associated objects',
 ];
 
 export const git: CommandFn = (world, args, io) => {

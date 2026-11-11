@@ -22,6 +22,8 @@ export function decorationFor(repo: Repo, id: string): string {
   for (const b of Object.keys(repo.branches).sort()) {
     if (repo.branches[b] === id && b !== current) names.push(b);
   }
+  for (const r of Object.keys(repo.remoteRefs).sort()) if (repo.remoteRefs[r] === id) names.push(r);
+  if (repo.originHead !== null && repo.remoteRefs[`origin/${repo.originHead}`] === id) names.push('origin/HEAD');
   return names.length ? `(${names.join(', ')})` : '';
 }
 

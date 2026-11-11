@@ -1,4 +1,5 @@
 import { createWorld } from '../engine/world'
+import { buildWorld } from '../engine/setup'
 import { runLine } from '../engine/interpreter'
 import type { World } from '../engine/types'
 import type { StepContext } from './schema'
@@ -21,6 +22,16 @@ import {
   ranGit,
   treeFile,
   workFile,
+  contains,
+  inSync,
+  lastFailed,
+  mergedPrTip,
+  ranAfter,
+  prFor,
+  rebaseInProgress,
+  serverTip,
+  trackingTip,
+  upstreamOf,
 } from './checks'
 
 function run(w: World, ...lines: string[]): World {
@@ -196,3 +207,61 @@ describe('history and file checks', () => {
 })
 
 const base0 = { files: { 'proj/a.txt': 'hi' }, cwd: 'proj' }
+
+describe('remote checks', () => {
+  const cloned = (): World => {
+    const start = buildWorld({
+      config: { 'user.name': 'Sam', 'user.email': 's@example.com' },
+      remote: { slug: 'team/notes', commits: [{ message: 'One', files: { 'a.txt': 'a\n' } }] },
+    })
+    return run(start, 'git clone https://git.example.com/team/notes.git', 'cd notes')
+  }
+  it('knows the server tip, tracking tip and upstream', () => {
+    const w = cloned()
+    expect(serverTip(w, 'main')).toBe(w.repo!.branches.main)
+    expect(trackingTip(w, 'origin/main')).toBe(w.repo!.branches.main)
+    expect(upstreamOf(w, 'main')).toBe('origin/main')
+    expect(serverTip(w, 'nope')).toBeNull()
+    expect(upstreamOf(w, 'nope')).toBeNull()
+    expect(inSync(w, 'main')).toBe(true)
+  })
+  it('is out of sync after a local commit and back in sync after a push', () => {
+    let w = run(cloned(), 'echo hi >> a.txt', 'git commit -am "Add hi"')
+    expect(inSync(w, 'main')).toBe(false)
+    w = run(w, 'git push')
+    expect(inSync(w, 'main')).toBe(true)
+  })
+  it('contains follows parents', () => {
+    const w = run(cloned(), 'echo hi >> a.txt', 'git commit -am "Add hi"')
+    expect(contains(w, 'main', 'origin/main')).toBe(true)
+    expect(contains(w, 'origin/main', 'main')).toBe(false)
+  })
+  it('prFor and rebaseInProgress are empty by default', () => {
+    const w = cloned()
+    expect(prFor(w, 'main')).toBeUndefined()
+    expect(rebaseInProgress(w)).toBe(false)
+  })
+  it('ranAfter needs the second command after the first', () => {
+    const w = cloned()
+    const ctx = (ran: string[]) => ({ start: w, world: w, ran, last: null })
+    expect(ranAfter(ctx(['git commit -m x && git status']), 'commit', 'status')).toBe(true)
+    expect(ranAfter(ctx(['git status', 'git commit -m x']), 'commit', 'status')).toBe(false)
+    expect(ranAfter(ctx([]), 'commit', 'status')).toBe(false)
+  })
+  it('lastFailed needs a failed run of that subcommand', () => {
+    const w = cloned()
+    const failed = { start: w, world: w, ran: ['git push nope'], last: { world: w, lines: [], exitCode: 1 } }
+    expect(lastFailed(failed, 'push')).toBe(true)
+    expect(lastFailed(failed, 'pull')).toBe(false)
+    expect(lastFailed({ ...failed, last: { world: w, lines: [], exitCode: 0 } }, 'push')).toBe(false)
+  })
+  it('mergedPrTip is the merged pull request head tip, otherwise null', () => {
+    const w = cloned()
+    expect(mergedPrTip(w, 1)).toBeNull()
+    const pr = { number: 1, title: 't', body: '', head: 'h', base: 'main', author: 'a', comments: [], openedAt: 0 }
+    const open = { ...w, remote: { ...w.remote!, prs: [{ ...pr, state: 'open' as const, headTip: 'abc' }] } }
+    expect(mergedPrTip(open, 1)).toBeNull()
+    const merged = { ...w, remote: { ...w.remote!, prs: [{ ...pr, state: 'merged' as const, headTip: 'abc' }] } }
+    expect(mergedPrTip(merged, 1)).toBe('abc')
+  })
+})

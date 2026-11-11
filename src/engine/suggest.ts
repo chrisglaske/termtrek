@@ -115,7 +115,11 @@ export function complete(world: World, line: string): { line: string; options: s
   } else if (cmdWords.length === 1 && cmdWords[0] === 'git') {
     matches = gitSubcommands().filter((n) => n.startsWith(word)).sort();
   } else if (cmdWords[0] === 'git' && wantsBranch(world, cmdWords)) {
-    const names = Object.keys(world.repo!.branches).filter((n) => n.startsWith(word)).sort();
+    const repo = world.repo!;
+    const local = Object.keys(repo.branches);
+    const remote = Object.keys(repo.remoteRefs);
+    const extra = cmdWords[1] === 'merge' ? remote : remote.map((r) => r.slice(r.indexOf('/') + 1)).filter((n) => !local.includes(n));
+    const names = [...new Set([...local, ...extra])].filter((n) => n.startsWith(word)).sort();
     matches = cmdWords[1] === 'checkout' ? [...names, ...pathCandidates(world, word).matches] : names;
   } else {
     matches = pathCandidates(world, word).matches;

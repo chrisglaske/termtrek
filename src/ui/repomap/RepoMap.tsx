@@ -1,21 +1,12 @@
-import type { Repo, World } from '../../engine/types'
+import type { Repo, RepoOp, World } from '../../engine/types'
 import { getStatus, headCommitId } from '../../engine/git/repoState'
 import { RichText } from '../RichText'
 import { reachableFromRefs } from '../../engine/git/refs'
-import { DEFAULT_GAP, LABEL_H, branchOrder, labelOffset, layoutGraph, type GraphLabel } from './layout'
+import { trackingSummary } from '../../engine/git/tracking'
+import { DEFAULT_GAP, LABEL_H, branchOrder, isDefaultRemote, labelOffset, labelText, labelWidth, layoutGraph } from './layout'
 import './RepoMap.css'
 
-const LABEL_CHAR = 7.4
-const LABEL_PAD = 18
 const MAX_SHOWN = 3
-
-function labelWidth(text: string): number {
-  return text.length * LABEL_CHAR + LABEL_PAD
-}
-
-function labelText(l: GraphLabel): string {
-  return l.current && l.name !== 'HEAD' ? `${l.name} · HEAD` : l.name
-}
 
 function listOf(names: string[]): string {
   return names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
@@ -34,9 +25,11 @@ function ariaSummary(repo: Repo): string {
   if (id7) parts.push(repo.head.kind === 'detached' ? `HEAD is detached at ${id7}.` : `HEAD is on ${repo.head.name} at ${id7}.`)
   const op = repo.op
   if (op) {
-    const doing = op.kind === 'merge' ? `Merging ${op.theirsLabel}` : 'Reverting'
+    const doing = opLabel(op)
     parts.push(op.conflicts.length ? `${doing}: ${plural(op.conflicts.length, 'conflict', 'conflicts')} to fix.` : `${doing}: conflicts fixed.`)
   }
+  const remotes = Object.keys(repo.remoteRefs).filter((r) => r !== 'origin/HEAD').sort()
+  if (remotes.length) parts.push(`Remote branches: ${listOf(remotes.map((r) => `${r} at ${repo.remoteRefs[r]!.slice(0, 7)}`))}.`)
   if (repo.stash.length) parts.push(`Stash: ${plural(repo.stash.length, 'entry', 'entries')}.`)
   return parts.join(' ')
 }
@@ -55,6 +48,15 @@ function savedCommits(repo: Repo): { id: string; message: string }[] {
     .map((id) => repo.commits[id]!)
     .sort((a, b) => b.time - a.time || (a.id < b.id ? -1 : 1))
     .map((c) => ({ id: c.id, message: c.message }))
+}
+
+/** The ahead/behind chip text for a branch with an upstream, from the last fetch. */
+function syncText(t: { ahead: number; behind: number; gone: boolean }): string {
+  if (t.gone) return 'Upstream gone'
+  if (t.ahead && t.behind) return `↑${t.ahead} to push · ↓${t.behind} to pull`
+  if (t.ahead) return `↑${t.ahead} to push`
+  if (t.behind) return `↓${t.behind} to pull`
+  return 'In sync'
 }
 
 function Area({ kind, title, count, empty, children }: { kind: string; title: string; count: number; empty: string; children: React.ReactNode[] }): React.JSX.Element {
@@ -87,6 +89,9 @@ function Connector({ label }: { label: string }): React.JSX.Element {
   )
 }
 
+
+const opLabel = (op: RepoOp): string =>
+  op.kind === 'merge' ? `Merging ${op.theirsLabel}` : op.kind === 'rebase' ? `Rebasing ${op.rebase?.branch ?? ''}`.trim() : 'Reverting'
 export function RepoMap({ world }: { world: World }): React.JSX.Element {
   const repo = world.repo
   if (!repo) {
@@ -106,6 +111,7 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
   const saved = savedCommits(repo)
   const headId = headCommitId(repo)
   const branchName = repo.head.kind === 'branch' ? repo.head.name : null
+  const sync = branchName ? trackingSummary(repo, branchName) : null
   const g = layoutGraph(repo)
   const nodeById = new Map(g.nodes.map((n) => [n.id, n]))
   const head = g.nodes.find((n) => n.isHead)
@@ -117,8 +123,14 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
   return (
     <section className="repomap">
       <div className="repomap-head">
-        {repo.op && <span className="repomap-chip repomap-op">{repo.op.kind === 'merge' ? `Merging ${repo.op.theirsLabel}` : 'Reverting'}</span>}
+        {repo.op && <span className="repomap-chip repomap-op">{opLabel(repo.op)}</span>}
         {repo.stash.length > 0 && <span className="repomap-chip repomap-stash">{`Stash: ${repo.stash.length}`}</span>}
+        {sync && (
+          <span className="repomap-chip repomap-sync" title={`Compared with ${sync.upstream} as of your last fetch`}>
+            {syncText(sync)}
+            <span className="sr-only">{` compared with ${sync.upstream}, as of your last fetch`}</span>
+          </span>
+        )}
         <span className="repomap-branch">
           <i className={`dot ${branchName === null || branchName === 'main' ? 'dot-main' : 'dot-branch'}`} aria-hidden="true" />
           {branchName ?? `HEAD detached at ${headId ? headId.slice(0, 7) : ''}`}
@@ -174,7 +186,16 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
                 const text = labelText(l)
                 const w = labelWidth(text)
                 const y = n.y + labelOffset(l.slot)
-                const amber = l.slot > 0 && l.name !== 'HEAD'
+                const amber = l.remote ? !isDefaultRemote(repo, l.name) : l.slot > 0 && l.name !== 'HEAD'
+                if (l.remote) {
+                  const stroke = amber ? 'var(--g-branch)' : 'var(--g-main)'
+                  return (
+                    <g key={l.name} className="label-remote">
+                      <rect x={n.x - w / 2} y={y} width={w} height={LABEL_H} rx={LABEL_H / 2} fill="var(--surface)" stroke={stroke} strokeWidth="2" />
+                      <text x={n.x} y={y + 15} textAnchor="middle" fontFamily="var(--mono)" fontSize="12" fontWeight="600" fill="var(--ink2)">{text}</text>
+                    </g>
+                  )
+                }
                 return (
                   <g key={l.name}>
                     <rect x={n.x - w / 2} y={y} width={w} height={LABEL_H} rx={LABEL_H / 2} fill={amber ? 'var(--g-branch)' : 'var(--g-main-lbl)'} stroke={l.current ? 'var(--g-head)' : 'none'} strokeWidth="2" />

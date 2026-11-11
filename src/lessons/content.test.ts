@@ -3,7 +3,7 @@ import { course, allLessons, findLesson } from './course'
 import { initRunner, runnerReducer } from './runner'
 import type { RunnerState } from './runner'
 import type { Lesson } from './schema'
-import { README } from './sample'
+import { NOTES_V2, README } from './sample'
 
 const lessonById = (id: string): Lesson => {
   const l = findLesson(id)
@@ -77,6 +77,20 @@ describe('course content', () => {
     ])
   })
 
+  it('team section lists its lessons', () => {
+    expect(course[3]!.lessons.map((l) => l.id)).toEqual([
+      'clone-a-repo',
+      'push-your-work',
+      'share-a-project',
+      'fetch-and-pull',
+      'push-a-branch',
+      'open-a-pull-request',
+      'merge-and-clean-up',
+      'update-your-branch',
+      'scenario-pushed-first',
+    ])
+  })
+
   describe('solvable', () => {
     for (const lesson of allLessons()) {
       it(lesson.id, () => {
@@ -87,6 +101,24 @@ describe('course content', () => {
           const last = i === lesson.steps.length - 1
           expect(s.status, `${lesson.id} / ${step.id}`).toBe(last ? 'lesson-done' : 'step-done')
           if (!last) s = runnerReducer(s, { type: 'next' })
+        })
+      })
+    }
+  })
+
+  describe('solution as one line', () => {
+    for (const lesson of allLessons()) {
+      lesson.steps.forEach((step, i) => {
+        if (step.solve) return
+        it(`${lesson.id} / ${step.id}`, () => {
+          let s = initRunner(lesson)
+          for (let j = 0; j < i; j++) {
+            for (const a of lesson.steps[j]!.solve ?? lesson.steps[j]!.solution.map((line) => ({ type: 'run' as const, line }))) s = runnerReducer(s, a)
+            s = runnerReducer(s, { type: 'next' })
+          }
+          s = runnerReducer(s, { type: 'run', line: step.solution.join(' && ') })
+          const last = i === lesson.steps.length - 1
+          expect(s.status).toBe(last ? 'lesson-done' : 'step-done')
         })
       })
     }
@@ -387,5 +419,193 @@ describe('course content', () => {
     run('git add README.md')
     run('git commit -m "Add a note about where to ask questions"')
     expect(s.status).toBe('lesson-done')
+  })
+
+  it('share-a-project wrong URL nudge', () => {
+    const s = play(lessonById('share-a-project'), ['git remote add origin https://git.example.com/team/projct.git'])
+    expect(s.stepIndex).toBe(0)
+    expect(s.status).toBe('working')
+    expect(s.entries.at(-1)!.explain?.text).toContain('`git remote remove origin`')
+    const fixed = play(lessonById('share-a-project'), [
+      'git remote add origin https://git.example.com/team/projct.git',
+      'git remote remove origin',
+      'git remote add origin https://git.example.com/team/project.git',
+      'git push -u origin main',
+      'git status',
+    ])
+    expect(fixed.status).toBe('lesson-done')
+  })
+
+  it('fetch-and-pull status before fetch says up to date', () => {
+    const s = play(lessonById('fetch-and-pull'), ['git status'])
+    expect(s.stepIndex).toBe(1)
+    const text = s.entries.flatMap((e) => e.lines.flat().map((x) => x.text)).join('\n')
+    expect(text).toContain("up to date with 'origin/main'")
+    const after = play(lessonById('fetch-and-pull'), ['git status', 'git fetch', 'git status'])
+    const out = after.entries.at(-1)!.lines.flat().map((x) => x.text).join('\n')
+    expect(out).toContain('behind')
+  })
+
+  it('push-a-branch: plain push fails, then -u works', () => {
+    const s = play(lessonById('push-a-branch'), [
+      'git switch -c homepage',
+      'echo "<h1>Team notes</h1>" > home.html',
+      'git add home.html',
+      'git commit -m "Add a home page"',
+      'git push',
+      'git push -u origin homepage',
+      'git branch -vv',
+    ])
+    expect(s.status).toBe('lesson-done')
+  })
+
+  it('push-a-branch: git remote -v does not count as listing branches', () => {
+    const steps = ['git switch -c homepage', 'echo "<h1>Team notes</h1>" > home.html', 'git add home.html', 'git commit -m "Add a home page"', 'git push', 'git push -u origin homepage']
+    expect(play(lessonById('push-a-branch'), [...steps, 'git remote -v']).status).toBe('working')
+    expect(play(lessonById('push-a-branch'), [...steps, 'git branch -v']).status).toBe('lesson-done')
+  })
+
+  it('fetch-and-pull: step 2 needs git status after git fetch', () => {
+    const wrong = play(lessonById('fetch-and-pull'), ['git status', 'git status', 'git fetch'])
+    expect(wrong.stepIndex).toBe(1)
+    expect(wrong.status).toBe('working')
+    const right = play(lessonById('fetch-and-pull'), ['git status', 'git fetch', 'git status'])
+    expect(right.stepIndex).toBe(2)
+  })
+})
+
+describe('Section 4, pull requests and the team scenario', () => {
+  const lastExplain = (s: RunnerState) => s.entries.at(-1)!.explain
+  const NOTES_PATH = '/home/you/notes/notes.txt'
+  const BOTH = NOTES_V2 + 'Bring a guest list.\nBring name tags.\n'
+  const lines = (s: RunnerState, ls: string[]): RunnerState => ls.reduce((st, line) => runnerReducer(st, { type: 'run', line }), s)
+
+  it('open-a-pull-request nudges an unpushed fix', () => {
+    let s = initRunner(lessonById('open-a-pull-request'))
+    s = runnerReducer(s, { type: 'pr-open', head: 'homepage', base: 'main', title: 'Add a home page', body: '' })
+    expect(s.status).toBe('step-done')
+    s = runnerReducer(s, { type: 'next' })
+    s = lines(s, ['echo "<p>Notes from our weekly meetings.</p>" >> home.html', 'git commit -am "Add a welcome line"'])
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('push')
+    s = lines(s, ['git push'])
+    expect(s.status).toBe('lesson-done')
+  })
+
+  it('open-a-pull-request recovers from a typo in the welcome line', () => {
+    let s = initRunner(lessonById('open-a-pull-request'))
+    s = runnerReducer(s, { type: 'pr-open', head: 'homepage', base: 'main', title: 'Add a home page', body: '' })
+    s = runnerReducer(s, { type: 'next' })
+    s = lines(s, ['echo "<p>Notes from our weekly meeting.</p>" >> home.html', 'git commit -am "Add a welcome line"', 'git push'])
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('echo "<p>Notes from our weekly meetings.</p>" >> home.html')
+    s = lines(s, ['echo "<p>Notes from our weekly meetings.</p>" >> home.html', 'git commit -am "Fix the welcome line"', 'git push'])
+    expect(s.status).toBe('lesson-done')
+  })
+
+  it('push-your-work needs git status after the commit', () => {
+    const early = play(lessonById('push-your-work'), ['git status', 'echo "Bring snacks." >> notes.txt', 'git commit -am "Add a snack reminder"'])
+    expect(early.stepIndex).toBe(0)
+    const ok = play(lessonById('push-your-work'), ['echo "Bring snacks." >> notes.txt', 'git commit -am "Add a snack reminder"', 'git status'])
+    expect(ok.stepIndex).toBe(1)
+  })
+
+  it('update-your-branch accepts a merge instead of rebase', () => {
+    expect(play(lessonById('update-your-branch'), ['git fetch', 'git merge --no-edit origin/main', 'git push']).status).toBe('lesson-done')
+  })
+
+  it('update-your-branch nudges a rejected push', () => {
+    const s = play(lessonById('update-your-branch'), ['git fetch', 'git rebase origin/main', 'git push'])
+    expect(s.stepIndex).toBe(2)
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('--force-with-lease')
+  })
+
+  it('scenario nudges after a rejected push', () => {
+    const lesson = lessonById('scenario-pushed-first')
+    const rejected = play(lesson, ['git push', 'git push'])
+    expect(rejected.world.remote).toEqual(initRunner(lesson).world.remote)
+    expect(rejected.stepIndex).toBe(1)
+    expect(lastExplain(rejected)?.text).toContain('`git pull`')
+    const pulled = play(lesson, ['git push', 'git pull'])
+    expect(pulled.stepIndex).toBe(1)
+    expect(lastExplain(pulled)?.text).toContain('`git pull --rebase`')
+  })
+
+  it('scenario nudges a merge pull toward abort and rebase', () => {
+    const s = play(lessonById('scenario-pushed-first'), ['git push', 'git pull --no-rebase'])
+    expect(s.stepIndex).toBe(1)
+    expect(lastExplain(s)?.text).toContain('git merge --abort')
+    expect(lastExplain(s)?.text).toContain('git pull --rebase')
+  })
+
+  it('scenario nudges a merge started in the conflict step toward abort', () => {
+    const s = play(lessonById('scenario-pushed-first'), ['git push', 'git pull --rebase', 'git rebase --abort', 'git pull --no-rebase'])
+    expect(s.stepIndex).toBe(2)
+    expect(lastExplain(s)?.text).toContain('git merge --abort')
+    expect(lastExplain(s)?.text).not.toContain('You cancelled the rebase')
+  })
+
+  it('scenario nudges after cancelling the rebase', () => {
+    const s = play(lessonById('scenario-pushed-first'), ['git push', 'git pull --rebase', 'code notes.txt', 'git rebase --abort'])
+    expect(s.stepIndex).toBe(2)
+    expect(lastExplain(s)?.text).toContain('You cancelled the rebase')
+    expect(lastExplain(s)?.text).toContain('git pull --rebase')
+  })
+
+  it('scenario refuses markers', () => {
+    let s = play(lessonById('scenario-pushed-first'), ['git push', 'git pull --rebase', 'git add notes.txt', 'git rebase --continue'])
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.kind).toBe('warn')
+    expect(lastExplain(s)?.text).toContain('<<<<<<<')
+    s = runnerReducer(s, { type: 'editor-done' })
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('Reset this lesson')
+  })
+
+  it('scenario force push nudge', () => {
+    const s = play(lessonById('scenario-pushed-first'), ['git push', 'git push -f'])
+    expect(s.stepIndex).toBe(1)
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.kind).toBe('warn')
+    expect(lastExplain(s)?.text).toContain('Reset this lesson')
+  })
+
+  it('scenario accepts a hand-written resolution', () => {
+    let s = play(lessonById('scenario-pushed-first'), ['git push', 'git pull --rebase', 'code notes.txt'])
+    s = runnerReducer(s, { type: 'save-file', path: NOTES_PATH, text: BOTH })
+    s = lines(s, ['git add notes.txt', 'git rebase --continue'])
+    s = runnerReducer(s, { type: 'editor-done' })
+    expect(s.stepIndex).toBe(2)
+    s = runnerReducer(s, { type: 'next' })
+    expect(lines(s, ['git push']).status).toBe('lesson-done')
+  })
+
+  it('merge-and-clean-up (b) passes after deleting the server branch before pulling', () => {
+    let s = initRunner(lessonById('merge-and-clean-up'))
+    s = runnerReducer(s, { type: 'pr-merge', number: 1 })
+    s = runnerReducer(s, { type: 'next' })
+    s = lines(s, ['git switch main', 'git push origin --delete homepage', 'git pull'])
+    expect(s.status).toBe('step-done')
+    expect(s.stepIndex).toBe(1)
+  })
+
+  it('fetch-and-pull (b) nudges after plain git pull', () => {
+    const s = play(lessonById('fetch-and-pull'), ['git status', 'git pull'])
+    expect(s.stepIndex).toBe(1)
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('`git fetch`')
+    expect(lastExplain(s)?.text).toContain('a fetch plus a merge')
+  })
+
+  it('scenario (b) copy when the merge was finished', () => {
+    let s = play(lessonById('scenario-pushed-first'), ['git push', 'git pull --no-rebase', 'code notes.txt'])
+    s = runnerReducer(s, { type: 'save-file', path: NOTES_PATH, text: BOTH })
+    s = lines(s, ['git add notes.txt', 'git commit --no-edit'])
+    s = runnerReducer(s, { type: 'editor-done' })
+    expect(s.stepIndex).toBe(1)
+    expect(s.status).toBe('step-done')
+    expect(lastExplain(s)?.text).toContain('merge commit')
+    expect(lastExplain(s)?.text).not.toContain('paused the rebase')
   })
 })

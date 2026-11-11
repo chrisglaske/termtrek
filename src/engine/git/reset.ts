@@ -2,7 +2,7 @@ import type { CommandFn } from '../registry';
 import type { OutLine, Repo, World } from '../types';
 import { err } from '../shell/fs';
 import { logRef } from './refs';
-import { badRevision, resolveRev } from './rev';
+import { resolveRev, unresolved } from './rev';
 import { activeRepo, headCommitId, workingFiles } from './repoState';
 import { matchPathspecs, moveTree } from './worktree';
 
@@ -48,11 +48,11 @@ export const gitReset: CommandFn = (world, args) => {
       paths = rest.slice(1);
     } else if (!('missing' in matchPathspecs(world, repo, [first], known)) && !('outside' in matchPathspecs(world, repo, [first], known))) {
       paths = rest;
-    } else return { lines: badRevision(first), exitCode: 128 };
+    } else return { lines: unresolved(repo, first), exitCode: 128 };
   }
 
   const targetId = spec === null ? headCommitId(repo) : resolveRev(repo, spec);
-  if (spec !== null && targetId === null) return { lines: badRevision(spec), exitCode: 128 };
+  if (spec !== null && targetId === null) return { lines: unresolved(repo, spec), exitCode: 128 };
   const targetTree = targetId ? { ...repo.commits[targetId]!.tree } : {};
 
   if (paths.length) {
@@ -75,10 +75,12 @@ export const gitReset: CommandFn = (world, args) => {
   }
 
   const m: Mode = mode ?? 'mixed';
-  if (m === 'soft' && repo.op?.kind === 'merge') return { lines: [err('fatal: Cannot do a soft reset in the middle of a merge.')], exitCode: 128 };
+  const unmerged = (repo.op?.conflicts.length ?? 0) > 0;
+  if (m === 'soft' && (repo.op?.kind === 'merge' || unmerged)) return { lines: [err('fatal: Cannot do a soft reset in the middle of a merge.')], exitCode: 128 };
   const message = `reset: moving to ${spec ?? 'HEAD'}`;
   // Like Git's remove_branch_state: a reset without paths ends any merge or revert in progress.
-  let repo2: Repo = { ...repo, op: null };
+  // A rebase keeps going; the reset only clears its unmerged entries.
+  let repo2: Repo = { ...repo, op: repo.op?.kind === 'rebase' ? { ...repo.op, conflicts: [] } : null };
   if (targetId !== null) {
     repo2 = repo.head.kind === 'branch'
       ? { ...repo2, branches: { ...repo2.branches, [repo.head.name]: targetId } }

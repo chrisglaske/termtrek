@@ -42,6 +42,7 @@ export function reachableFromRefs(repo: Repo): Set<string> {
   const tips = Object.values(repo.branches).filter((t): t is string => t !== null);
   const head = headCommitId(repo);
   if (head) tips.push(head);
+  tips.push(...Object.values(repo.remoteRefs));
   for (const tip of tips) for (const id of ancestors(repo, tip)) out.add(id);
   return out;
 }
@@ -52,4 +53,15 @@ export function logRef(repo: Repo, id: string, message: string): Repo {
 
 export function branchOf(repo: Repo): string | null {
   return repo.head.kind === 'branch' ? repo.head.name : null;
+}
+
+/** Commits reachable from `a` but not `b` (ahead), and the reverse (behind). */
+export function aheadBehind(repo: Repo, a: string, b: string): { ahead: number; behind: number } {
+  const sa = ancestors(repo, a);
+  const sb = ancestors(repo, b);
+  let ahead = 0;
+  let behind = 0;
+  for (const id of sa) if (!sb.has(id)) ahead += 1;
+  for (const id of sb) if (!sa.has(id)) behind += 1;
+  return { ahead, behind };
 }

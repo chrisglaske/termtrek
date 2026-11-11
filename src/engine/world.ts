@@ -71,6 +71,10 @@ export function createWorld(setup: WorldSetup = {}): World {
       reflog,
       stash: [],
       op: null,
+      remotes: {},
+      remoteRefs: {},
+      upstream: {},
+      originHead: null,
     };
   }
 

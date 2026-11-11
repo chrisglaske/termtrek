@@ -192,4 +192,44 @@ describe('RepoMap', () => {
     expect(container.querySelectorAll('.node-lost')).toHaveLength(1)
     expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
   })
+
+  describe('with a remote', () => {
+    const SERVER = { slug: 'team/notes', commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }] }
+    const ahead = () => {
+      const w = buildWorld({ config, remote: SERVER, run: ['git clone https://git.example.com/team/notes.git', 'cd notes', 'echo a > a.txt', 'git add .', 'git commit -m "a"'] })
+      const repo = w.repo!
+      const tip = repo.branches.main as string
+      return { w: { ...w, repo: { ...repo, branches: { ...repo.branches, main: tip } } }, repo }
+    }
+
+    it('sync chip shows ahead and behind', () => {
+      const { w, repo } = ahead()
+      const { rerender } = render(<RepoMap world={w} />)
+      expect(screen.getByText('↑1 to push')).toBeInTheDocument()
+      expect(screen.getByTitle(/as of your last fetch/)).toBeInTheDocument()
+      const base = repo.remoteRefs['origin/main']!
+      const parent = repo.commits[repo.branches.main as string]!.parents[0]!
+      expect(parent).toBe(base)
+      const behind = { ...repo, branches: { main: base }, remoteRefs: { 'origin/main': repo.branches.main as string } }
+      rerender(<RepoMap world={{ ...w, repo: behind }} />)
+      expect(screen.getByText('↓1 to pull')).toBeInTheDocument()
+      const sync = { ...repo, branches: { ...repo.branches }, remoteRefs: { 'origin/main': repo.branches.main as string } }
+      rerender(<RepoMap world={{ ...w, repo: sync }} />)
+      expect(screen.getByText('In sync')).toBeInTheDocument()
+    })
+
+    it('text alternative names origin/main', () => {
+      const { w, repo } = ahead()
+      render(<RepoMap world={w} />)
+      const label = screen.getByRole('img').getAttribute('aria-label') ?? ''
+      expect(label).toContain(`origin/main at ${repo.remoteRefs['origin/main']!.slice(0, 7)}`)
+    })
+
+    it('axe passes with remote labels', async () => {
+      const { w } = ahead()
+      const { container } = render(<RepoMap world={w} />)
+      expect(container.querySelectorAll('.label-remote')).toHaveLength(1)
+      expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
+    })
+  })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { findLesson, nextLesson } from '../../lessons/course'
 import type { Lesson } from '../../lessons/schema'
@@ -6,6 +6,8 @@ import { useLessonRunner } from '../../lessons/useLessonRunner'
 import { useProgress } from '../../progress/ProgressContext'
 import type { World } from '../../engine/types'
 import { RepoMap } from '../repomap/RepoMap'
+import { RemotePanel } from '../remote/RemotePanel'
+import type { RemotePanelProps } from '../remote/RemotePanel'
 import { Nav } from '../layout/Nav'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { NotFound } from '../NotFound'
@@ -22,18 +24,61 @@ function isWide(): boolean {
   return typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 980px)').matches
 }
 
-function RepoPanel({ world }: { world: World }): React.JSX.Element {
-  const tabId = useId()
+type RepoTab = 'repo' | 'remote'
+
+export interface RepoPanelProps {
+  world: World
+  remoteError?: string | null
+  onOpenPr?: RemotePanelProps['onOpenPr']
+  onMergePr?: RemotePanelProps['onMergePr']
+  onDeleteBranch?: RemotePanelProps['onDeleteBranch']
+}
+
+const noop = () => {}
+
+export function RepoPanel({ world, remoteError = null, onOpenPr = noop, onMergePr = noop, onDeleteBranch = noop }: RepoPanelProps): React.JSX.Element {
+  const ids = { repo: useId(), remote: useId() }
   const panelId = useId()
+  const [picked, setPicked] = useState<RepoTab>('repo')
+  const remote = world.remote
+  const tabs: RepoTab[] = remote ? ['repo', 'remote'] : ['repo']
+  const tab: RepoTab = remote ? picked : 'repo'
+  const latest = remote ? remote.activity.reduce((m, a) => (a.who === 'teammate' ? Math.max(m, a.seq) : m), 0) : 0
+  // Activity that is already there when the lesson starts is not "new".
+  const [seen, setSeen] = useState(latest)
+  if (tab === 'remote' && seen !== latest) setSeen(latest)
+  else if (latest < seen) setSeen(latest) // a reset rewinds the world
+  const dot = tab !== 'remote' && latest > seen
+  const refs = useRef<Record<RepoTab, HTMLButtonElement | null>>({ repo: null, remote: null })
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const i = tabs.indexOf(tab)
+    let to: RepoTab | undefined
+    if (e.key === 'ArrowRight') to = tabs[(i + 1) % tabs.length]
+    else if (e.key === 'ArrowLeft') to = tabs[(i - 1 + tabs.length) % tabs.length]
+    else if (e.key === 'Home') to = tabs[0]
+    else if (e.key === 'End') to = tabs[tabs.length - 1]
+    if (!to) return
+    e.preventDefault()
+    setPicked(to)
+    refs.current[to]?.focus()
+  }
+
   return (
     <section className="lesson-repo" aria-label="Repository">
-      <div className="repo-tabs" role="tablist" aria-label="Repository views">
-        <button type="button" role="tab" id={tabId} aria-selected="true" aria-controls={panelId} tabIndex={0}>
+      <div className="repo-tabs" role="tablist" aria-label="Repository views" onKeyDown={onKeyDown}>
+        <button type="button" role="tab" id={ids.repo} ref={(el) => void (refs.current.repo = el)} aria-selected={tab === 'repo'} aria-controls={panelId} tabIndex={tab === 'repo' ? 0 : -1} onClick={() => setPicked('repo')}>
           Your repo
         </button>
+        {remote && (
+          <button type="button" role="tab" id={ids.remote} ref={(el) => void (refs.current.remote = el)} aria-selected={tab === 'remote'} aria-controls={panelId} tabIndex={tab === 'remote' ? 0 : -1} onClick={() => setPicked('remote')}>
+            Remote
+            {dot && <span className="repo-tab-dot" role="img" aria-label="new activity" />}
+          </button>
+        )}
       </div>
-      <div role="tabpanel" id={panelId} aria-labelledby={tabId}>
-        <RepoMap world={world} />
+      <div role="tabpanel" id={panelId} aria-labelledby={ids[tab]}>
+        {tab === 'remote' ? <RemotePanel world={world} error={remoteError} onOpenPr={onOpenPr} onMergePr={onMergePr} onDeleteBranch={onDeleteBranch} /> : <RepoMap world={world} />}
       </div>
     </section>
   )
@@ -41,7 +86,7 @@ function RepoPanel({ world }: { world: World }): React.JSX.Element {
 
 function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
   const { complete } = useProgress()
-  const { state, run, hint, next, reset, saveFile, closeFile, editorDone, showMe } = useLessonRunner(lesson, complete)
+  const { state, run, hint, next, reset, saveFile, closeFile, editorDone, showMe, openPr, mergePr, deleteRemoteBranch, remoteError } = useLessonRunner(lesson, complete)
   const termRef = useRef<HTMLDivElement>(null)
   const { world, status } = state
   const step = lesson.steps[state.stepIndex]
@@ -112,7 +157,7 @@ function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
         <div className="lesson-term" ref={termRef}>
           <Workspace ref={wsRef} state={state} onRun={onRun} saveFile={saveFile} closeFile={closeFile} editorDone={editorDone} />
         </div>
-        <RepoPanel world={world} />
+        <RepoPanel world={world} remoteError={remoteError} onOpenPr={openPr} onMergePr={mergePr} onDeleteBranch={deleteRemoteBranch} />
       </div>
     </div>
   )

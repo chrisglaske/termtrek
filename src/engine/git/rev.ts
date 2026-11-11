@@ -2,9 +2,22 @@ import type { OutLine, Repo } from '../types';
 import { err } from '../shell/fs';
 import { headCommitId } from './repoState';
 
+function has(obj: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
 function base(repo: Repo, name: string): string | null {
   if (name === 'HEAD' || name === '@') return headCommitId(repo);
-  if (Object.prototype.hasOwnProperty.call(repo.branches, name)) return repo.branches[name] ?? null;
+  const up = /^(.*)@\{(?:u|upstream)\}$/.exec(name);
+  if (up) {
+    const branch = up[1] === '' || up[1] === 'HEAD' ? (repo.head.kind === 'branch' ? repo.head.name : null) : up[1]!;
+    const target = branch !== null && has(repo.upstream, branch) ? repo.upstream[branch] : undefined;
+    return target ? (repo.remoteRefs[`${target.remote}/${target.branch}`] ?? null) : null;
+  }
+  if (has(repo.branches, name)) return repo.branches[name] ?? null;
+  const remoteName = name.replace(/^(?:refs\/)?remotes\//, '');
+  if (has(repo.remoteRefs, remoteName)) return repo.remoteRefs[remoteName] ?? null;
+  if (name === 'origin' && repo.originHead !== null) return repo.remoteRefs[`origin/${repo.originHead}`] ?? null;
   if (/^[0-9a-f]{4,}$/.test(name)) {
     const hits = Object.keys(repo.commits).filter((id) => id.startsWith(name));
     return hits.length === 1 ? hits[0]! : null;
@@ -40,4 +53,20 @@ export function badRevision(spec: string): OutLine[] {
     [{ text: "Use '--' to separate paths from revisions, like this:" }],
     [{ text: "'git <command> [<revision>...] -- [<file>...]'" }],
   ];
+}
+
+/** Git's refusal for `@{u}` on a branch that tracks nothing, or null when `spec` isn't an upstream spec in that state. */
+export function noUpstream(repo: Repo, spec: string): string | null {
+  const m = /^(.*?)@\{(?:u|upstream)\}/.exec(spec);
+  if (!m) return null;
+  const branch = m[1] === '' || m[1] === 'HEAD' ? (repo.head.kind === 'branch' ? repo.head.name : null) : m[1]!;
+  if (branch === null) return "fatal: HEAD does not point to a branch";
+  if (!has(repo.branches, branch) || has(repo.upstream, branch)) return null;
+  return `fatal: no upstream configured for branch '${branch}'`;
+}
+
+/** The refusal lines for a revision that did not resolve, with Git's own wording for a missing upstream. */
+export function unresolved(repo: Repo, spec: string): OutLine[] {
+  const none = noUpstream(repo, spec);
+  return none ? [err(none)] : badRevision(spec);
 }

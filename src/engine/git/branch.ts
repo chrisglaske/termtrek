@@ -4,6 +4,7 @@ import { err } from '../shell/fs';
 import { isAncestor } from './refs';
 import { resolveRev } from './rev';
 import { activeRepo, headCommitId } from './repoState';
+import { parseRemoteRef, setUpstream, TRACK_LINE, trackingSummary } from './tracking';
 
 /** Git's refname rules for a branch name, in the cases a learner is likely to hit. */
 export function validBranchName(name: string): boolean {
@@ -25,10 +26,25 @@ export const gitBranch: CommandFn = (world, args) => {
   if (!repo) return { lines: [], exitCode: 128 };
   let del: 'd' | 'D' | null = null;
   let move = false;
+  let verbose = 0;
+  let remotes = false;
+  let all = false;
+  let upstreamTo: string | null = null;
   const names: string[] = [];
   let dashdash = false;
-  for (const a of args) {
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
     if (!dashdash && a === '--') dashdash = true;
+    else if (!dashdash && (a === '-v' || a === '--verbose')) verbose += 1;
+    else if (!dashdash && a === '-vv') verbose += 2;
+    else if (!dashdash && (a === '-r' || a === '--remotes')) remotes = true;
+    else if (!dashdash && (a === '-a' || a === '--all')) all = true;
+    else if (!dashdash && a.startsWith('--set-upstream-to=')) upstreamTo = a.slice('--set-upstream-to='.length);
+    else if (!dashdash && (a === '-u' || a === '--set-upstream-to')) {
+      const v = args[++i];
+      if (v === undefined) return { lines: [err(`error: switch \`u' requires a value`)], exitCode: 129 };
+      upstreamTo = v;
+    }
     else if (!dashdash && (a === '-d' || a === '--delete')) del = del ?? 'd';
     else if (!dashdash && (a === '-D')) del = 'D';
     else if (!dashdash && (a === '-m' || a === '--move' || a === '-M')) move = true;
@@ -39,9 +55,25 @@ export const gitBranch: CommandFn = (world, args) => {
   const headId = headCommitId(repo);
   const current = repo.head.kind === 'branch' ? repo.head.name : null;
 
+  if (upstreamTo !== null) {
+    if (names.length > 1) return { lines: [err('fatal: too many arguments to set new upstream')], exitCode: 128 };
+    const up = parseRemoteRef(repo, upstreamTo);
+    if (!up) return { lines: [err(`fatal: the requested upstream branch '${upstreamTo}' does not exist`)], exitCode: 128 };
+    const target = names[0] ?? current;
+    if (target === null) return { lines: [err(`fatal: could not set upstream of HEAD to '${upstreamTo}' when it does not point to any branch.`)], exitCode: 128 };
+    if (!hasBranch(repo, target) || repo.branches[target] === null) return { lines: [err(`fatal: branch '${target}' does not exist`)], exitCode: 128 };
+    return {
+      world: { ...world, repo: setUpstream(repo, target, up) },
+      lines: [[{ text: TRACK_LINE(target, up) }]],
+      explain: { kind: 'ok', text: `**${target}** now follows **${up.remote}/${up.branch}**. That is how \`git status\`, \`git pull\` and \`git push\` know which remote branch to compare against.` },
+      exitCode: 0,
+    };
+  }
+
   if (del) {
     if (names.length === 0) return { lines: [err('fatal: branch name required')], exitCode: 128 };
     const branches = { ...repo.branches };
+    const upstream = { ...repo.upstream };
     const lines: OutLine[] = [];
     let code = 0;
     for (const n of names) {
@@ -57,12 +89,13 @@ export const gitBranch: CommandFn = (world, args) => {
         code = 1;
       } else {
         delete branches[n];
+        delete upstream[n];
         lines.push([{ text: `Deleted branch ${n} (was ` }, { text: tip ?? '', tone: 'id' }, { text: ').' }]);
       }
     }
     const deleted = lines.some((l) => l[0]!.text.startsWith('Deleted'));
     return {
-      world: deleted ? { ...world, repo: { ...repo, branches } } : undefined,
+      world: deleted ? { ...world, repo: { ...repo, branches, upstream } } : undefined,
       lines,
       explain: deleted
         ? { kind: 'ok', text: 'Deleted the branch label. Its commits are not erased: if another branch or `git reflog` still reaches them, they are still there.' }
@@ -83,7 +116,9 @@ export const gitBranch: CommandFn = (world, args) => {
     if (hasBranch(repo, newName!) && newName !== oldName) return { lines: [err(`fatal: a branch named '${newName}' already exists`)], exitCode: 128 };
     const branches: Record<string, string | null> = {};
     for (const [k, v] of Object.entries(repo.branches)) branches[k === oldName ? newName! : k] = v;
-    const next: Repo = { ...repo, branches, head: current === oldName ? { kind: 'branch', name: newName! } : repo.head };
+    const upstream: Repo['upstream'] = {};
+    for (const [k, v] of Object.entries(repo.upstream)) upstream[k === oldName ? newName! : k] = v;
+    const next: Repo = { ...repo, branches, upstream, head: current === oldName ? { kind: 'branch', name: newName! } : repo.head };
     return {
       world: { ...world, repo: next },
       lines: [],
@@ -92,16 +127,42 @@ export const gitBranch: CommandFn = (world, args) => {
     };
   }
 
-  if (names.length === 0) {
+  if (names.length === 0 || remotes || all) {
     const lines: OutLine[] = [];
-    if (repo.head.kind === 'detached') lines.push([{ text: '* (HEAD detached at ' }, { text: repo.head.id, tone: 'id' }, { text: ')' }]);
-    for (const n of Object.keys(repo.branches).sort()) {
-      if (repo.branches[n] === null) continue;
-      lines.push(n === current ? [{ text: '* ' + n, tone: 'ok' }] : [{ text: '  ' + n }]);
+    const remoteLines = (prefix: string): OutLine[] => {
+      const rows: OutLine[] = [];
+      const keys = Object.keys(repo.remoteRefs).sort();
+      if (repo.originHead !== null && keys.includes(`origin/${repo.originHead}`)) rows.push([{ text: `  ${prefix}origin/HEAD -> origin/${repo.originHead}`, tone: 'warn' }]);
+      for (const k of keys) rows.push([{ text: `  ${prefix}${k}`, tone: 'warn' }]);
+      return rows;
+    };
+    if (!remotes) {
+      const shown = Object.keys(repo.branches).sort().filter((n) => repo.branches[n] !== null);
+      const detached = repo.head.kind === 'detached' ? `(HEAD detached at ${repo.head.id})` : null;
+      const width = Math.max(detached?.length ?? 0, ...shown.map((n) => n.length));
+      const row = (label: string, id: string | null, star: boolean, branch: string | null): OutLine => {
+        const mark = star ? '* ' : '  ';
+        if (!verbose) return star ? [{ text: mark + label, tone: 'ok' }] : [{ text: mark + label }];
+        const sum = verbose > 1 && branch !== null ? trackingSummary(repo, branch) : null;
+        const bracket = sum ? ` [${sum.upstream}${sum.gone ? ': gone' : sum.ahead || sum.behind ? ': ' + [sum.ahead ? `ahead ${sum.ahead}` : '', sum.behind ? `behind ${sum.behind}` : ''].filter(Boolean).join(', ') : ''}]` : '';
+        return [
+          { text: mark + label.padEnd(width) + ' ', tone: star ? 'ok' : undefined },
+          { text: id ?? '', tone: 'id' },
+          { text: bracket + ' ' + (id ? repo.commits[id]!.message.split('\n')[0]! : '') },
+        ];
+      };
+      if (detached) lines.push(row(detached, headCommitId(repo), true, null));
+      for (const n of shown) lines.push(row(n, repo.branches[n]!, n === current, n));
     }
+    if (remotes) lines.push(...remoteLines(''));
+    else if (all) lines.push(...remoteLines('remotes/'));
     return {
       lines,
-      explain: { kind: 'tip', text: 'These are your branches. The one with the **star** is where you are now. Use `git switch <name>` to move to another.' },
+      explain: remotes || all
+        ? { kind: 'tip', text: 'The `origin/...` names are **remote-tracking branches**: your last-known copy of the server\'s branches. They only move when you fetch or pull.' }
+        : verbose > 1
+          ? { kind: 'tip', text: 'The part in **[brackets]** is the remote branch each local branch follows, and how far apart the two are.' }
+          : { kind: 'tip', text: 'These are your branches. The one with the **star** is where you are now. Use `git switch <name>` to move to another.' },
       exitCode: 0,
     };
   }
