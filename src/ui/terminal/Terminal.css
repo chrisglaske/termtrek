@@ -1,0 +1,134 @@
+.term {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--t-bg);
+  color: var(--t-ink);
+  border: 1px solid var(--t-bd);
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.term-bar {
+  background: var(--t-bar);
+  border-bottom: 1px solid var(--t-bd);
+  color: var(--t-mute);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+.term-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 14px;
+  cursor: text;
+}
+.term-entry {
+  margin-bottom: 4px;
+}
+.term-line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--mono);
+}
+.t-cwd {
+  color: var(--t-prompt);
+}
+.t-branch {
+  color: var(--t-branch);
+}
+.t-dollar {
+  color: var(--t-mute);
+}
+.tone-out {
+  color: var(--t-ink);
+}
+.tone-muted {
+  color: var(--t-mute);
+}
+.tone-error {
+  color: var(--t-err);
+}
+.tone-ok {
+  color: var(--t-ok);
+}
+.tone-id,
+.tone-warn {
+  color: var(--t-id);
+}
+.term-live {
+  display: flex;
+  align-items: baseline;
+}
+.term-live .t-prompt {
+  white-space: pre;
+  flex: none;
+}
+.term-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  color: var(--t-ink);
+  caret-color: var(--t-cur);
+  font: inherit;
+}
+.term-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  font-family: var(--sans);
+}
+.fb {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 8px 0 10px;
+  padding: 10px 12px;
+  background: var(--t-why-bg);
+  border: 1px solid var(--t-why-bd);
+  border-radius: 10px;
+  color: var(--t-why-ink);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: normal;
+}
+.fb-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.fb-ok .fb-icon {
+  background: var(--ok);
+}
+.fb-tip .fb-icon {
+  background: var(--accent);
+}
+.fb-warn .fb-icon {
+  background: var(--warn);
+}
+.fb-body p {
+  margin: 0;
+}
+.fb-body p + p {
+  margin-top: 6px;
+}
+.fb-body strong {
+  color: var(--t-why-h);
+}

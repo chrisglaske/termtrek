@@ -1,0 +1,103 @@
+.lesson-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: calc(100dvh - var(--nav-h));
+  background: var(--wash);
+}
+.lesson-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.lesson-main:focus {
+  outline: none;
+}
+.lesson-run {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.lesson-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(360px, 420px);
+  grid-template-areas:
+    'term learn'
+    'term repo';
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  padding: 16px 24px 24px;
+  align-items: start;
+}
+.lesson-learn {
+  grid-area: learn;
+  min-width: 0;
+}
+.lesson-term {
+  grid-area: term;
+  position: sticky;
+  top: calc(var(--nav-h) + 16px);
+  /* nav + lesson header (measured, so a wrapped header still fits) + work padding */
+  height: max(420px, calc(100dvh - var(--nav-h) - var(--lh-h, 65px) - 40px));
+  min-width: 0;
+}
+.lesson-term > .term {
+  height: 100%;
+}
+.lesson-repo {
+  grid-area: repo;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.repo-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.repo-tabs [role='tab'] {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--mute);
+  cursor: default;
+}
+.repo-tabs [role='tab'][aria-selected='true'] {
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.repo-tabs [role='tab']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.lesson-repo .repomap {
+  border: 0;
+  border-radius: 0;
+}
+@media (max-width: 979px) {
+  .lesson-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lesson-work {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'learn'
+      'term'
+      'repo';
+    grid-template-rows: auto;
+    padding: 12px 16px 24px;
+    gap: 12px;
+  }
+  .lesson-term {
+    position: static;
+    height: 420px;
+  }
+}
