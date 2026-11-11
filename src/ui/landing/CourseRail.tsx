@@ -29,7 +29,7 @@ export function CourseRail(): React.JSX.Element {
                 </div>
               )}
             </div>
-            <span className="when">{later ? 'Coming next' : 'At launch'}</span>
+            <span className="when">{later ? 'Coming next' : 'Available now'}</span>
           </li>
         )
       })}

@@ -196,7 +196,7 @@ describe('Landing', () => {
     for (const s of course) {
       expect(within(rail as HTMLElement).getByRole('heading', { name: s.title })).toBeInTheDocument()
     }
-    expect(within(rail as HTMLElement).getAllByText('At launch').length).toBe(course.filter((s) => s.status === 'launch').length)
+    expect(within(rail as HTMLElement).getAllByText('Available now').length).toBe(course.filter((s) => s.status === 'launch').length)
     expect(within(rail as HTMLElement).getAllByText('Coming next').length).toBe(course.filter((s) => s.status === 'later').length)
     expect(within(rail as HTMLElement).getByText('git reflog')).toBeInTheDocument()
   })
