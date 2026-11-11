@@ -1,6 +1,6 @@
 import type { Lesson } from '../schema'
 import { ran, ranGit } from '../checks'
-import { IDENTITY, NOTES, README } from './sample'
+import { IDENTITY, NOTES, README } from '../sample'
 
 export const whatIsGit: Lesson = {
   id: 'what-is-git',

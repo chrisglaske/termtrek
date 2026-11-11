@@ -5,6 +5,7 @@ import { tokenize } from './tokenize';
 import type { Token } from './tokenize';
 import { didYouMean } from './suggest';
 import { err, insideHome, isDir, parentOf } from './shell/fs';
+import { EDITOR_WAITING } from './git/editor';
 
 interface Segment {
   /** How this segment was joined to the previous one: `&&` runs only after success, `;` always runs. */
@@ -81,6 +82,7 @@ function runUnsafe(start: World, line: string): RunResult {
   const lines: OutLine[] = [];
   let explain: Explain | undefined;
   let clear = false;
+  let open: string | undefined;
   let exitCode = 0;
 
   for (const seg of parsed.segments) {
@@ -104,6 +106,7 @@ function runUnsafe(start: World, line: string): RunResult {
           explain = suggestion(seg.words, parsed.segments.length === 1 ? line : undefined) ?? explain;
         }
         if (r.clear) clear = true;
+        if (r.open) open = r.open;
       }
     }
     if (seg.redirect) {
@@ -131,10 +134,14 @@ function runUnsafe(start: World, line: string): RunResult {
   const result: RunResult = { world, lines, exitCode };
   if (explain) result.explain = explain;
   if (clear) result.clear = true;
+  if (open) result.open = open;
   return result;
 }
 
 export function runLine(world: World, line: string): RunResult {
+  if (world.pending) {
+    return { world, lines: [[{ text: EDITOR_WAITING, tone: 'muted' }]], exitCode: 1 };
+  }
   try {
     return runUnsafe(world, line);
   } catch {

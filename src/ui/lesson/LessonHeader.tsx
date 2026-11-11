@@ -80,7 +80,10 @@ export function LessonHeader({
   const n = state.stepIndex + 1
   return (
     <header className="lh">
-      <h1 className="lh-title">{lesson.title}</h1>
+      <div className="lh-head">
+        <h1 className="lh-title">{lesson.title}</h1>
+        {lesson.assumes && <p className="lh-assumes">Assumes: {lesson.assumes}</p>}
+      </div>
       <span className="lh-tag">
         {lesson.level}, {lesson.minutes} min
       </span>

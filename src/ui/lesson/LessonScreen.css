@@ -41,7 +41,7 @@
   height: max(420px, calc(100dvh - var(--nav-h) - var(--lh-h, 65px) - 40px));
   min-width: 0;
 }
-.lesson-term > .term {
+.lesson-term > .ws {
   height: 100%;
 }
 .lesson-repo {

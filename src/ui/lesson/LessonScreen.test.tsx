@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { axe } from 'vitest-axe'
 import App from '../App'
 import { STORAGE_KEY } from '../../progress/store'
-import { findLesson } from '../../lessons/course'
+import { allLessons, findLesson } from '../../lessons/course'
 
 const ID = 'first-commit'
 
@@ -45,6 +45,16 @@ describe('LessonScreen', () => {
     expect(within(course).getByRole('link', { name: /Your first commit/ })).toHaveAttribute('aria-current', 'page')
     expect(within(course).getAllByText('Coming next').length).toBe(2)
     expect(screen.getByRole('tab', { name: 'Your repo' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('shows assumes', () => {
+    open('see-what-changed')
+    expect(screen.getByText('Assumes: You can stage and commit changes.')).toBeInTheDocument()
+  })
+
+  it('leaves assumes out when a lesson has none', () => {
+    open('what-is-git')
+    expect(screen.queryByText(/^Assumes:/)).toBeNull()
   })
 
   it('completes a step when the solution is typed, keeping focus in the terminal', async () => {
@@ -121,8 +131,9 @@ describe('LessonScreen', () => {
   })
 
   it('says so when the last lesson out is finished', async () => {
-    const { user } = open('start-a-project')
-    const steps = findLesson('start-a-project')!.steps
+    const last = allLessons().at(-1)!
+    const { user } = open(last.id)
+    const steps = last.steps
     for (const [i, s] of steps.entries()) {
       if (i > 0) await user.keyboard('{Enter}')
       for (const line of s.solution) await user.type(input(), `${line}{Enter}`)
@@ -142,6 +153,101 @@ describe('LessonScreen', () => {
     expect(nextBtn()).toBeDisabled()
     expect(screen.getByRole('log')).not.toHaveTextContent('git add')
     confirm.mockRestore()
+  })
+
+  it('opens a file in an editor tab with code', async () => {
+    const { user } = open()
+    await user.type(input(), 'code notes.txt{Enter}')
+    const tab = screen.getByRole('tab', { name: 'notes.txt' })
+    expect(tab).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Terminal' })).toHaveAttribute('aria-selected', 'false')
+    expect(screen.getByRole('textbox', { name: 'Edit notes.txt' })).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('tab', { name: 'notes.txt' })).toBeNull()
+    expect(screen.getByRole('tab', { name: 'Terminal' })).toHaveAttribute('aria-selected', 'true')
+    expect(input()).toHaveFocus()
+  })
+
+  it('opens COMMIT_EDITMSG for git commit and waits for it', async () => {
+    const { user } = open()
+    await user.type(input(), 'git add notes.txt{Enter}')
+    await user.keyboard('{Enter}')
+    await user.type(input(), 'git commit{Enter}')
+    expect(screen.getByRole('tab', { name: 'COMMIT_EDITMSG' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('textbox', { name: 'Edit COMMIT_EDITMSG' })).toHaveFocus()
+    await user.click(screen.getByRole('tab', { name: 'Terminal' }))
+    expect(input()).toBeDisabled()
+    expect(screen.getByText('hint: Waiting for your editor to close the file...')).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'COMMIT_EDITMSG' }))
+    const msg = screen.getByRole('textbox', { name: 'Edit COMMIT_EDITMSG' })
+    await user.type(msg, 'Add meeting notes')
+    await user.click(screen.getByRole('button', { name: 'Save and close' }))
+    expect(screen.queryByRole('tab', { name: 'COMMIT_EDITMSG' })).toBeNull()
+    expect(input()).toBeEnabled()
+    expect(input()).toHaveFocus()
+    expect(screen.queryByText('hint: Waiting for your editor to close the file...')).toBeNull()
+    expect(screen.getByRole('log')).toHaveTextContent('Add meeting notes')
+    expect(screen.getByRole('heading', { name: 'Lesson complete' })).toBeInTheDocument()
+  })
+
+  it('shows the step success inside the editor tab when a Save completes the step', async () => {
+    const { user } = open('merge-conflicts')
+    await user.type(input(), 'git merge launch-date{Enter}')
+    await user.click(nextBtn())
+    await user.type(input(), 'code notes.txt{Enter}')
+    await user.click(screen.getByRole('button', { name: /Keep incoming/ }))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    const panel = screen.getByRole('tabpanel', { name: 'notes.txt' })
+    expect(panel.querySelector('.fb-ok')).toHaveTextContent(/Conflict fixed in the file/)
+    expect(within(panel).getByText(/Conflict fixed in the file/)).toBeInTheDocument()
+  })
+
+  it('keeps a file open when it is reopened after closing its tab', async () => {
+    const { user } = open()
+    await user.type(input(), 'code notes.txt{Enter}')
+    screen.getByRole('tab', { name: 'notes.txt' }).focus()
+    await user.keyboard('{Delete}')
+    expect(screen.queryByRole('tab', { name: 'notes.txt' })).toBeNull()
+    await user.type(input(), 'code notes.txt{Enter}')
+    expect(screen.getByRole('tab', { name: 'notes.txt' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('shows the terminal when the Learn card runs a command, and Next focuses it', async () => {
+    const { user, container } = open()
+    await user.type(input(), 'code notes.txt{Enter}')
+    const learn = container.querySelector('.lesson-learn') as HTMLElement
+    await user.click(within(learn).getByRole('button', { name: 'git add notes.txt' }))
+    expect(screen.getByRole('tab', { name: 'Terminal' })).toHaveAttribute('aria-selected', 'true')
+    expect(container.querySelector('.fb-ok')).toHaveTextContent(/Ready to save/)
+    await user.click(screen.getByRole('tab', { name: 'notes.txt' }))
+    await user.click(nextBtn())
+    expect(screen.getByRole('tab', { name: 'Terminal' })).toHaveAttribute('aria-selected', 'true')
+    expect(input()).toHaveFocus()
+  })
+
+  it('sends Learn card commands to the open commit message instead of the log', async () => {
+    const { user, container } = open()
+    await user.type(input(), 'git add notes.txt{Enter}')
+    await user.keyboard('{Enter}')
+    await user.type(input(), 'git commit{Enter}')
+    await user.click(screen.getByRole('tab', { name: 'Terminal' }))
+    const count = container.querySelectorAll('.term-entry').length
+    const learn = container.querySelector('.lesson-learn') as HTMLElement
+    await user.click(within(learn).getByRole('button', { name: 'git commit -m "Add meeting notes"' }))
+    expect(container.querySelectorAll('.term-entry')).toHaveLength(count)
+    expect(screen.getByRole('tab', { name: 'COMMIT_EDITMSG' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('textbox', { name: 'Edit COMMIT_EDITMSG' })).toHaveFocus()
+  })
+
+  it('moves between workspace tabs with the arrow keys', async () => {
+    const { user } = open()
+    await user.type(input(), 'code notes.txt{Enter}')
+    screen.getByRole('tab', { name: 'notes.txt' }).focus()
+    await user.keyboard('{ArrowLeft}')
+    expect(screen.getByRole('tab', { name: 'Terminal' })).toHaveFocus()
+    expect(screen.getByRole('tab', { name: 'Terminal' })).toHaveAttribute('aria-selected', 'true')
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByRole('tab', { name: 'notes.txt' })).toHaveAttribute('aria-selected', 'true')
   })
 
   it('has no axe violations', async () => {

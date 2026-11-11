@@ -2,7 +2,26 @@ import { createWorld } from '../engine/world'
 import { runLine } from '../engine/interpreter'
 import type { World } from '../engine/types'
 import type { StepContext } from './schema'
-import { commitCount, hasIdentity, inRepo, isClean, isStaged, isTracked, messageQuality, ran, ranGit } from './checks'
+import {
+  branchExists,
+  commitCount,
+  hasIdentity,
+  hasMarkers,
+  headMessage,
+  historyLength,
+  inRepo,
+  isClean,
+  isStaged,
+  isTracked,
+  mergeInProgress,
+  messageQuality,
+  onBranch,
+  parentCount,
+  ran,
+  ranGit,
+  treeFile,
+  workFile,
+} from './checks'
 
 function run(w: World, ...lines: string[]): World {
   return lines.reduce((acc, l) => runLine(acc, l).world, w)
@@ -97,3 +116,83 @@ describe('ran', () => {
     expect(ran(ctx([]), 'ls')).toBe(false)
   })
 })
+
+describe('history and file checks', () => {
+  const repoSetup = {
+    cwd: 'proj',
+    config: { 'user.name': 'Sam', 'user.email': 's@x.io' },
+    repo: {
+      at: 'proj',
+      commits: [
+        { message: 'Add a', files: { 'a.txt': 'one\n' } },
+        { message: 'Change a', files: { 'a.txt': 'two\n' } },
+      ],
+    },
+  }
+
+  it('headMessage', () => {
+    expect(headMessage(createWorld())).toBeNull()
+    expect(headMessage(run(createWorld(base0), 'git init'))).toBeNull()
+    expect(headMessage(createWorld(repoSetup))).toBe('Change a')
+  })
+
+  it('historyLength follows first parents from a ref', () => {
+    const w = createWorld(repoSetup)
+    expect(historyLength(createWorld())).toBe(0)
+    expect(historyLength(w)).toBe(2)
+    expect(historyLength(w, 'HEAD~1')).toBe(1)
+    expect(historyLength(w, 'nope')).toBe(0)
+    const m = run(w, 'git switch -c side', 'echo b > b.txt', 'git add b.txt', 'git commit -m "Add b"', 'git switch main', 'echo c > c.txt', 'git add c.txt', 'git commit -m "Add c"', 'git merge --no-edit side')
+    expect(parentCount(m)).toBe(2)
+    expect(historyLength(m)).toBe(4)
+    expect(historyLength(m, 'side')).toBe(3)
+  })
+
+  it('workFile and treeFile', () => {
+    const w = run(createWorld(repoSetup), 'echo three > a.txt')
+    expect(workFile(w, 'a.txt')).toBe('three\n')
+    expect(workFile(w, 'missing.txt')).toBeUndefined()
+    expect(workFile(createWorld(), 'a.txt')).toBeUndefined()
+    expect(treeFile(w, 'HEAD', 'a.txt')).toBe('two\n')
+    expect(treeFile(w, 'HEAD~1', 'a.txt')).toBe('one\n')
+    expect(treeFile(w, 'HEAD', 'missing.txt')).toBeUndefined()
+    expect(treeFile(w, 'nope', 'a.txt')).toBeUndefined()
+  })
+
+  it('onBranch and branchExists', () => {
+    const w = createWorld(repoSetup)
+    expect(onBranch(w, 'main')).toBe(true)
+    expect(branchExists(w, 'side')).toBe(false)
+    const b = run(w, 'git switch -c side')
+    expect(onBranch(b, 'side')).toBe(true)
+    expect(onBranch(b, 'main')).toBe(false)
+    expect(branchExists(b, 'side')).toBe(true)
+    expect(branchExists(b, 'toString')).toBe(false)
+    expect(onBranch(run(w, 'git switch --detach HEAD'), 'main')).toBe(false)
+    expect(onBranch(createWorld(), 'main')).toBe(false)
+  })
+
+  it('parentCount', () => {
+    expect(parentCount(createWorld())).toBe(0)
+    expect(parentCount(createWorld(repoSetup))).toBe(1)
+    expect(parentCount(run(createWorld(repoSetup), 'git reset --hard HEAD~1'))).toBe(0)
+  })
+
+  it('hasMarkers', () => {
+    expect(hasMarkers('<<<<<<< HEAD\na\n=======\nb\n>>>>>>> side\n')).toBe(true)
+    expect(hasMarkers('a\n=======\n')).toBe(true)
+    expect(hasMarkers('plain text\n')).toBe(false)
+    expect(hasMarkers('x <<<<<<< HEAD\n')).toBe(false)
+    expect(hasMarkers('<<<<<<<<\n')).toBe(false)
+  })
+
+  it('mergeInProgress', () => {
+    const w = createWorld(repoSetup)
+    expect(mergeInProgress(w)).toBe(false)
+    const c = run(w, 'git switch -c side', 'echo side > a.txt', 'git commit -am "Side a"', 'git switch main', 'echo main > a.txt', 'git commit -am "Main a"', 'git merge side')
+    expect(mergeInProgress(c)).toBe(true)
+    expect(mergeInProgress(run(c, 'git merge --abort'))).toBe(false)
+  })
+})
+
+const base0 = { files: { 'proj/a.txt': 'hi' }, cwd: 'proj' }

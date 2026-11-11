@@ -159,3 +159,35 @@ describe('semicolons and pipes', () => {
     }
   });
 });
+
+describe('code and editor aliases', () => {
+  const world = createWorld({ files: { 'notes.txt': 'hi\n' }, dirs: ['docs'] });
+  it('code notes.txt sets open', () => {
+    const r = run(['code notes.txt'], world);
+    expect(r.open).toBe('/home/you/notes.txt');
+    expect(r.lines).toEqual([]);
+    expect(r.explain?.text).toBe('Opened **notes.txt** in the editor tab. Save with Ctrl+S (⌘S on Mac).');
+  });
+  it('code opens a missing file', () => {
+    expect(run(['code new.txt'], world).open).toBe('/home/you/new.txt');
+  });
+  it('vim notes.txt adds the alias tip', () => {
+    const r = run(['vim notes.txt'], world);
+    expect(r.open).toBe('/home/you/notes.txt');
+    expect(r.explain?.text).toContain('Here `nano`, `vim` and `open` open the same editor; on your computer, `code` opens VS Code.');
+  });
+  it('code on a directory', () => {
+    const r = run(['code docs'], world);
+    expect(text(r)).toEqual(['code: docs: Is a directory']);
+    expect(r.exitCode).toBe(1);
+    expect(r.open).toBeUndefined();
+  });
+  it('code with no args', () => {
+    const r = run(['code'], world);
+    expect(text(r)).toEqual(['code: name a file to open, like `code notes.txt`']);
+    expect(r.exitCode).toBe(1);
+  });
+  it('code outside home', () => {
+    expect(text(run(['code /etc/hosts'], world))).toEqual(['code: /etc/hosts: Permission denied']);
+  });
+});

@@ -84,8 +84,9 @@ describe('git commit', () => {
   });
   it('missing -m', () => {
     const { r } = run(fresh(), 'git add .', 'git commit');
-    expect(r.exitCode).toBe(1);
-    expect(text(r)[0]).toBe('hint: add a message with -m "Describe your change"');
+    expect(r.exitCode).toBe(0);
+    expect(text(r)).toEqual(['hint: Waiting for your editor to close the file...']);
+    expect(r.world.pending?.file).toBe('.git/COMMIT_EDITMSG');
     expect(r.explain?.kind).toBe('tip');
   });
   it('identity missing', () => {
@@ -120,7 +121,7 @@ describe('git log', () => {
     const [c2, c1] = w.repo!.reflog.map((e) => e.id);
     const r = runLine(w, 'git log');
     expect(text(r)).toEqual([
-      `commit ${c2}`,
+      `commit ${c2} (HEAD -> main)`,
       'Author: Sam <sam@example.com>',
       'Date:   Mon Nov 9 09:02:00 2026 +0000',
       '',
@@ -139,9 +140,9 @@ describe('git log', () => {
   it('oneline and limits', () => {
     const w = two();
     const [c2, c1] = w.repo!.reflog.map((e) => e.id);
-    expect(text(runLine(w, 'git log --oneline'))).toEqual([`${c2} Update notes`, `${c1} Add notes`]);
-    expect(text(runLine(w, 'git log --oneline -1'))).toEqual([`${c2} Update notes`]);
-    expect(text(runLine(w, 'git log --oneline -n 1'))).toEqual([`${c2} Update notes`]);
+    expect(text(runLine(w, 'git log --oneline'))).toEqual([`${c2} (HEAD -> main) Update notes`, `${c1} Add notes`]);
+    expect(text(runLine(w, 'git log --oneline -1'))).toEqual([`${c2} (HEAD -> main) Update notes`]);
+    expect(text(runLine(w, 'git log --oneline -n 1'))).toEqual([`${c2} (HEAD -> main) Update notes`]);
   });
   it('unborn repo', () => {
     const r = runLine(fresh(), 'git log');

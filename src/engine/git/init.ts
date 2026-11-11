@@ -39,6 +39,8 @@ export const gitInit: CommandFn = (world, args) => {
       head: { kind: 'branch' as const, name: branch },
       index: {},
       reflog: [],
+      stash: [],
+      op: null,
     },
   };
   return {

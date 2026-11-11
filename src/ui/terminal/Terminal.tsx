@@ -9,6 +9,8 @@ export interface TermEntry {
   input: string
   lines: OutLine[]
   explain?: Explain
+  /** Output with no command typed (e.g. the editor closing): no prompt row is drawn. */
+  note?: boolean
 }
 
 export interface TerminalProps {
@@ -22,6 +24,8 @@ export interface TerminalProps {
   autoFocus?: boolean
   /** A card shown above the log, e.g. to explain a practice repo. */
   intro?: Explain
+  /** While set, the live line shows this muted text instead of a prompt, and input is disabled. */
+  waiting?: string
 }
 
 function Prompt({
@@ -50,6 +54,7 @@ export function Terminal({
   title = 'Terminal',
   autoFocus,
   intro,
+  waiting,
 }: TerminalProps): React.JSX.Element {
   const [value, setValue] = useState('')
   const [options, setOptions] = useState<string[]>([])
@@ -142,13 +147,15 @@ export function Terminal({
         <div role="log" aria-live="polite">
           {entries.map((en, i) => (
             <div className="term-entry" key={i}>
-              <div className="term-line">
-                <Prompt cwd={en.prompt.cwd} branch={en.prompt.branch} />
-                <span className="t-input">{en.input}</span>
-              </div>
+              {!en.note && (
+                <div className="term-line">
+                  <Prompt cwd={en.prompt.cwd} branch={en.prompt.branch} />
+                  <span className="t-input">{en.input}</span>
+                </div>
+              )}
               {en.lines.map((line, j) => (
                 <div className="term-line" key={j}>
-                  {line.length === 0
+                  {line.every((s) => s.text === '')
                     ? ' '
                     : line.map((s, k) => (
                         <span key={k} className={tone(s.tone)}>
@@ -164,11 +171,16 @@ export function Terminal({
           ))}
         </div>
         <div className="term-line term-live">
-          <Prompt cwd={cwdLabel} branch={branch} />
+          {waiting ? (
+            <span className="t-wait tone-muted">{waiting}</span>
+          ) : (
+            <Prompt cwd={cwdLabel} branch={branch} />
+          )}
           <input
             ref={inputRef}
             className="term-input"
             aria-label="Terminal input"
+            disabled={!!waiting}
             value={value}
             spellCheck={false}
             autoCapitalize="off"

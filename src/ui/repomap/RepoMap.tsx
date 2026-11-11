@@ -1,7 +1,8 @@
 import type { Repo, World } from '../../engine/types'
 import { getStatus, headCommitId } from '../../engine/git/repoState'
 import { RichText } from '../RichText'
-import { DEFAULT_GAP, layoutGraph } from './layout'
+import { reachableFromRefs } from '../../engine/git/refs'
+import { DEFAULT_GAP, LABEL_H, branchOrder, labelOffset, layoutGraph, type GraphLabel } from './layout'
 import './RepoMap.css'
 
 const LABEL_CHAR = 7.4
@@ -12,34 +13,48 @@ function labelWidth(text: string): number {
   return text.length * LABEL_CHAR + LABEL_PAD
 }
 
-function labelText(name: string, current: boolean): string {
-  return current ? `${name} · HEAD` : name
+function labelText(l: GraphLabel): string {
+  return l.current && l.name !== 'HEAD' ? `${l.name} · HEAD` : l.name
 }
 
-function ariaSummary(world: World): string {
-  const repo = world.repo
-  if (!repo) return ''
-  const n = Object.keys(repo.commits).length
-  const noun = n === 1 ? 'commit' : 'commits'
+function listOf(names: string[]): string {
+  return names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+}
+
+function plural(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`
+}
+
+function ariaSummary(repo: Repo): string {
+  const n = reachableFromRefs(repo).size
+  const branches = branchOrder(repo).filter((b) => repo.branches[b])
   const headId = headCommitId(repo)
   const id7 = headId ? headId.slice(0, 7) : ''
-  if (!id7) return `${n} ${noun}.`
-  if (repo.head.kind === 'detached') return `${n} ${noun}. HEAD is detached at ${id7}.`
-  return `${n} ${noun} on ${repo.head.name}. HEAD is on ${repo.head.name} at ${id7}.`
+  const parts = [`${plural(n, 'commit', 'commits')}${branches.length ? ` on ${listOf(branches)}` : ''}.`]
+  if (id7) parts.push(repo.head.kind === 'detached' ? `HEAD is detached at ${id7}.` : `HEAD is on ${repo.head.name} at ${id7}.`)
+  const op = repo.op
+  if (op) {
+    const doing = op.kind === 'merge' ? `Merging ${op.theirsLabel}` : 'Reverting'
+    parts.push(op.conflicts.length ? `${doing}: ${plural(op.conflicts.length, 'conflict', 'conflicts')} to fix.` : `${doing}: conflicts fixed.`)
+  }
+  if (repo.stash.length) parts.push(`Stash: ${plural(repo.stash.length, 'entry', 'entries')}.`)
+  return parts.join(' ')
 }
 
+/** Every commit HEAD reaches, newest first. */
 function savedCommits(repo: Repo): { id: string; message: string }[] {
-  const out: { id: string; message: string }[] = []
   const seen = new Set<string>()
-  let id = headCommitId(repo)
-  while (id && !seen.has(id)) {
+  const stack = [headCommitId(repo)]
+  while (stack.length) {
+    const id = stack.pop()
+    if (!id || seen.has(id) || !repo.commits[id]) continue
     seen.add(id)
-    const c: Repo['commits'][string] | undefined = repo.commits[id]
-    if (!c) break
-    out.push({ id: c.id, message: c.message })
-    id = c.parents[0] ?? null
+    stack.push(...repo.commits[id].parents)
   }
-  return out
+  return [...seen]
+    .map((id) => repo.commits[id]!)
+    .sort((a, b) => b.time - a.time || (a.id < b.id ? -1 : 1))
+    .map((c) => ({ id: c.id, message: c.message }))
 }
 
 function Area({ kind, title, count, empty, children }: { kind: string; title: string; count: number; empty: string; children: React.ReactNode[] }): React.JSX.Element {
@@ -85,7 +100,8 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
   }
 
   const status = getStatus(world)
-  const changed = status ? [...status.unstaged.map((c) => c.path), ...status.untracked] : []
+  const conflicts = repo.op ? [...repo.op.conflicts].sort() : []
+  const changed = status ? [...status.unstaged.map((c) => c.path), ...status.untracked].filter((p) => !conflicts.includes(p)) : []
   const staged = status ? status.staged.map((c) => c.path) : []
   const saved = savedCommits(repo)
   const headId = headCommitId(repo)
@@ -94,13 +110,15 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
   const nodeById = new Map(g.nodes.map((n) => [n.id, n]))
   const head = g.nodes.find((n) => n.isHead)
   const stubX = head ? head.x + DEFAULT_GAP : 0
-  const widest = Math.max(0, ...g.labels.map((l) => labelWidth(labelText(l.name, l.current))))
+  const widest = Math.max(0, ...g.labels.map((l) => labelWidth(labelText(l))))
   const padX = Math.max(20, Math.ceil(widest / 2) + 4)
   const totalW = g.width + padX
 
   return (
     <section className="repomap">
       <div className="repomap-head">
+        {repo.op && <span className="repomap-chip repomap-op">{repo.op.kind === 'merge' ? `Merging ${repo.op.theirsLabel}` : 'Reverting'}</span>}
+        {repo.stash.length > 0 && <span className="repomap-chip repomap-stash">{`Stash: ${repo.stash.length}`}</span>}
         <span className="repomap-branch">
           <i className={`dot ${branchName === null || branchName === 'main' ? 'dot-main' : 'dot-branch'}`} aria-hidden="true" />
           {branchName ?? `HEAD detached at ${headId ? headId.slice(0, 7) : ''}`}
@@ -110,23 +128,25 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
         <p className="repomap-empty">No commits yet</p>
       ) : (
         <div className="repomap-graph">
-          <svg role="img" aria-label={ariaSummary(world)} width={totalW} height={g.height} viewBox={`0 0 ${totalW} ${g.height}`}>
+          <svg role="img" aria-label={ariaSummary(repo)} width={totalW} height={g.height} viewBox={`0 0 ${totalW} ${g.height}`}>
             <g transform={`translate(${padX} 0)`} aria-hidden="true">
               {g.edges.map((e) => {
                 const a = nodeById.get(e.from)
                 const b = nodeById.get(e.to)
                 if (!a || !b) return null
                 const mid = (a.x + b.x) / 2
-                const main = b.lane === 0
+                const lost = a.lost || b.lost
+                const main = lost || (a.lane === 0 && b.lane === 0)
                 return (
                   <path
                     key={`${e.from}-${e.to}`}
-                    className="edge"
+                    className={lost ? 'edge edge-lost' : 'edge'}
                     d={`M${a.x} ${a.y} C${mid} ${a.y} ${mid} ${b.y} ${b.x} ${b.y}`}
                     fill="none"
                     stroke={main ? 'var(--g-main)' : 'var(--g-branch)'}
                     strokeWidth="3"
-                    strokeOpacity={main ? 0.45 : 1}
+                    strokeOpacity={lost ? 0.4 : main ? 0.45 : 1}
+                    strokeDasharray={lost ? '4 4' : undefined}
                   />
                 )
               })}
@@ -139,6 +159,8 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
               {g.nodes.map((n) =>
                 n.id === '…' ? (
                   <text key={n.id} x={n.x} y={n.y + 5} textAnchor="middle" fill="var(--mute)" fontFamily="var(--mono)" fontSize="16">…</text>
+                ) : n.lost ? (
+                  <circle key={n.id} className="node-lost" cx={n.x} cy={n.y} r="7" fill="var(--g-hollow)" stroke="var(--g-main)" strokeWidth="2" strokeDasharray="3 3" opacity="0.4" />
                 ) : (
                   <g key={n.id}>
                     {n.isHead && <circle cx={n.x} cy={n.y} r="13" fill="none" stroke="var(--g-head)" strokeWidth="3" />}
@@ -149,14 +171,14 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
               {g.labels.map((l) => {
                 const n = nodeById.get(l.commitId)
                 if (!n) return null
-                const text = labelText(l.name, l.current)
+                const text = labelText(l)
                 const w = labelWidth(text)
-                const y = l.lane === 0 ? n.y + 24 : n.y - 42
-                const fill = l.lane === 0 ? 'var(--g-main-lbl)' : 'var(--g-branch)'
+                const y = n.y + labelOffset(l.slot)
+                const amber = l.slot > 0 && l.name !== 'HEAD'
                 return (
                   <g key={l.name}>
-                    <rect x={n.x - w / 2} y={y} width={w} height="22" rx="11" fill={fill} stroke={l.current ? 'var(--g-head)' : 'none'} strokeWidth="2" />
-                    <text x={n.x} y={y + 15} textAnchor="middle" fontFamily="var(--mono)" fontSize="12" fontWeight="600" fill={l.lane === 0 ? '#fff' : '#1b1306'}>{text}</text>
+                    <rect x={n.x - w / 2} y={y} width={w} height={LABEL_H} rx={LABEL_H / 2} fill={amber ? 'var(--g-branch)' : 'var(--g-main-lbl)'} stroke={l.current ? 'var(--g-head)' : 'none'} strokeWidth="2" />
+                    <text x={n.x} y={y + 15} textAnchor="middle" fontFamily="var(--mono)" fontSize="12" fontWeight="600" fill={amber ? 'var(--cmd-bg)' : 'var(--on-accent)'}>{text}</text>
                   </g>
                 )
               })}
@@ -166,15 +188,24 @@ export function RepoMap({ world }: { world: World }): React.JSX.Element {
             {g.nodes
               .filter((n) => n.id !== '…')
               .map((n) => (
-                <li key={n.id}>{`${n.id.slice(0, 7)} ${n.message}`}</li>
+                <li key={n.id}>{`${n.id.slice(0, 7)} ${n.message}${n.lost ? ' (lost: only the reflog reaches it)' : ''}`}</li>
               ))}
           </ol>
         </div>
       )}
 
       <div className="zones">
-        <Area kind="folder" title="Folder" count={changed.length} empty="Nothing changed">
-          {changed.map((p) => <li key={p} className="file file-changed" title={p}><i aria-hidden="true" />{p}</li>)}
+        <Area kind="folder" title="Folder" count={conflicts.length + changed.length} empty="Nothing changed">
+          {[
+            ...conflicts.map((p) => (
+              <li key={p} className="file file-conflict" title={`${p} (conflict)`}>
+                <b className="file-badge" aria-hidden="true">!</b>
+                <span className="file-name">{p}</span>
+                <span className="file-tag">conflict</span>
+              </li>
+            )),
+            ...changed.map((p) => <li key={p} className="file file-changed" title={p}><i aria-hidden="true" />{p}</li>),
+          ]}
         </Area>
         <Connector label="add" />
         <Area kind="staged" title="Staged" count={staged.length} empty="Nothing staged yet. Stage a change with `git add`.">

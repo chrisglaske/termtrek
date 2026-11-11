@@ -1,7 +1,7 @@
 import type { Lesson, StepContext } from '../schema'
 import { isStaged, segmentsOf } from '../checks'
 import { getStatus } from '../../engine/git/repoState'
-import { IDENTITY, NOTES, NOTES_V2, README } from './sample'
+import { IDENTITY, NOTES, NOTES_V2, README } from '../sample'
 
 /** The words of the `git diff` command in the line just run, if there is one. */
 const lastDiff = (c: StepContext): string[] | undefined =>

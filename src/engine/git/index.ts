@@ -1,12 +1,20 @@
 import type { CommandFn } from '../registry';
 import { err, out } from '../shell/fs';
 import { gitAdd } from './add';
+import { gitBranch } from './branch';
 import { gitCommit } from './commit';
 import { gitConfig } from './config';
 import { gitDiff } from './diff';
 import { gitInit } from './init';
 import { gitLog } from './log';
+import { gitMerge } from './merge';
+import { gitReflog } from './reflog';
+import { gitReset } from './reset';
+import { gitRestore } from './restore';
+import { gitRevert } from './revert';
+import { gitStash } from './stash';
 import { gitStatus } from './status';
+import { gitCheckout, gitSwitch } from './switch';
 import { activeRepo } from './repoState';
 
 interface Sub { run: CommandFn; needsRepo: boolean }
@@ -19,6 +27,15 @@ const subs: Record<string, Sub> = {
   commit: { run: gitCommit, needsRepo: true },
   log: { run: gitLog, needsRepo: true },
   diff: { run: gitDiff, needsRepo: true },
+  restore: { run: gitRestore, needsRepo: true },
+  reset: { run: gitReset, needsRepo: true },
+  reflog: { run: gitReflog, needsRepo: true },
+  branch: { run: gitBranch, needsRepo: true },
+  switch: { run: gitSwitch, needsRepo: true },
+  checkout: { run: gitCheckout, needsRepo: true },
+  merge: { run: gitMerge, needsRepo: true },
+  revert: { run: gitRevert, needsRepo: true },
+  stash: { run: gitStash, needsRepo: true },
 };
 
 /** Single source of truth for known subcommands (used by did-you-mean and Tab). */
@@ -35,6 +52,15 @@ const USAGE = [
   '   commit    Record changes to the repository',
   '   log       Show commit logs',
   '   diff      Show changes between commits, index and working tree',
+  '   restore   Restore working tree files',
+  '   reset     Reset current HEAD to the specified state',
+  '   reflog    Manage reflog information',
+  '   branch    List, create, or delete branches',
+  '   switch    Switch branches',
+  '   checkout  Switch branches or restore working tree files',
+  '   merge     Join two or more development histories together',
+  '   revert    Revert some existing commits',
+  '   stash     Stash the changes in a dirty working directory away',
 ];
 
 export const git: CommandFn = (world, args, io) => {

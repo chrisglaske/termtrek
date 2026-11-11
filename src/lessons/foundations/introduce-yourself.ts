@@ -1,6 +1,6 @@
 import type { Lesson } from '../schema'
 import { hasIdentity } from '../checks'
-import { NOTES, README } from './sample'
+import { NOTES, README } from '../sample'
 
 export const introduceYourself: Lesson = {
   id: 'introduce-yourself',

@@ -1,6 +1,6 @@
 import type { Lesson } from '../schema'
 import { inRepo } from '../checks'
-import { IDENTITY, NOTES, README } from './sample'
+import { IDENTITY, NOTES, README } from '../sample'
 
 export const createARepo: Lesson = {
   id: 'create-a-repo',

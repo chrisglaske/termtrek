@@ -15,6 +15,14 @@
   letter-spacing: -0.02em;
   color: var(--ink);
 }
+.lh-head {
+  min-width: 0;
+}
+.lh-assumes {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--mute);
+}
 .lh-tag {
   font-size: 12px;
   font-weight: 600;

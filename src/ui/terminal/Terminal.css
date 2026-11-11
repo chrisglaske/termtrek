@@ -132,3 +132,14 @@
 .fb-body strong {
   color: var(--t-why-h);
 }
+.t-wait {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: pre-wrap;
+}
+.term-live:has(.t-wait) {
+  flex-wrap: wrap;
+}
+.term-input:disabled {
+  cursor: default;
+}

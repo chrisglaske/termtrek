@@ -18,6 +18,9 @@ export function useLessonRunner(
   hint(): void
   next(): void
   reset(): void
+  saveFile(path: string, text: string): void
+  closeFile(path: string): void
+  editorDone(text?: string | null): void
   visibleHint: string | null
   showMe: string | null
 } {
@@ -43,9 +46,12 @@ export function useLessonRunner(
   const hint = useCallback(() => dispatch({ type: 'hint' }), [])
   const next = useCallback(() => dispatch({ type: 'next' }), [])
   const reset = useCallback(() => dispatch({ type: 'reset' }), [])
+  const saveFile = useCallback((path: string, text: string) => dispatch({ type: 'save-file', path, text }), [])
+  const closeFile = useCallback((path: string) => dispatch({ type: 'close-file', path }), [])
+  const editorDone = useCallback((text?: string | null) => dispatch({ type: 'editor-done', text }), [])
 
   const step = state.lesson.steps[state.stepIndex]
   const visibleHint = step && state.hintLevel > 0 ? (step.hints[state.hintLevel - 1] ?? null) : null
   const showMe = step && state.hintLevel === step.hints.length ? step.solution.join(' && ') : null
-  return { state, run, hint, next, reset, visibleHint, showMe }
+  return { state, run, hint, next, reset, saveFile, closeFile, editorDone, visibleHint, showMe }
 }

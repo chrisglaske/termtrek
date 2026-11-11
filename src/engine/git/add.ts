@@ -33,7 +33,9 @@ export const gitAdd: CommandFn = (world, args) => {
   const ignoredHit: string[] = [];
   const staged = new Set<string>();
 
+  const touched = new Set<string>();
   const stage = (p: string) => {
+    touched.add(p);
     if (p in work) {
       if (index[p] !== work[p]) staged.add(p);
       index[p] = work[p]!;
@@ -54,8 +56,9 @@ export const gitAdd: CommandFn = (world, args) => {
     }
     const rel = isRoot ? '' : t.abs.slice(rootPrefix.length);
     const inside = (p: string) => rel === '' || p === rel || p.startsWith(rel + '/');
-    const candidates = new Set([...Object.keys(work), ...Object.keys(index)].filter(inside));
-    const exact = rel in work || rel in index;
+    const unmerged = repo.op?.conflicts ?? [];
+    const candidates = new Set([...Object.keys(work), ...Object.keys(index), ...unmerged].filter(inside));
+    const exact = rel in work || rel in index || unmerged.includes(rel);
     if (candidates.size === 0 && !exact && !isDir(world, t.abs)) {
       return { lines: [err(`fatal: pathspec '${t.label}' did not match any files`)], exitCode: 128 };
     }
@@ -70,7 +73,9 @@ export const gitAdd: CommandFn = (world, args) => {
     }
   }
 
-  const world2 = { ...world, repo: { ...repo, index } };
+  // Staging a conflicted path marks it resolved.
+  const op = repo.op && repo.op.conflicts.length ? { ...repo.op, conflicts: repo.op.conflicts.filter((p) => !touched.has(p)) } : repo.op;
+  const world2 = { ...world, repo: { ...repo, index, op } };
   if (ignoredHit.length) {
     return {
       world: world2,

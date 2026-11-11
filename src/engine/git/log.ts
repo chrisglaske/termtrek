@@ -1,5 +1,5 @@
 import type { CommandFn } from '../registry';
-import type { Commit, OutLine } from '../types';
+import type { Commit, OutLine, Repo } from '../types';
 import { err } from '../shell/fs';
 import { activeRepo, headCommitId } from './repoState';
 
@@ -13,14 +13,50 @@ export function formatDate(minutes: number): string {
   return `${DAYS[d.getUTCDay()]} ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} ${d.getUTCFullYear()} +0000`;
 }
 
+/** Ref decoration for a commit id, like `(HEAD -> main, feature)`, or '' when the commit is not a tip. */
+export function decorationFor(repo: Repo, id: string): string {
+  const head = headCommitId(repo);
+  const names: string[] = [];
+  const current = repo.head.kind === 'branch' ? repo.head.name : null;
+  if (head === id) names.push(current ? `HEAD -> ${current}` : 'HEAD');
+  for (const b of Object.keys(repo.branches).sort()) {
+    if (repo.branches[b] === id && b !== current) names.push(b);
+  }
+  return names.length ? `(${names.join(', ')})` : '';
+}
+
+/** Every commit reachable from the tips, newest first, each exactly once. */
+function walk(repo: Repo, tips: string[]): Commit[] {
+  const seen = new Set<string>();
+  const frontier = [...tips];
+  const result: Commit[] = [];
+  while (frontier.length) {
+    let best = 0;
+    for (let i = 1; i < frontier.length; i++) {
+      if ((repo.commits[frontier[i]!]?.time ?? 0) > (repo.commits[frontier[best]!]?.time ?? 0)) best = i;
+    }
+    const id = frontier.splice(best, 1)[0]!;
+    const c = repo.commits[id];
+    if (!c || seen.has(id)) continue;
+    seen.add(id);
+    result.push(c);
+    frontier.push(...c.parents);
+  }
+  return result;
+}
+
 export const gitLog: CommandFn = (world, args) => {
   const repo = activeRepo(world);
   if (!repo) return { lines: [], exitCode: 128 };
   let oneline = false;
+  let all = false;
+  let graph = false;
   let limit = Infinity;
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
     if (a === '--oneline') oneline = true;
+    else if (a === '--all') all = true;
+    else if (a === '--graph') graph = true;
     else if (a === '-n' || a === '--max-count') {
       const k = Number(args[++i]);
       if (!Number.isInteger(k) || k < 0) return { lines: [err(`fatal: '${args[i] ?? ''}': not an integer`)], exitCode: 128 };
@@ -35,23 +71,34 @@ export const gitLog: CommandFn = (world, args) => {
     const b = repo.head.kind === 'branch' ? repo.head.name : 'HEAD';
     return { lines: [err(`fatal: your current branch '${b}' does not have any commits yet`)], exitCode: 128 };
   }
-  const lines: OutLine[] = [];
-  let n = 0;
-  while (cur && n < limit) {
-    const c: Commit | undefined = repo.commits[cur];
-    if (!c) break;
-    if (oneline) {
-      lines.push([{ text: c.id, tone: 'id' }, { text: ' ' + c.message.split('\n')[0] }]);
-    } else {
-      if (n > 0) lines.push([{ text: '' }]);
-      lines.push([{ text: 'commit ' }, { text: c.id, tone: 'id' }]);
-      lines.push([{ text: `Author: ${c.author.name} <${c.author.email}>` }]);
-      lines.push([{ text: `Date:   ${formatDate(c.time)}` }]);
-      lines.push([{ text: '' }]);
-      for (const l of c.message.split('\n')) lines.push([{ text: '    ' + l }]);
-    }
-    n++;
-    cur = c.parents[0] ?? null;
+  const tips: string[] = [cur];
+  if (all) {
+    for (const t of Object.values(repo.branches)) if (t !== null) tips.push(t);
+    if (repo.head.kind === 'detached') tips.push(repo.head.id);
   }
-  return { lines, exitCode: 0 };
+  const shown = walk(repo, tips).slice(0, limit);
+  const lines: OutLine[] = [];
+  const mark = graph ? '* ' : '';
+  const bar = graph ? '| ' : '';
+  shown.forEach((c, n) => {
+    const decor = decorationFor(repo, c.id);
+    const decorSpans = decor ? [{ text: ' ' }, { text: decor, tone: 'ok' as const }] : [];
+    if (oneline) {
+      lines.push([{ text: mark }, { text: c.id, tone: 'id' }, ...decorSpans, { text: ' ' + c.message.split('\n')[0] }]);
+      return;
+    }
+    if (n > 0) lines.push([{ text: graph ? '|' : '' }]);
+    lines.push([{ text: mark + 'commit ' }, { text: c.id, tone: 'id' }, ...decorSpans]);
+    if (c.parents.length > 1) lines.push([{ text: `${bar}Merge: ${c.parents.map((p) => p.slice(0, 7)).join(' ')}` }]);
+    lines.push([{ text: `${bar}Author: ${c.author.name} <${c.author.email}>` }]);
+    lines.push([{ text: `${bar}Date:   ${formatDate(c.time)}` }]);
+    lines.push([{ text: bar.trimEnd() }]);
+    for (const l of c.message.split('\n')) lines.push([{ text: bar + '    ' + l }]);
+  });
+  const merged = graph && shown.some((c) => c.parents.length > 1);
+  return {
+    lines,
+    explain: merged ? { kind: 'tip', text: 'The **Your repo** map draws this graph for you.' } : undefined,
+    exitCode: 0,
+  };
 };

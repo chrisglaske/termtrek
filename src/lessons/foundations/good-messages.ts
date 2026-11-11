@@ -1,7 +1,7 @@
 import type { Lesson, StepContext } from '../schema'
 import { commitCount, isStaged, messageQuality } from '../checks'
 import { headCommitId } from '../../engine/git/repoState'
-import { IDENTITY, NOTES, README, README_V2 } from './sample'
+import { IDENTITY, NOTES, README, README_V2 } from '../sample'
 
 const SETUP_COMMITS = 1
 

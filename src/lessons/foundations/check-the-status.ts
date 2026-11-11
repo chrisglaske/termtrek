@@ -1,6 +1,6 @@
 import type { Lesson } from '../schema'
 import { isStaged, ranGit } from '../checks'
-import { IDENTITY, NOTES, README } from './sample'
+import { IDENTITY, NOTES, README } from '../sample'
 
 export const checkTheStatus: Lesson = {
   id: 'check-the-status',

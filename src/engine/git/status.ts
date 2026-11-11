@@ -1,6 +1,8 @@
 import type { CommandFn } from '../registry';
 import type { OutLine, Span } from '../types';
-import { activeRepo, getStatus, headCommitId } from './repoState';
+import type { Repo } from '../types';
+import { activeRepo, getStatus, headCommitId, headTree } from './repoState';
+import { mergeBase } from './refs';
 import type { Change } from './repoState';
 
 /** Path of `rel` (repo-relative) as seen from `cwdRel` (repo-relative cwd), with `../` like Git. */
@@ -14,10 +16,38 @@ export function relFromCwd(cwdRel: string, rel: string): string {
   return isDir ? (out === '' ? './' : out.endsWith('/') ? out : out + '/') : out;
 }
 
-const LABEL = { new: 'new file:   ', modified: 'modified:   ', deleted: 'deleted:    ' } as const;
+export const LABEL = { new: 'new file:   ', modified: 'modified:   ', deleted: 'deleted:    ' } as const;
 const line = (...spans: Span[]): OutLine => spans;
 const muted = (t: string): OutLine => [{ text: t, tone: 'muted' }];
 const blank: OutLine = [{ text: '' }];
+
+export type UnmergedCode = 'UU' | 'AA' | 'UD' | 'DU' | 'AU' | 'UA';
+
+/** Long-form `git status` label for each unmerged code. */
+const UNMERGED_LABEL: Record<UnmergedCode, string> = {
+  UU: 'both modified:   ',
+  AA: 'both added:      ',
+  UD: 'deleted by them: ',
+  DU: 'deleted by us:   ',
+  AU: 'added by us:     ',
+  UA: 'added by them:   ',
+};
+
+/** Where the conflicted merge stands for a path, as Git's short-status code. */
+export function unmergedCode(repo: Repo, path: string): UnmergedCode {
+  const op = repo.op;
+  const headId = headCommitId(repo);
+  const reverted = op?.kind === 'revert' ? repo.commits[op.theirs] : undefined;
+  // A revert merges with the reverted commit as base and its parent as "theirs".
+  const baseId = reverted ? reverted.id : op && headId ? mergeBase(repo, headId, op.theirs) : null;
+  const base = baseId ? repo.commits[baseId]!.tree : {};
+  const ours = headTree(repo);
+  const theirs = reverted ? (repo.commits[reverted.parents[0] ?? '']?.tree ?? {}) : op ? (repo.commits[op.theirs]?.tree ?? {}) : {};
+  if (!(path in base)) return path in ours && path in theirs ? 'AA' : path in ours ? 'AU' : 'UA';
+  if (!(path in theirs)) return 'UD';
+  if (!(path in ours)) return 'DU';
+  return 'UU';
+}
 
 export const gitStatus: CommandFn = (world, args) => {
   const repo = activeRepo(world);
@@ -29,6 +59,8 @@ export const gitStatus: CommandFn = (world, args) => {
   const rel = (p: string) => relFromCwd(cwdRel, p);
   const born = headCommitId(repo) !== null;
   const lines: OutLine[] = [];
+  const op = repo.op;
+  const conflicts = op ? [...op.conflicts].sort() : [];
 
   if (short) {
     if (showBranch) {
@@ -37,45 +69,78 @@ export const gitStatus: CommandFn = (world, args) => {
     }
     const code = (c: Change | undefined, staged: boolean) =>
       !c ? ' ' : c.kind === 'new' ? (staged ? 'A' : '?') : c.kind === 'modified' ? 'M' : 'D';
-    const paths = new Set([...st.staged.map((c) => c.path), ...st.unstaged.map((c) => c.path)]);
+    const paths = new Set([...st.staged.map((c) => c.path), ...st.unstaged.map((c) => c.path), ...conflicts]);
     for (const p of [...paths].sort()) {
+      if (conflicts.includes(p)) {
+        lines.push(line({ text: unmergedCode(repo, p), tone: 'warn' }, { text: ' ' + rel(p) }));
+        continue;
+      }
       const s = st.staged.find((c) => c.path === p);
       const u = st.unstaged.find((c) => c.path === p);
       const spans: Span[] = [];
       spans.push({ text: code(s, true), tone: 'ok' }, { text: code(u, false), tone: 'error' }, { text: ' ' + rel(p) });
       lines.push(spans);
     }
-    for (const p of st.untracked) lines.push(line({ text: '??', tone: 'error' }, { text: ' ' + rel(p) }));
+    for (const p of st.untracked) if (!conflicts.includes(p)) lines.push(line({ text: '??', tone: 'error' }, { text: ' ' + rel(p) }));
     return { lines, explain: { kind: 'tip', text: '`git status` is your "where am I?" command.' }, exitCode: 0 };
   }
 
   lines.push([{ text: st.branch ? `On branch ${st.branch}` : `HEAD detached at ${headCommitId(repo) ?? ''}` }]);
   if (!born) lines.push(blank, [{ text: 'No commits yet' }], blank);
-  if (st.staged.length) {
+  if (op?.kind === 'revert') {
+    lines.push(
+      [{ text: `You are currently reverting commit ${op.theirs}.` }],
+      muted(conflicts.length ? '  (fix conflicts and run "git revert --continue")' : '  (all conflicts fixed: run "git revert --continue")'),
+      muted('  (use "git revert --abort" to cancel the revert operation)'),
+      blank,
+    );
+  } else if (op && conflicts.length) {
+    lines.push([{ text: 'You have unmerged paths.' }], muted('  (fix conflicts and run "git commit")'), muted('  (use "git merge --abort" to abort the merge)'), blank);
+  } else if (op) {
+    lines.push([{ text: 'All conflicts fixed but you are still merging.' }], muted('  (use "git commit" to conclude merge)'), blank);
+  }
+  // Conflicted paths only show under "Unmerged paths".
+  const skip = (c: Change) => conflicts.includes(c.path);
+  const staged = st.staged.filter((c) => !skip(c));
+  const unstaged = st.unstaged.filter((c) => !skip(c));
+  const untracked = st.untracked.filter((p) => !conflicts.includes(p));
+  if (staged.length) {
     lines.push([{ text: 'Changes to be committed:' }]);
-    lines.push(muted(born ? '  (use "git restore --staged <file>..." to unstage)' : '  (use "git rm --cached <file>..." to unstage)'));
-    for (const c of st.staged) lines.push(line({ text: '\t' + LABEL[c.kind] + rel(c.path), tone: 'ok' }));
+    if (op?.kind !== 'merge') lines.push(muted(born ? '  (use "git restore --staged <file>..." to unstage)' : '  (use "git rm --cached <file>..." to unstage)'));
+    for (const c of staged) lines.push(line({ text: '\t' + LABEL[c.kind] + rel(c.path), tone: 'ok' }));
     lines.push(blank);
   }
-  if (st.unstaged.length) {
+  if (conflicts.length) {
+    lines.push([{ text: 'Unmerged paths:' }]);
+    const codes = conflicts.map((p) => unmergedCode(repo, p));
+    const rm = codes.some((c) => c === 'UD' || c === 'DU');
+    lines.push(muted(rm ? '  (use "git add/rm <file>..." as appropriate to mark resolution)' : '  (use "git add <file>..." to mark resolution)'));
+    conflicts.forEach((p, i) => lines.push(line({ text: '\t' + UNMERGED_LABEL[codes[i]!] + rel(p), tone: 'warn' })));
+    lines.push(blank);
+  }
+  if (unstaged.length) {
     lines.push([{ text: 'Changes not staged for commit:' }]);
-    const anyDeleted = st.unstaged.some((c) => c.kind === 'deleted');
+    const anyDeleted = unstaged.some((c) => c.kind === 'deleted');
     lines.push(muted(`  (use "git add${anyDeleted ? '/rm' : ''} <file>..." to update what will be committed)`));
     lines.push(muted('  (use "git restore <file>..." to discard changes in working directory)'));
-    for (const c of st.unstaged) lines.push(line({ text: '\t' + LABEL[c.kind === 'new' ? 'modified' : c.kind] + rel(c.path), tone: 'error' }));
+    for (const c of unstaged) lines.push(line({ text: '\t' + LABEL[c.kind === 'new' ? 'modified' : c.kind] + rel(c.path), tone: 'error' }));
     lines.push(blank);
   }
-  if (st.untracked.length) {
+  if (untracked.length) {
     lines.push([{ text: 'Untracked files:' }]);
     lines.push(muted('  (use "git add <file>..." to include in what will be committed)'));
-    for (const p of st.untracked) lines.push(line({ text: '\t' + rel(p), tone: 'error' }));
+    for (const p of untracked) lines.push(line({ text: '\t' + rel(p), tone: 'error' }));
     lines.push(blank);
   }
-  if (st.staged.length === 0 && st.unstaged.length > 0) {
+  if (op) {
+    if (staged.length === 0 && (conflicts.length > 0 || unstaged.length > 0)) {
+      lines.push([{ text: 'no changes added to commit (use "git add" and/or "git commit -a")' }]);
+    }
+  } else if (staged.length === 0 && unstaged.length > 0) {
     lines.push([{ text: 'no changes added to commit (use "git add" and/or "git commit -a")' }]);
-  } else if (st.staged.length === 0 && st.untracked.length > 0) {
+  } else if (staged.length === 0 && untracked.length > 0) {
     lines.push([{ text: 'nothing added to commit but untracked files present (use "git add" to track)' }]);
-  } else if (st.staged.length === 0) {
+  } else if (staged.length === 0) {
     lines.push([{ text: born ? 'nothing to commit, working tree clean' : 'nothing to commit (create/copy files and use "git add" to track)' }]);
   }
   return { lines, explain: { kind: 'tip', text: '`git status` is your "where am I?" command.' }, exitCode: 0 };

@@ -69,6 +69,8 @@ export function createWorld(setup: WorldSetup = {}): World {
       head: { kind: 'branch', name: branch },
       index,
       reflog,
+      stash: [],
+      op: null,
     };
   }
 

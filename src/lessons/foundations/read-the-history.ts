@@ -1,6 +1,6 @@
 import type { Lesson } from '../schema'
 import { ranGit, segmentsOf } from '../checks'
-import { IDENTITY, NOTES, NOTES_V2, README, README_V2 } from './sample'
+import { IDENTITY, NOTES, NOTES_V2, README, README_V2 } from '../sample'
 
 /** `git log --oneline`, `git log -n 2`, `git log -3` and friends. */
 const isShortLog = (words: string[]): boolean =>

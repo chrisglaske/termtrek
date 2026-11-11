@@ -4,11 +4,7 @@ import { findLesson, nextLesson } from '../../lessons/course'
 import type { Lesson } from '../../lessons/schema'
 import { useLessonRunner } from '../../lessons/useLessonRunner'
 import { useProgress } from '../../progress/ProgressContext'
-import { activeRepo } from '../../engine/git/repoState'
-import { displayPath } from '../../engine/paths'
-import { complete as completeLine } from '../../engine/suggest'
 import type { World } from '../../engine/types'
-import { Terminal } from '../terminal/Terminal'
 import { RepoMap } from '../repomap/RepoMap'
 import { Nav } from '../layout/Nav'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
@@ -17,12 +13,9 @@ import { Sidebar } from './Sidebar'
 import { LessonHeader } from './LessonHeader'
 import { LearnCard } from './LearnCard'
 import { LessonDone } from './LessonDone'
+import { Workspace } from './Workspace'
+import type { WorkspaceHandle } from './Workspace'
 import './LessonScreen.css'
-
-function branchOf(world: World): string | null {
-  const repo = activeRepo(world)
-  return repo && repo.head.kind === 'branch' ? repo.head.name : null
-}
 
 // Phones and narrow tablets: don't pop the on-screen keyboard or jump the page on load.
 function isWide(): boolean {
@@ -48,14 +41,15 @@ function RepoPanel({ world }: { world: World }): React.JSX.Element {
 
 function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
   const { complete } = useProgress()
-  const { state, run, hint, next, reset, showMe } = useLessonRunner(lesson, complete)
+  const { state, run, hint, next, reset, saveFile, closeFile, editorDone, showMe } = useLessonRunner(lesson, complete)
   const termRef = useRef<HTMLDivElement>(null)
   const { world, status } = state
   const step = lesson.steps[state.stepIndex]
-  const cwd = displayPath(world, world.cwd)
 
   const runRef = useRef<HTMLDivElement>(null)
-  const focusTerminal = () => termRef.current?.querySelector('input')?.focus({ preventScroll: isWide() })
+  const wsRef = useRef<WorkspaceHandle>(null)
+  const focusTerminal = () => wsRef.current?.focusTerminal({ preventScroll: isWide() })
+  const runFromCard = (line: string) => wsRef.current?.run(line)
   const focusInTerminal = () => !!termRef.current?.contains(document.activeElement)
 
   useEffect(() => {
@@ -104,7 +98,7 @@ function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
                 status={status}
                 hintLevel={state.hintLevel}
                 showMe={showMe}
-                run={run}
+                run={runFromCard}
                 hint={hint}
                 focusInTerminal={focusInTerminal}
                 onNext={() => {
@@ -116,14 +110,7 @@ function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
           )}
         </div>
         <div className="lesson-term" ref={termRef}>
-          <Terminal
-            entries={state.entries}
-            cwdLabel={cwd}
-            branch={branchOf(world)}
-            onRun={onRun}
-            onComplete={(line) => completeLine(world, line)}
-            title={`${cwd} — bash`}
-          />
+          <Workspace ref={wsRef} state={state} onRun={onRun} saveFile={saveFile} closeFile={closeFile} editorDone={editorDone} />
         </div>
         <RepoPanel world={world} />
       </div>

@@ -1,4 +1,5 @@
 import { createWorld } from './world';
+import { buildWorld } from './setup';
 import { runLine } from './interpreter';
 import { complete, didYouMean } from './suggest';
 
@@ -38,7 +39,7 @@ describe('didYouMean', () => {
 describe('complete', () => {
   const w = createWorld({ files: { 'notes.txt': 'x', 'node_modules/a.js': '', 'docs/readme.md': '' } });
   it('completes command names and git subcommands', () => {
-    expect(complete(w, 'git sta')).toEqual({ line: 'git status', options: [] });
+    expect(complete(w, 'git stat')).toEqual({ line: 'git status', options: [] });
     expect(complete(w, 'pw').line).toBe('pwd');
   });
   it('completes paths, dirs with trailing slash', () => {
@@ -54,5 +55,20 @@ describe('complete', () => {
   });
   it('returns the line unchanged when nothing matches', () => {
     expect(complete(w, 'cat zzz')).toEqual({ line: 'cat zzz', options: [] });
+  });
+});
+
+describe('complete branch names', () => {
+  const repoWorld = () =>
+    runLine(
+      buildWorld({ cwd: 'p', config: { 'user.name': 'Sam', 'user.email': 's@x.com' }, repo: { at: 'p' }, files: { 'p/feat.txt': 'x' }, run: ['git add .', 'git commit -m c1'] }),
+      'git branch feature',
+    ).world;
+  it('completes branch names after switch, checkout, merge and branch -d', () => {
+    const w = repoWorld();
+    expect(complete(w, 'git switch fe').line).toBe('git switch feature');
+    expect(complete(w, 'git merge fe').line).toBe('git merge feature');
+    expect(complete(w, 'git branch -d fe').line).toBe('git branch -d feature');
+    expect(complete(w, 'git checkout fe').options).toEqual(['feature', 'feat.txt']);
   });
 });

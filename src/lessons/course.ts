@@ -9,6 +9,21 @@ import { readTheHistory } from './foundations/read-the-history'
 import { seeWhatChanged } from './foundations/see-what-changed'
 import { ignoreFiles } from './foundations/ignore-files'
 import { startAProject } from './foundations/start-a-project'
+import { unstage } from './fixing/unstage'
+import { discardChanges } from './fixing/discard-changes'
+import { amend } from './fixing/amend'
+import { undoACommit } from './fixing/undo-a-commit'
+import { rewindWithReset } from './fixing/rewind-with-reset'
+import { getItBack } from './fixing/get-it-back'
+import { scenarioMessyAfternoon } from './fixing/scenario-messy-afternoon'
+import { makeABranch } from './branching/make-a-branch'
+import { switchBranches } from './branching/switch-branches'
+import { checkoutExplained } from './branching/checkout-explained'
+import { fastForward } from './branching/fast-forward'
+import { mergeCommit } from './branching/merge-commit'
+import { mergeConflicts } from './branching/merge-conflicts'
+import { stash } from './branching/stash'
+import { scenarioUrgentFix } from './branching/scenario-urgent-fix'
 
 export const course: Section[] = [
   {
@@ -37,7 +52,7 @@ export const course: Section[] = [
       "Undo a change, fix your last commit, and get back work you thought you'd lost. Learned early, so you're never afraid to try things.",
     commands: ['git restore', 'git commit --amend', 'git revert', 'git reset', 'git reflog'],
     status: 'launch',
-    lessons: [],
+    lessons: [unstage, discardChanges, amend, undoACommit, rewindWithReset, getItBack, scenarioMessyAfternoon],
   },
   {
     id: 'branching',
@@ -45,7 +60,7 @@ export const course: Section[] = [
     summary: 'Work on ideas side by side, merge them back, and resolve conflicts without panic.',
     commands: ['git switch', 'git branch', 'git merge', 'git stash'],
     status: 'launch',
-    lessons: [],
+    lessons: [makeABranch, switchBranches, checkoutExplained, fastForward, mergeCommit, mergeConflicts, stash, scenarioUrgentFix],
   },
   {
     id: 'team',

@@ -2,7 +2,7 @@ import type { Lesson } from '../schema'
 import { isTracked } from '../checks'
 import { getStatus } from '../../engine/git/repoState'
 import type { World } from '../../engine/types'
-import { IDENTITY, NOTES, README } from './sample'
+import { IDENTITY, NOTES, README } from '../sample'
 
 const SECRETS = ['.env', 'debug.log']
 

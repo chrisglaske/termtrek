@@ -1,6 +1,6 @@
 import type { Lesson } from '../schema'
 import { commitCount, isStaged, isTracked } from '../checks'
-import { IDENTITY, NOTES } from './sample'
+import { IDENTITY, NOTES } from '../sample'
 
 export const firstCommit: Lesson = {
   id: 'first-commit',

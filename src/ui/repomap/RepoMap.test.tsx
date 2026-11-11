@@ -1,7 +1,18 @@
 import { render, screen } from '@testing-library/react'
+import { axe } from 'vitest-axe'
 import { createWorld } from '../../engine/world'
+import { buildWorld } from '../../engine/setup'
 import { runLine } from '../../engine/interpreter'
 import { RepoMap } from './RepoMap'
+
+const config = { 'user.name': 'Sam', 'user.email': 's@x.com' }
+const built = (run: string[]) =>
+  buildWorld({ cwd: 'p', config, repo: { at: 'p' }, files: { 'p/notes.txt': 'base\n' }, run: ['git add .', 'git commit -m "c1"', ...run] })
+const FEATURE = ['git switch -c feature', 'echo f > f.txt', 'git add .', 'git commit -m "f1"', 'git switch main']
+const MAIN = ['echo m > m.txt', 'git add .', 'git commit -m "m1"']
+const merged = () => built([...FEATURE, ...MAIN, 'git merge --no-edit feature'])
+const conflicted = () =>
+  runLine(built(['git switch -c feature', 'echo theirs > notes.txt', 'git add .', 'git commit -m "f1"', 'git switch main', 'echo ours > notes.txt', 'git add .', 'git commit -m "m1"']), 'git merge feature').world
 
 describe('RepoMap', () => {
   const area = (name: string) => {
@@ -113,7 +124,7 @@ describe('RepoMap', () => {
     repo.head = { kind: 'detached', id }
     const { container } = render(<RepoMap world={world} />)
     expect(container.querySelector('.repomap-branch')?.textContent).toBe(`HEAD detached at ${id.slice(0, 7)}`)
-    expect(screen.getByRole('img').getAttribute('aria-label')).toBe(`1 commit. HEAD is detached at ${id.slice(0, 7)}.`)
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe(`1 commit on main. HEAD is detached at ${id.slice(0, 7)}.`)
   })
 
   it('draws cross-lane edges as curves', () => {
@@ -125,5 +136,60 @@ describe('RepoMap', () => {
     const { container } = render(<RepoMap world={world} />)
     const ds = [...container.querySelectorAll('path.edge')].map((p) => p.getAttribute('d') ?? '')
     expect(ds.some((d) => d.includes(' C'))).toBe(true)
+  })
+
+  it("Saved lists a merged branch's commits", () => {
+    const w = merged()
+    render(<RepoMap world={w} />)
+    const saved = area('Saved')
+    expect(saved.el.querySelector('em')?.textContent).toBe('4')
+    expect(saved.items[0]).toMatch(/^[0-9a-f]{7}Merge branch 'feature'$/)
+    const titles = [...saved.el.querySelectorAll('li.saved')].map((li) => li.getAttribute('title') ?? '')
+    expect(titles.map((t) => t.slice(8))).toEqual(["Merge branch 'feature'", 'm1', 'f1'])
+  })
+
+  it('conflict badge', () => {
+    const w = conflicted()
+    expect(w.repo!.op?.conflicts).toEqual(['notes.txt'])
+    const { container } = render(<RepoMap world={w} />)
+    const folder = area('Folder')
+    const li = folder.el.querySelector('li.file-conflict')!
+    expect(li).not.toBeNull()
+    expect(li.querySelector('.file-badge')?.textContent).toBe('!')
+    expect(li.textContent).toContain('notes.txt')
+    expect(li.textContent).toContain('conflict')
+    expect(folder.items.filter((t) => t?.includes('notes.txt'))).toHaveLength(1)
+    expect(container.querySelector('.repomap-op')?.textContent).toBe('Merging feature')
+  })
+
+  it('does not say Merging for a conflicted stash pop', () => {
+    const r = runLine(built(['echo stashed > notes.txt', 'git stash', 'echo other > notes.txt', 'git add .', 'git commit -m "c2"']), 'git stash pop')
+    const w = r.world
+    expect(r.lines.map((l) => l.map((x) => x.text).join('')).join('\n')).toContain('CONFLICT')
+    expect(w.repo!.op).toBeNull()
+    const { container } = render(<RepoMap world={w} />)
+    expect(container.querySelector('.repomap-op')).toBeNull()
+  })
+
+  it('stash chip', () => {
+    let w = built(['echo edit > notes.txt'])
+    const { container, rerender } = render(<RepoMap world={w} />)
+    expect(container.querySelector('.repomap-stash')).toBeNull()
+    w = runLine(w, 'git stash').world
+    rerender(<RepoMap world={w} />)
+    expect(container.querySelector('.repomap-stash')?.textContent).toBe('Stash: 1')
+  })
+
+  it('aria summary names branches', () => {
+    render(<RepoMap world={conflicted()} />)
+    const label = screen.getByRole('img').getAttribute('aria-label') ?? ''
+    expect(label).toMatch(/^3 commits on main and feature\. HEAD is on main at [0-9a-f]{7}\. Merging feature: 1 conflict to fix\.$/)
+  })
+
+  it('draws a merge, a lost commit and stacked labels without axe violations', async () => {
+    const w = built([...FEATURE, ...MAIN, 'git merge --no-edit feature', 'git reset --hard HEAD~1'])
+    const { container } = render(<RepoMap world={w} />)
+    expect(container.querySelectorAll('.node-lost')).toHaveLength(1)
+    expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
   })
 })

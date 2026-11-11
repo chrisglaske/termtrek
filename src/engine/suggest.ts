@@ -88,6 +88,16 @@ function pathCandidates(world: World, word: string): { prefix: string; matches: 
   return { prefix: word, matches };
 }
 
+/** True when the word being typed after `git <cmd> ...` should be a branch name. */
+function wantsBranch(world: World, cmdWords: string[]): boolean {
+  if (!world.repo) return false;
+  const sub = cmdWords[1];
+  const flags = cmdWords.slice(2);
+  if (sub === 'switch' || sub === 'checkout' || sub === 'merge') return !flags.includes('--');
+  if (sub === 'branch') return flags.some((f) => f === '-d' || f === '-D' || f === '-m' || f === '-M');
+  return false;
+}
+
 /**
  * Tab completion for the word at the end of the line.
  * Paths containing spaces are completed unquoted (lesson files have none).
@@ -104,6 +114,9 @@ export function complete(world: World, line: string): { line: string; options: s
     matches = shellNames().filter((n) => n.startsWith(word)).sort();
   } else if (cmdWords.length === 1 && cmdWords[0] === 'git') {
     matches = gitSubcommands().filter((n) => n.startsWith(word)).sort();
+  } else if (cmdWords[0] === 'git' && wantsBranch(world, cmdWords)) {
+    const names = Object.keys(world.repo!.branches).filter((n) => n.startsWith(word)).sort();
+    matches = cmdWords[1] === 'checkout' ? [...names, ...pathCandidates(world, word).matches] : names;
   } else {
     matches = pathCandidates(world, word).matches;
   }

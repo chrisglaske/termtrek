@@ -34,6 +34,15 @@ describe('Terminal', () => {
     expect(input.value).toBe('draft')
   })
 
+  it('keeps a blank output line visible at one line height', () => {
+    const entries: TermEntry[] = [
+      { prompt: { cwd: '~', branch: null }, input: 'git log', lines: [[{ text: 'a' }], [{ text: '' }], [], [{ text: 'b' }]] },
+    ]
+    const { container } = setup({ entries })
+    const rows = [...container.querySelectorAll('.term-entry .term-line')].slice(1)
+    expect(rows.map((r) => r.textContent)).toEqual(['a', '\u00a0', '\u00a0', 'b'])
+  })
+
   it('includes inputs from entries in history', async () => {
     const entries: TermEntry[] = [{ prompt: { cwd: '~', branch: null }, input: 'ls', lines: [] }]
     const { input } = setup({ entries })

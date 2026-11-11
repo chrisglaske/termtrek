@@ -41,3 +41,8 @@ export function withDirs(dirs: string[], abs: string): string[] {
 export function hasVirtualGit(world: World, dir: string): boolean {
   return world.repo !== null && world.repo.root === dir;
 }
+
+/** Write `text` to `abs`, creating its parent directories. */
+export function writeFile(world: World, abs: string, text: string): World {
+  return { ...world, files: { ...world.files, [abs]: text }, dirs: withDirs(world.dirs, parentOf(abs)) };
+}
