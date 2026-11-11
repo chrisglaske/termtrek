@@ -59,7 +59,8 @@ export const pushABranch: Lesson = {
       task: 'Run `git push` and read the message.',
       hints: ['Just try it.', 'Type `git push` and press Enter.'],
       solution: ['git push'],
-      check: (c) => lastFailed(c, 'push'),
+      // Also passes if the learner already pushed with -u: a plain push can no longer fail then.
+      check: (c) => lastFailed(c, 'push') || upstreamOf(c.world, 'homepage') !== null,
       success: '**No upstream branch.** The server has no **homepage** yet, and Git will not guess. The error shows the command to use.',
     },
     {
@@ -104,7 +105,7 @@ export const pushABranch: Lesson = {
       step: 0,
       command: [
         { text: 'git switch', say: 'move to a branch' },
-        { text: '-c', say: 'make it first' },
+        { text: '-c', say: 'create it, then switch to it' },
         { text: 'homepage', say: 'with this name' },
       ],
       done: '**On homepage.** It starts at the tip of main.',
