@@ -30,6 +30,8 @@ export interface TerminalProps {
   done?: boolean
   /** Puts this text in the input (without running it) each time `seq` changes. */
   prefill?: { text: string; seq: number }
+  /** Called with the current input text whenever it changes (empty after a command runs). */
+  onInput?: (text: string) => void
 }
 
 function Prompt({
@@ -61,8 +63,12 @@ export function Terminal({
   waiting,
   done,
   prefill,
+  onInput,
 }: TerminalProps): React.JSX.Element {
   const [value, setValue] = useState('')
+  useEffect(() => {
+    onInput?.(value)
+  }, [value, onInput])
   const [options, setOptions] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const logRef = useRef<HTMLDivElement>(null)

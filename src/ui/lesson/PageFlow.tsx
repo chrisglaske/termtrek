@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import type { DoPage, FinishPage, Lesson, LessonPage, ReadPage, StageBox } from '../../lessons/schema'
+import type { DoPage, FinishPage, Lesson, LessonPage, ReadPage } from '../../lessons/schema'
 import type { RunnerState } from '../../lessons/runner'
 import { nextLesson } from '../../lessons/course'
 import { useLessonRunner } from '../../lessons/useLessonRunner'
@@ -33,8 +33,6 @@ import './PageFlow.css'
 
 /** After a command passes, the same Enter (or a held key) must not also press Continue. */
 const GUARD_MS = 500
-
-const NEXT_BOX: Record<StageBox, StageBox> = { folder: 'staged', staged: 'saved', saved: 'saved' }
 
 /** True once the learner has finished the runner step a do page is bound to. */
 const passed = (s: RunnerState, step: number): boolean => s.stepIndex > step || (s.stepIndex === step && s.status !== 'working')
@@ -82,8 +80,7 @@ function Head({ page, headRef }: { page: ReadPage | DoPage; headRef: React.Ref<H
 function Visual({ page, state, done }: { page: ReadPage | DoPage; state: RunnerState; done: boolean }): React.JSX.Element | null {
   const v = page.visual
   if (v.kind === 'stage') {
-    const hot = done && v.hot ? NEXT_BOX[v.hot] : v.hot
-    return <StageVisual world={state.world} show={v.show} hot={hot} tone={done ? 'ok' : 'accent'} compact={page.kind === 'do'} />
+    return <StageVisual world={state.world} show={v.show} hot={v.hot} advance={done} compact={page.kind === 'do'} />
   }
   if (v.kind === 'tree') return <TreeVisual world={state.world} last={state.ran[state.ran.length - 1]} />
   if (v.kind === 'rewind') return <RewindVisual world={state.world} />
@@ -188,6 +185,7 @@ function DoBody({
   const [openedBefore] = useState(state.lastOpened?.seq ?? 0)
   const file = state.lastOpened && state.lastOpened.seq > openedBefore && state.open.includes(state.lastOpened.path) ? state.lastOpened.path : null
   const notice = file && state.notice?.path === file && state.notice.explain.kind !== 'ok' ? state.notice.explain : null
+  const [typed, setTyped] = useState('')
   const [fill, setFill] = useState<{ text: string; seq: number } | undefined>(undefined)
   const [noteOpen, setNoteOpen] = useState(true)
   const resultRef = useRef<HTMLDivElement>(null)
@@ -213,7 +211,7 @@ function DoBody({
 
   return (
     <>
-      <CommandCard parts={page.command} />
+      <CommandCard parts={page.command} typed={ok ? '' : typed} />
       {liveAtStart && (
         <div className="pf-term" ref={termRef}>
           <Terminal
@@ -226,6 +224,7 @@ function DoBody({
             autoFocus
             done={ok}
             prefill={fill}
+            onInput={setTyped}
           />
           {page.note && noteOpen && !ok && (
             <div className="pf-note">

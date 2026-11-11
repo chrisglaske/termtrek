@@ -45,12 +45,30 @@ export function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Pla
 }
 
 /** The command exactly as it is typed, on one line, with what each part means written under it. */
-export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Element {
+/** How each typed letter compares with the command: right ones glow, the first wrong one turns red. */
+export function mark(full: string, typed: string): Array<'ok' | 'bad' | undefined> {
+  const out: Array<'ok' | 'bad' | undefined> = []
+  let wrong = false
+  for (let i = 0; i < full.length; i++) {
+    if (i >= typed.length || wrong) out.push(undefined)
+    else if (typed[i] === full[i]) out.push('ok')
+    else {
+      out.push('bad')
+      wrong = true
+    }
+  }
+  return out
+}
+
+export function CommandCard({ parts, typed = '' }: { parts: CommandPart[]; typed?: string }): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null)
   const [placed, setPlaced] = useState<Placed[] | null>(null)
   const [minW, setMinW] = useState(0)
   const [scrolls, setScrolls] = useState(false)
   const full = parts.map((p) => p.text).join(' ')
+  const marks = mark(full, typed)
+  // Letters typed past the end of a command that was otherwise right.
+  const extra = typed.length > full.length && !marks.includes('bad') ? typed.slice(full.length) : ''
 
   useLayoutEffect(() => {
     const box = boxRef.current
@@ -78,13 +96,31 @@ export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Elem
       <p className="cc-k">Type this, then press Enter</p>
       <div className="cc-box" ref={boxRef} style={minW ? { minWidth: minW } : undefined}>
         <code className="cc-line" aria-label={full}>
-          {parts.map((p, i) => (
-            <Fragment key={i}>
-              {i > 0 && ' '}
-              <span className="cc-tok">{p.text}</span>
-            </Fragment>
-          ))}
+          {parts.map((p, i) => {
+            const start = parts.slice(0, i).reduce((n, q) => n + q.text.length + 1, 0)
+            const ch = (at: number, c: string) => (
+              <span key={at} className={marks[at] ? `cc-${marks[at]}` : undefined}>
+                {c}
+              </span>
+            )
+            return (
+              <Fragment key={i}>
+                {i > 0 && ch(start - 1, ' ')}
+                <span className="cc-tok">{[...p.text].map((c, k) => ch(start + k, c))}</span>
+              </Fragment>
+            )
+          })}
+          {extra && (
+            <span className="cc-bad cc-extra" aria-hidden="true">
+              {extra.trim() === '' ? '·'.repeat(extra.length) : extra}
+            </span>
+          )}
         </code>
+        {typed !== '' && (
+          <span className="sr-only" role="status">
+            {marks.includes('bad') || extra ? 'That does not match the command yet.' : ''}
+          </span>
+        )}
         <ul className={placed ? 'cc-says' : 'cc-says cc-flow'} aria-label="What each part means" style={placed ? { height: LINE + rows * ROW_H } : undefined}>
           {parts.map((p, i) => {
             const at = placed?.[i]
