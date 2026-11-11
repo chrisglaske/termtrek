@@ -61,7 +61,7 @@ export const pushABranch: Lesson = {
       solution: ['git push'],
       // Also passes if the learner already pushed with -u: a plain push can no longer fail then.
       check: (c) => lastFailed(c, 'push') || upstreamOf(c.world, 'homepage') !== null,
-      success: '**No upstream branch.** The server has no **homepage** yet, and Git will not guess. The error shows the command to use.',
+      success: '**A new branch needs an upstream.** Without one, a plain push stops and the error shows the command to use. If you already pushed with -u, the link is set and that is fine too.',
     },
     {
       id: 'push-u',
@@ -172,7 +172,7 @@ export const pushABranch: Lesson = {
       visual: { kind: 'none' },
       step: 4,
       command: [{ text: 'git push', say: 'send my commits' }],
-      done: '**No upstream branch.** Git will not guess where to send a new branch. The error shows the command to use.',
+      done: '**A new branch needs an upstream.** Without one, a plain push stops and the error shows the command to use. If you already pushed with -u, the link is set and that is fine too.',
     },
     {
       kind: 'read',
