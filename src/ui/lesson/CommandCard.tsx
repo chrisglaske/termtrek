@@ -33,6 +33,7 @@ export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Elem
   const boxRef = useRef<HTMLDivElement>(null)
   const [placed, setPlaced] = useState<Placed[] | null>(null)
   const [minW, setMinW] = useState(0)
+  const [scrolls, setScrolls] = useState(false)
   const full = parts.map((p) => p.text).join(' ')
 
   useLayoutEffect(() => {
@@ -46,6 +47,7 @@ export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Elem
       // A label wider than the command itself widens the box so it is never clipped.
       setMinW(Math.max(0, ...widths))
       setPlaced(place(toks, widths, origin))
+      setScrolls(box.scrollWidth > box.clientWidth + 1)
     }
     measure()
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
@@ -83,6 +85,7 @@ export function CommandCard({ parts }: { parts: CommandPart[] }): React.JSX.Elem
           })}
         </ul>
       </div>
+      {scrolls && <p className="cc-more">The command is wider than the screen. Scroll sideways to see all of it.</p>}
     </div>
   )
 }
