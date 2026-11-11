@@ -86,12 +86,34 @@ export const gitFetch: CommandFn = (world, args) => {
   const repo = activeRepo(world);
   if (!repo) return { lines: [], exitCode: 128 };
   let prune = false;
+  let all = false;
   const pos: string[] = [];
   for (const a of args) {
     if (a === '--prune' || a === '-p') prune = true;
+    else if (a === '--all') all = true;
     else if (a.startsWith('-') && a.length > 1) {
       return { lines: [err(`error: unknown option \`${a.replace(/^-+/, '')}'`), err('usage: git fetch [<options>] [<repository> [<refspec>...]]')], exitCode: 129 };
     } else pos.push(a);
+  }
+  if (all) {
+    if (pos.length > 0) return { lines: [err('fatal: fetch --all does not take a repository argument')], exitCode: 129 };
+    const names = Object.keys(repo.remotes);
+    if (names.length === 0) return { lines: [], world, exitCode: 0 };
+    let w = world;
+    const lines: OutLine[] = [];
+    let changed = 0;
+    for (const n of names) {
+      lines.push(out(`Fetching ${n}`));
+      const r = fetchInto(w, n, { prune });
+      if (!r.ok) return { lines: [...lines, ...r.lines], exitCode: r.exitCode };
+      w = r.world;
+      lines.push(...r.lines);
+      changed += r.changed;
+    }
+    const explain = changed === 0
+      ? { kind: 'tip' as const, text: 'Nothing new on any server. What you have matches the last time you checked.' }
+      : { kind: 'ok' as const, text: 'Downloaded the news from every server and updated your remote-tracking branches. Your own files and branches did not change.' };
+    return { world: w, lines, explain, exitCode: 0 };
   }
   let name = pos[0];
   if (name === undefined) {

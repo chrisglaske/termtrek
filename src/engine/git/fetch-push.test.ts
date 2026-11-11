@@ -37,6 +37,14 @@ describe('git fetch', () => {
     expect(r.world.files).toEqual(w.files);
     expect(r.explain!.text).toContain('did not change');
   });
+  it('fetch --all fetches every remote', () => {
+    const w = mate(cloned(), 'topic work', 'feature');
+    const r = runLine(w, 'git fetch --all');
+    expect(r.exitCode).toBe(0);
+    expect(text(r)).toEqual(['Fetching origin', 'From https://git.example.com/team/notes', ' * [new branch]      feature    -> origin/feature']);
+    expect(r.world.repo!.remoteRefs['origin/feature']).toBeDefined();
+  });
+
   it('fetch announces new branches and forced updates', () => {
     let w = cloned();
     w = mate(w, 'topic work', 'feature');
