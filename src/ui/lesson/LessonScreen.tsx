@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { findLesson, nextLesson } from '../../lessons/course'
 import type { Lesson } from '../../lessons/schema'
@@ -16,6 +16,7 @@ import { LessonHeader } from './LessonHeader'
 import { LearnCard } from './LearnCard'
 import { LessonDone } from './LessonDone'
 import { Workspace } from './Workspace'
+import { PageRun } from './PageFlow'
 import { isWide } from './isWide'
 import type { WorkspaceHandle } from './Workspace'
 import './LessonScreen.css'
@@ -80,7 +81,7 @@ export function RepoPanel({ world, remoteError = null, onOpenPr = noop, onMergeP
   )
 }
 
-function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
+function LessonRun({ lesson, courseOpen, onToggleCourse }: { lesson: Lesson; courseOpen: boolean; onToggleCourse: () => void }): React.JSX.Element {
   const { complete } = useProgress()
   const { state, run, hint, next, reset, saveFile, closeFile, editorDone, showMe, openPr, mergePr, deleteRemoteBranch, remoteError } = useLessonRunner(lesson, complete)
   const termRef = useRef<HTMLDivElement>(null)
@@ -120,6 +121,8 @@ function LessonRun({ lesson }: { lesson: Lesson }): React.JSX.Element {
       <LessonHeader
         lesson={lesson}
         state={state}
+        courseOpen={courseOpen}
+        onToggleCourse={onToggleCourse}
         onReset={() => {
           reset()
           focusTerminal()
@@ -176,13 +179,22 @@ function LessonPage({ lesson }: { lesson: Lesson }): React.JSX.Element {
     setLastRef.current(lesson.id)
   }, [lesson.id])
 
+  const [courseOpen, setCourseOpen] = useState(false)
+  const closeCourse = useCallback(() => setCourseOpen(false), [])
+  // Picking a lesson from the drawer (or any route change) closes it.
+  useEffect(() => setCourseOpen(false), [lesson.id])
+
   return (
     <>
       <Nav />
       <div className="lesson-shell">
-        <Sidebar currentId={lesson.id} />
+        <Sidebar currentId={lesson.id} open={courseOpen} onClose={closeCourse} />
         <main id="main" className="lesson-main" tabIndex={-1}>
-          <LessonRun key={lesson.id} lesson={lesson} />
+          {lesson.pages ? (
+            <PageRun key={lesson.id} lesson={lesson} pages={lesson.pages} courseOpen={courseOpen} onToggleCourse={() => setCourseOpen((o) => !o)} />
+          ) : (
+            <LessonRun key={lesson.id} lesson={lesson} courseOpen={courseOpen} onToggleCourse={() => setCourseOpen((o) => !o)} />
+          )}
         </main>
       </div>
     </>

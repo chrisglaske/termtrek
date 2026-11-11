@@ -105,10 +105,10 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <div>
               <h1 id="hero-title">
-                <span>Learn Git</span> <span>by using it.</span>
+                <span>See what Git</span> <span>is doing.</span>
               </h1>
               <p className="lede">
-                A free, hands-on course that runs in your browser. Type real Git commands, watch your project's history take shape, and get comfortable with the tool every team expects you to know.
+                <strong>Learn Git by using it.</strong> Type real commands and watch your project's history change on the map. A free, hands-on course in your browser, from your first commit to your first merged pull request.
               </p>
               <div className="ctas">
                 <Link className="btn btn-p" to="/learn">

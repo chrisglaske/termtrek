@@ -39,7 +39,7 @@ describe('Nav', () => {
 
   it('nav links point at the right routes', () => {
     renderNav()
-    expect(screen.getByRole('link', { name: 'Course' })).toHaveAttribute('href', '/learn')
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/learn')
     expect(screen.getByRole('link', { name: 'Playground' })).toHaveAttribute('href', '/playground')
     expect(screen.getByRole('link', { name: 'Guides' })).toHaveAttribute('href', '/guides')
   })

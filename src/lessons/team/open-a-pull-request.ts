@@ -1,5 +1,5 @@
 import type { Lesson } from '../schema'
-import { prFor, ranGit, serverTip } from '../checks'
+import { prFor, ranGit, serverTip, treeFile, workFile } from '../checks'
 import { WELCOME } from '../branching/setups'
 import { TEAMMATE } from '../sample'
 import { teammateComment } from '../../engine/remote/teammate'
@@ -35,25 +35,130 @@ export const openAPullRequest: Lesson = {
       success: '**Pull request #1 is open.** Your teammates can read the changes in it now. Nothing has been merged yet.',
     },
     {
-      id: 'respond',
-      title: 'Respond to the review',
+      id: 'add-line',
+      title: 'Add the welcome line',
       learn:
-        'A reviewer can approve a pull request or ask for changes. Open the pull request in the **Remote** tab to read what they wrote.\n\nTo answer a request for changes, change your branch the usual way: edit, commit, and push. The pull request follows its branch, so it updates by itself when you push. There is no need to open a new one.\n\nAdd the welcome line to `home.html` with `echo "<p>Notes from our weekly meetings.</p>" >> home.html`, then commit it with `git commit -am "Add a welcome line"` and push it with `git push`.',
-      task: 'Add the welcome line to home.html, commit it and push it.',
-      hints: [
-        'Append the line, commit with `-am`, then push.',
-        'Type `echo "<p>Notes from our weekly meetings.</p>" >> home.html`, then `git commit -am "Add a welcome line"`, then `git push`.',
-      ],
-      solution: ['echo "<p>Notes from our weekly meetings.</p>" >> home.html', 'git commit -am "Add a welcome line"', 'git push'],
+        'A reviewer can approve a pull request or ask for changes. To answer a request for changes, change your branch the usual way: edit, commit, and push. The pull request follows its branch, so it updates by itself.\n\nAdd the welcome line with `echo "<p>Notes from our weekly meetings.</p>" >> home.html`.',
+      task: 'Add the welcome line to `home.html`.',
+      hints: ['Append the line with `>>`.', 'Type `echo "<p>Notes from our weekly meetings.</p>" >> home.html` and press Enter.'],
+      solution: ['echo "<p>Notes from our weekly meetings.</p>" >> home.html'],
       event: { apply: teammateComment(ALEX_ASKS_FOR_A_WELCOME), note: `**${TEAMMATE.name}** reviewed your pull request.` },
+      check: (c) => workFile(c.world, 'home.html')?.includes(WELCOME) ?? false,
+      nudge: (c) =>
+        workFile(c.world, 'home.html') !== workFile(c.start, 'home.html')
+          ? { kind: 'tip', text: 'That line is not quite the one Alex asked for. Add it again with `echo "<p>Notes from our weekly meetings.</p>" >> home.html`.' }
+          : null,
+      success: '**The welcome line is in the file.** Only on your computer so far.',
+    },
+    {
+      id: 'commit',
+      title: 'Commit it',
+      learn: 'Save the change with `git commit -am "Add a welcome line"`.',
+      task: 'Commit the welcome line.',
+      hints: ['Commit with `-am` and a message.', 'Type `git commit -am "Add a welcome line"` and press Enter.'],
+      solution: ['git commit -am "Add a welcome line"'],
+      check: (c) => treeFile(c.world, 'HEAD', 'home.html')?.includes(WELCOME) ?? false,
+      success: '**Committed.** The pull request only shows what is on the server, so it does not have it yet.',
+    },
+    {
+      id: 'push',
+      title: 'Push it',
+      learn: 'Send it with `git push`. The pull request follows the **homepage** branch on the server, so it picks up the new commit by itself. There is no need to open a new one.',
+      task: 'Push the welcome line.',
+      hints: ['A plain push works: the branch already has an upstream.', 'Type `git push` and press Enter.'],
+      solution: ['git push'],
       check: (c) => homepageFile(c)?.includes(WELCOME) ?? false,
       nudge: (c) =>
-        ranGit(c, 'commit') && !ranGit(c, 'push')
-          ? { kind: 'tip', text: 'Now push it: the pull request only shows what is on the server, and your commit is still only on your computer.' }
-          : ranGit(c, 'push') && !homepageFile(c)?.includes(WELCOME)
-            ? { kind: 'tip', text: 'The server\'s `home.html` does not have the welcome line yet. Add it with `echo "<p>Notes from our weekly meetings.</p>" >> home.html`, then commit with `git commit -am "Add a welcome line"` and push again with `git push`.' }
-            : null,
+        ranGit(c, 'push') && !homepageFile(c)?.includes(WELCOME)
+          ? { kind: 'tip', text: 'The server\'s `home.html` does not have the welcome line yet. Commit it with `git commit -am "Add a welcome line"`, then push again with `git push`.' }
+          : null,
       success: '**The pull request updated by itself.** Open it in the **Remote** tab: the welcome line is part of it now.',
+    },
+  ],  pages: [
+    {
+      kind: 'read',
+      id: 'review',
+      kicker: 'The setup',
+      title: 'Your branch is on the server',
+      body: 'Your **homepage** branch is on the server, but **main** does not have it yet. On a team, someone looks at your work before it goes into main.',
+      visual: { kind: 'server', branch: 'homepage' },
+    },
+    {
+      kind: 'read',
+      id: 'pr',
+      kicker: 'The idea',
+      title: 'A pull request asks for a review',
+      body: 'A **pull request** asks to merge your branch into another one. Teammates read the changes, comment, and approve.\n\nPull requests live on the server\'s website, not in Git, so you open one with clicks.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'do',
+      id: 'open',
+      kicker: 'Try it',
+      title: 'Open a pull request',
+      body: 'It compares **homepage** into **main**, and the title is filled in for you. Click **Create pull request**.',
+      visual: { kind: 'none' },
+      step: 0,
+      command: [],
+      on: 'server',
+      view: 'new',
+      done: '**Pull request #1 is open.** Nothing is merged yet.',
+    },
+    {
+      kind: 'read',
+      id: 'feedback',
+      kicker: 'The review',
+      title: 'Alex asked for a change',
+      body: 'To answer, change your branch the usual way: edit, commit, push. The pull request follows the branch, so it updates by itself.',
+      visual: { kind: 'pr' },
+    },
+    {
+      kind: 'do',
+      id: 'add-line',
+      kicker: 'Try it',
+      title: 'Add the welcome line',
+      body: '`>>` adds it under the heading.',
+      visual: { kind: 'stage', show: ['folder'], hot: 'folder' },
+      step: 1,
+      command: [
+        { text: 'echo', say: 'print' },
+        { text: '"<p>Notes from our weekly meetings.</p>"', say: 'this text' },
+        { text: '>>', say: 'add it to the end of' },
+        { text: 'home.html', say: 'this file' },
+      ],
+      done: '**The welcome line is in the file.**',
+    },
+    {
+      kind: 'do',
+      id: 'commit',
+      kicker: 'Try it',
+      title: 'Commit it',
+      body: 'The pull request only shows what is on the server, so watch both sides.',
+      visual: { kind: 'server', branch: 'homepage' },
+      step: 2,
+      command: [
+        { text: 'git commit', say: 'save a snapshot' },
+        { text: '-am', say: 'of every changed file' },
+        { text: '"Add a welcome line"', say: 'with this message' },
+      ],
+      done: '**Committed.** One step left: send it.',
+    },
+    {
+      kind: 'do',
+      id: 'push',
+      kicker: 'Try it',
+      title: 'Push it',
+      body: 'The branch already has an upstream, so a plain push is enough.',
+      visual: { kind: 'pr' },
+      step: 3,
+      command: [{ text: 'git push', say: 'send my commits' }],
+      done: '**The pull request updated by itself.** It has your welcome line now.',
+    },
+    {
+      kind: 'finish',
+      id: 'done',
+      title: 'You asked for a review',
+      body: 'A pull request shows your branch to the team. To answer feedback, commit and push to the same branch.',
     },
   ],
 }

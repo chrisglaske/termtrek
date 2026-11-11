@@ -1,5 +1,6 @@
 import type { Lesson, StepContext } from '../schema'
-import { headMessage, historyLength, treeFile } from '../checks'
+import { headMessage, historyLength, isStaged, treeFile } from '../checks'
+import { headCommitId } from '../../engine/git/repoState'
 import { AGENDA, IDENTITY, NOTES, NOTES_V2 } from '../sample'
 
 const sameLength = (c: StepContext): boolean => historyLength(c.world) === historyLength(c.start)
@@ -54,20 +55,118 @@ export const amend: Lesson = {
         "**Typo fixed.** Look at **Your repo**: the history is the same length, but the last commit has a new ID. Amending doesn't edit a commit, it swaps in a fixed copy.",
     },
     {
-      id: 'add-file',
-      title: 'Add a file you forgot',
+      id: 'stage',
+      title: 'Stage the file you forgot',
       learn:
-        "You also meant to include `agenda.txt` in that commit. Amend works for files too: stage the file, then amend.\n\n1. `git add agenda.txt` stages it.\n2. `git commit --amend --no-edit` replaces the last commit with one that includes everything staged. `--no-edit` keeps the message as it is, so no editor opens.\n\n**One rule:** only amend commits you haven't shared yet. Amending swaps in a new commit, which causes trouble for anyone who already has the old one. For shared commits, use `git revert` instead, which comes up next. (Sharing with `git push` comes in Section 4.)",
+        'You also meant to include `agenda.txt` in that commit. Amend works for files too: stage the file with `git add agenda.txt`, then amend.',
+      task: 'Stage `agenda.txt`.',
+      hints: ['Use the Git command that adds a file to the staging area.', 'Type `git add agenda.txt` and press Enter.'],
+      solution: ['git add agenda.txt'],
+      check: (c) => isStaged(c.world, 'agenda.txt'),
+      nudge: newCommitNudge,
+      success: '**Staged.** `agenda.txt` is chosen, ready to join the last commit.',
+    },
+    {
+      id: 'add-file',
+      title: 'Add it to the last commit',
+      learn:
+        "`git commit --amend --no-edit` replaces the last commit with one that includes everything staged. `--no-edit` keeps the message as it is, so no editor opens.\n\n**One rule:** only amend commits you haven't shared yet. Amending swaps in a new commit, which causes trouble for anyone who already has the old one. For shared commits, use `git revert` instead, which comes up next. (Sharing with `git push` comes in Section 4.)",
       task: 'Add `agenda.txt` to the last commit and keep its message.',
       hints: [
-        'Stage `agenda.txt` first, then amend without changing the message.',
-        'Type `git add agenda.txt`, then `git commit --amend --no-edit`.',
+        'Amend again, but keep the message as it is.',
+        'Type `git commit --amend --no-edit` and press Enter.',
       ],
-      solution: ['git add agenda.txt', 'git commit --amend --no-edit'],
+      solution: ['git commit --amend --no-edit'],
       check: (c) => treeFile(c.world, 'HEAD', 'agenda.txt') !== undefined && sameLength(c),
       nudge: newCommitNudge,
       success:
         "**One tidy commit.** It has the fixed message, the notes and the agenda, as if you'd gotten it right the first time. Amend is your go-to fix for the commit you just made.",
+    },
+  ],  pages: [
+    {
+      kind: 'read',
+      id: 'situation',
+      kicker: 'The problem',
+      title: 'A typo in your last commit',
+      body: 'The last commit says "Add the lanch date". Typos happen. You can fix the last commit as long as you have not shared it.',
+      visual: { kind: 'graph', all: true },
+    },
+    {
+      kind: 'read',
+      id: 'idea',
+      kicker: 'The idea',
+      title: 'Amend swaps in a fixed copy',
+      body: '`--amend` means "replace the last commit" instead of adding a new one. Nothing else in your history changes.',
+      visual: { kind: 'graph', all: true },
+    },
+    {
+      kind: 'do',
+      id: 'message',
+      kicker: 'Try it',
+      title: 'Fix the message',
+      body: 'Git opens the message in an editor. Fix the typo in the first line, then click **Save and close**. Lines that start with # are Git\'s notes to you and are left out.',
+      visual: { kind: 'graph', all: true },
+      step: 0,
+      command: [
+        { text: 'git commit', say: 'save a commit' },
+        { text: '--amend', say: 'replace the last one' },
+      ],
+      done: '**Typo fixed.** The history is the same length, but the last commit has a new ID.',
+      report: (world) => {
+        const id = world.repo ? headCommitId(world.repo) : null
+        return id ? `Amending does not edit a commit, it swaps in a fixed copy. The new one is \`${id.slice(0, 7)}\`.` : null
+      },
+    },
+    {
+      kind: 'read',
+      id: 'forgot',
+      kicker: 'Another slip',
+      title: 'You forgot a file',
+      body: 'You also meant to include **agenda.txt** in that commit. Amend works for files too: stage the file first, then amend.',
+      visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
+    },
+    {
+      kind: 'do',
+      id: 'stage',
+      kicker: 'Try it',
+      title: 'Stage the file',
+      body: 'Stage it, like before.',
+      visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
+      step: 1,
+      command: [
+        { text: 'git add', say: 'put it in the box' },
+        { text: 'agenda.txt', say: 'this file' },
+      ],
+      done: '**Staged.** agenda.txt is chosen, ready to join the last commit.',
+    },
+    {
+      kind: 'do',
+      id: 'add-file',
+      kicker: 'Try it',
+      title: 'Add it to the last commit',
+      body: '`--no-edit` keeps the message as it is, so no editor opens.',
+      visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'staged' },
+      step: 2,
+      command: [
+        { text: 'git commit', say: 'save a commit' },
+        { text: '--amend', say: 'replace the last one' },
+        { text: '--no-edit', say: 'keep the message' },
+      ],
+      done: '**One tidy commit.** It has the fixed message, the notes and the agenda.',
+    },
+    {
+      kind: 'read',
+      id: 'rule',
+      kicker: 'One rule',
+      title: 'Only amend what you have not shared',
+      body: 'Amending swaps in a new commit, which causes trouble for anyone who already has the old one. For shared commits use `git revert`, which comes next.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'finish',
+      id: 'done',
+      title: 'You can fix your last commit',
+      body: 'You fixed a message and added a forgotten file, without leaving a trail of "oops" commits.',
     },
   ],
 }

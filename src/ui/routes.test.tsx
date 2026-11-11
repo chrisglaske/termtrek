@@ -59,27 +59,38 @@ describe('routes', () => {
     expect(document.title).toBe('Your first commit · TermTrek')
   })
 
-  it('redirects /learn to the first lesson', () => {
+  it('shows the welcome Home page at /learn on a first visit', () => {
     at('/learn')
-    expect(screen.getByRole('heading', { level: 1, name: 'What is Git?' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Learn Git by doing it' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Start the course' })).toHaveAttribute('href', '/learn/terminal-basics')
+    expect(screen.getByRole('link', { name: /Skip to Git/ })).toHaveAttribute('href', '/learn/what-is-git')
   })
 
-  it('redirects /learn to the last lesson when it still exists', () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, completed: {}, lastLesson: 'check-the-status' }))
+  it('offers Continue with the last lesson when progress exists', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, completed: { 'terminal-basics': { at: '2026-11-09T00:00:00.000Z' } }, lastLesson: 'check-the-status' }))
     at('/learn')
-    expect(screen.getByRole('heading', { level: 1, name: 'Check the status' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Pick up where you left off' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Continue' })).toHaveAttribute('href', '/learn/check-the-status')
+    expect(screen.getByText(/^1 of \d+ lessons done\.$/)).toBeInTheDocument()
   })
 
-  it('falls back to the first incomplete lesson when lastLesson is a stale id', () => {
-    const completed = { 'what-is-git': { at: '2026-11-09T00:00:00.000Z' } }
+  it('falls back to the first unfinished lesson when lastLesson is a stale id', () => {
+    const completed = { 'terminal-basics': { at: '2026-11-09T00:00:00.000Z' }, 'what-is-git': { at: '2026-11-09T00:00:00.000Z' } }
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, completed, lastLesson: 'gone' }))
     at('/learn')
-    expect(screen.getByRole('heading', { level: 1, name: 'Introduce yourself' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Continue' })).toHaveAttribute('href', '/learn/introduce-yourself')
+  })
+
+  it('lists every launch lesson, with the current section open and the others collapsed', () => {
+    at('/learn')
+    expect(screen.getByRole('button', { name: /Foundations/ })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: /Branching/ })).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.getByRole('link', { name: 'Terminal basics' })).toHaveAttribute('href', '/learn/terminal-basics')
   })
 
   it('shows the landing page at /', () => {
     at('/')
-    expect(screen.getByRole('heading', { name: 'Learn Git by using it.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'See what Git is doing.' })).toBeInTheDocument()
     for (const a of screen.getAllByRole('link', { name: 'Start the course' })) expect(a).toHaveAttribute('href', '/learn')
     expect(screen.getByRole('link', { name: 'TermTrek home' })).toHaveAttribute('href', '/')
     expect(document.title).toBe('TermTrek: learn Git by using it')

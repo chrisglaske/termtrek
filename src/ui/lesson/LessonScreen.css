@@ -1,6 +1,4 @@
 .lesson-shell {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
   min-height: calc(100dvh - var(--nav-h));
   background: var(--wash);
 }
@@ -19,27 +17,28 @@
   min-width: 0;
 }
 .lesson-work {
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(360px, 420px);
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
   grid-template-areas:
-    'term learn'
-    'term repo';
-  grid-template-rows: auto 1fr;
+    'learn term'
+    'learn repo';
+  grid-template-rows: minmax(220px, 1fr) auto;
   gap: 16px;
   padding: 16px 24px 24px;
-  align-items: start;
+  /* Fill the screen under the nav and the lesson header; the lesson text scrolls inside its own column. */
+  height: max(560px, calc(100dvh - var(--nav-h) - var(--lh-h, 65px)));
 }
 .lesson-learn {
   grid-area: learn;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
 }
 .lesson-term {
   grid-area: term;
-  position: sticky;
-  top: calc(var(--nav-h) + 16px);
-  /* nav + lesson header (measured, so a wrapped header still fits) + work padding */
-  height: max(420px, calc(100dvh - var(--nav-h) - var(--lh-h, 65px) - 40px));
   min-width: 0;
+  min-height: 0;
 }
 .lesson-term > .ws {
   height: 100%;
@@ -47,10 +46,11 @@
 .lesson-repo {
   grid-area: repo;
   min-width: 0;
+  max-height: 42vh;
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;
-  overflow: hidden;
 }
 .repo-tabs {
   display: flex;
@@ -94,10 +94,8 @@
   border-radius: 0;
 }
 @media (max-width: 979px) {
-  .lesson-shell {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .lesson-work {
+    height: auto;
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       'learn'
@@ -107,8 +105,13 @@
     padding: 12px 16px 24px;
     gap: 12px;
   }
+  .lesson-learn {
+    overflow: visible;
+  }
   .lesson-term {
-    position: static;
     height: 420px;
+  }
+  .lesson-repo {
+    max-height: none;
   }
 }

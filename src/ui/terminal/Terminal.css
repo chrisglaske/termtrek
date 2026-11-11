@@ -11,9 +11,9 @@
   font-size: 13.5px;
   line-height: 1.6;
 }
-/* The input hides its own outline, so show focus on the whole terminal. */
+/* The input hides its own outline. The blinking caret already shows focus, so mark the terminal with a quiet 1px edge. */
 .term:has(.term-input:focus-visible) {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 .term-bar {
   background: var(--t-bar);

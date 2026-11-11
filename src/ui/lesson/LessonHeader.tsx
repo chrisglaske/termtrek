@@ -1,11 +1,12 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { Lesson } from '../../lessons/schema'
 import type { RunnerState } from '../../lessons/runner'
+import { COURSE_DRAWER_ID } from './Sidebar'
 import './LessonHeader.css'
 
 const RESET_CONFIRM = 'Start this lesson over? Your progress on other lessons is kept.'
 
-function OptionsMenu({ onReset }: { onReset: () => void }): React.JSX.Element {
+export function OptionsMenu({ onReset }: { onReset: () => void }): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -70,23 +71,35 @@ export function LessonHeader({
   lesson,
   state,
   onReset,
+  courseOpen,
+  onToggleCourse,
 }: {
   lesson: Lesson
   state: RunnerState
   onReset: () => void
+  courseOpen: boolean
+  onToggleCourse: () => void
 }): React.JSX.Element {
   const total = lesson.steps.length
   const doneCount = state.stepIndex + (state.status === 'working' ? 0 : 1)
   const n = state.stepIndex + 1
   return (
     <header className="lh">
+      <button type="button" className="lh-course" aria-expanded={courseOpen} aria-controls={COURSE_DRAWER_ID} onClick={onToggleCourse}>
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+        </svg>
+        Course
+      </button>
       <div className="lh-head">
-        <h1 className="lh-title">{lesson.title}</h1>
+        <div className="lh-titlerow">
+          <h1 className="lh-title">{lesson.title}</h1>
+          <span className="lh-tag">
+            {lesson.level}, {lesson.minutes} min
+          </span>
+        </div>
         {lesson.assumes && <p className="lh-assumes">Assumes: {lesson.assumes}</p>}
       </div>
-      <span className="lh-tag">
-        {lesson.level}, {lesson.minutes} min
-      </span>
       <div className="lh-progress">
         <div
           className="lh-bar"

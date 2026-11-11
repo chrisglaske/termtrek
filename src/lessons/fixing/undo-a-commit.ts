@@ -1,5 +1,6 @@
 import type { Lesson } from '../schema'
 import { headMessage, historyLength, ranGit, workFile } from '../checks'
+import { headCommitId } from '../../engine/git/repoState'
 import { IDENTITY, NOTES, NOTES_V2 } from '../sample'
 
 const LAUNCH_LINE = 'We launch on Friday.'
@@ -54,6 +55,77 @@ export const undoACommit: Lesson = {
         historyLength(c.world) === historyLength(c.start) + 1,
       success:
         "**The date is back.** Your history now tells the whole story: the date was removed, then put back. Nothing was rewritten, so anyone who already has the old commits just gets one more.",
+    },
+  ],  pages: [
+    {
+      kind: 'read',
+      id: 'situation',
+      kicker: 'The problem',
+      title: 'A change needs to come back',
+      body: 'Someone removed the launch date from **notes.txt**, but the launch is still on. That change is already shared, so you cannot just amend it away.',
+      visual: { kind: 'graph', all: true },
+    },
+    {
+      kind: 'do',
+      id: 'find',
+      kicker: 'Try it',
+      title: 'Find the commit to undo',
+      body: '`git log` lists your commits, newest first. Look for the one that removed the date.',
+      visual: { kind: 'graph', all: true },
+      step: 0,
+      command: [
+        { text: 'git', say: 'talk to Git' },
+        { text: 'log', say: 'list the commits' },
+      ],
+      done: '**There it is.** "Remove the launch date" is the newest commit, the one HEAD points at.',
+    },
+    {
+      kind: 'read',
+      id: 'idea',
+      kicker: 'The idea',
+      title: 'Undo by adding, not erasing',
+      body: '`git revert` makes a **new** commit that does the exact opposite of an old one. Lines it removed come back, and lines it added go away.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
+      id: 'safe',
+      kicker: 'Why it is safe',
+      title: 'Nothing is rewritten',
+      body: 'The old commit stays in the history. Anyone who already has it just gets one more commit. That is why revert is the way to undo shared work.',
+      visual: { kind: 'graph', all: true },
+    },
+    {
+      kind: 'do',
+      id: 'revert',
+      kicker: 'Try it',
+      title: 'Undo it with a new commit',
+      body: '`HEAD` is the commit you are on, the newest one here. Git opens a message that is already written for you. It is fine as it is: click **Save and close**.',
+      visual: { kind: 'graph', all: true },
+      step: 1,
+      command: [
+        { text: 'git revert', say: 'undo a commit' },
+        { text: 'HEAD', say: 'the newest one' },
+      ],
+      done: '**The date is back.** The history now says: the date was removed, then put back.',
+      report: (world) => {
+        const id = world.repo ? headCommitId(world.repo) : null
+        return id ? `Git added a new commit, \`${id.slice(0, 7)}\`, that undoes the old one. Nothing was erased.` : null
+      },
+    },
+    {
+      kind: 'read',
+      id: 'no-edit',
+      kicker: 'A shortcut',
+      title: 'Skip the editor',
+      body: 'Add `--no-edit` to keep the ready-made message: `git revert --no-edit HEAD`. You can also revert any commit by its ID from `git log`.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'finish',
+      id: 'done',
+      title: 'You can undo a shared commit',
+      body: 'Revert undoes a commit by adding a new one, so nothing in the history is rewritten.',
     },
   ],
 }

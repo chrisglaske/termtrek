@@ -1,6 +1,8 @@
 import type { Lesson } from '../schema'
-import { branchExists, historyLength, onBranch, ranGit } from '../checks'
+import { branchExists, historyLength, onBranch, ranGit, workFile } from '../checks'
 import { TWO_ON_MAIN } from './setups'
+
+const HOME_LINE = 'Home page work happens on the homepage branch.'
 
 export const makeABranch: Lesson = {
   id: 'make-a-branch',
@@ -46,19 +48,23 @@ export const makeABranch: Lesson = {
       success: "**You're on homepage.** The prompt shows the branch name, and the HEAD ring moved to **homepage** in **Your repo**.",
     },
     {
+      id: 'edit',
+      title: 'Change a file on the branch',
+      learn: `Make a change on the new branch. \`echo "${HOME_LINE}" >> README.md\` adds a line to the end of the README.`,
+      task: 'Add a line to `README.md`.',
+      hints: ['Use `echo` with `>>` so the README keeps its other lines.', `Type \`echo "${HOME_LINE}" >> README.md\` and press Enter.`],
+      solution: [`echo "${HOME_LINE}" >> README.md`],
+      check: (c) => (workFile(c.world, 'README.md') ?? '').includes(HOME_LINE) || historyLength(c.world, 'homepage') === 3,
+      success: '**README changed.** Now save it on this branch.',
+    },
+    {
       id: 'commit',
       title: 'Commit on the branch',
       learn:
-        "Make a change and commit it. This time, save a step: `git commit -am` stages and commits in one go.\n- `-a` means \"all\": it stages every change to a file Git already tracks. New files still need `git add`.\n- `-m` is the message, as before. `-am` is the two together.\n\n1. `echo \"Home page work happens on the homepage branch.\" >> README.md` adds a line to the README.\n2. `git commit -am \"Note where home page work happens\"` saves it.",
-      task: 'Change `README.md` and commit it on homepage.',
-      hints: [
-        'Add a line to `README.md` with `echo` and `>>`, then commit with `-am`.',
-        'Type `echo "Home page work happens on the homepage branch." >> README.md`, then `git commit -am "Note where home page work happens"`.',
-      ],
-      solution: [
-        'echo "Home page work happens on the homepage branch." >> README.md',
-        'git commit -am "Note where home page work happens"',
-      ],
+        'Commit the change. This time, save a step: `git commit -am` stages and commits in one go.\n- `-a` means "all": it stages every change to a file Git already tracks. New files still need `git add`.\n- `-m` is the message, as before. `-am` is the two together.\n\nType `git commit -am "Note where home page work happens"`.',
+      task: 'Commit the change to `README.md` on homepage.',
+      hints: ['Commit with `-am`, so the change is staged and saved in one go.', 'Type `git commit -am "Note where home page work happens"` and press Enter.'],
+      solution: ['git commit -am "Note where home page work happens"'],
       check: (c) => historyLength(c.world, 'homepage') === 3 && c.world.repo?.branches.main === c.start.repo?.branches.main,
       nudge: (c) => {
         if (c.world.repo?.branches.main !== c.start.repo?.branches.main) {
@@ -74,6 +80,127 @@ export const makeABranch: Lesson = {
       },
       success:
         "**homepage moved ahead.** In **Your repo**, **homepage** is one commit past **main**, and **main** didn't move. That's the point of a branch: try things without touching the work everyone relies on.",
+    },
+  ],
+  pages: [
+    {
+      kind: 'read',
+      id: 'idea',
+      kicker: 'The idea',
+      title: 'A branch is a movable label',
+      body: 'So far every commit went on **main**. A **branch** is a label that points at a commit. When you commit, the label you are on moves forward. It is not a copy of your files.',
+      visual: { kind: 'graph', branches: true },
+    },
+    {
+      kind: 'read',
+      id: 'head',
+      kicker: 'You are here',
+      title: 'HEAD marks where you are',
+      body: '**HEAD** points at the branch you are on. In the picture it is the ring around the label.',
+      visual: { kind: 'graph', branches: true },
+    },
+    {
+      kind: 'do',
+      id: 'list',
+      kicker: 'Try it',
+      title: 'See your branches',
+      body: 'This lists every branch in the repo.',
+      visual: { kind: 'graph', branches: true },
+      step: 0,
+      command: [
+        { text: 'git', say: 'talk to Git' },
+        { text: 'branch', say: 'list the branches' },
+      ],
+      done: '**One branch, main.** The star marks the branch you are on.',
+    },
+    {
+      kind: 'read',
+      id: 'why',
+      kicker: 'Why branch',
+      title: 'Try things without touching main',
+      body: 'You want to start a home page, but keep **main** as it is until the page is ready. A branch gives that work its own label.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'do',
+      id: 'create',
+      kicker: 'Try it',
+      title: 'Make a branch for the home page',
+      body: 'Use short names with dashes instead of spaces, like `contact-page`. Nothing in your folder changes.',
+      visual: { kind: 'graph', branches: true },
+      step: 1,
+      command: [
+        { text: 'git branch', say: 'make a branch' },
+        { text: 'homepage', say: 'with this name' },
+      ],
+      done: '**Two labels, one commit.** homepage sits on the same commit as main.',
+    },
+    {
+      kind: 'read',
+      id: 'not-yet',
+      kicker: 'Look closely',
+      title: 'You are still on main',
+      body: 'Making a branch does not move you onto it. The ring is still around **main**.',
+      visual: { kind: 'graph', branches: true },
+    },
+    {
+      kind: 'do',
+      id: 'switch',
+      kicker: 'Try it',
+      title: 'Move onto it',
+      body: 'From now on, new commits go on **homepage**, and **main** stays where it is.',
+      visual: { kind: 'graph', branches: true },
+      step: 2,
+      command: [
+        { text: 'git switch', say: 'move to a branch' },
+        { text: 'homepage', say: 'this one' },
+      ],
+      done: '**You are on homepage.** The prompt shows the branch name, and the ring moved.',
+    },
+    {
+      kind: 'do',
+      id: 'edit',
+      kicker: 'Try it',
+      title: 'Change a file on the branch',
+      body: 'This adds a line to the end of the README. `>>` adds to a file instead of replacing it.',
+      visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
+      step: 3,
+      command: [
+        { text: 'echo', say: 'print this text' },
+        { text: '"Home page work happens on the homepage branch."', say: 'the text' },
+        { text: '>>', say: 'add to a file' },
+        { text: 'README.md', say: 'this one' },
+      ],
+      done: '**README changed.** Now save it on this branch.',
+    },
+    {
+      kind: 'read',
+      id: 'am',
+      kicker: 'A shortcut',
+      title: 'Stage and commit in one go',
+      body: '`-a` means "all": it stages every change to a file Git already tracks, so you can skip `git add`. New files still need `git add`.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'do',
+      id: 'commit',
+      kicker: 'Try it',
+      title: 'Commit on the branch',
+      body: '`-am` is `-a` and `-m` together: stage everything, with this message.',
+      visual: { kind: 'graph', branches: true },
+      step: 4,
+      command: [
+        { text: 'git commit', say: 'save a commit' },
+        { text: '-am', say: 'stage all, add a message' },
+        { text: '"Note where home page work happens"', say: 'the message' },
+      ],
+      done: '**homepage moved ahead.** It is one commit past main, and main did not move.',
+    },
+    {
+      kind: 'finish',
+      id: 'done',
+      title: 'You can make a branch',
+      body: 'Your work lives on its own branch, and **main** stays exactly as everyone relies on it.',
     },
   ],
 }

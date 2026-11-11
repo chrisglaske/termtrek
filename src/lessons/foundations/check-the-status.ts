@@ -1,5 +1,6 @@
 import type { Lesson } from '../schema'
 import { isStaged, ranGit } from '../checks'
+import { getStatus } from '../../engine/git/repoState'
 import { IDENTITY, NOTES, README } from '../sample'
 
 export const checkTheStatus: Lesson = {
@@ -45,6 +46,78 @@ export const checkTheStatus: Lesson = {
       check: (c) => isStaged(c.world, 'notes.txt'),
       success:
         '**Staged.** `notes.txt` is now on the list for your next commit, and the **Staged** count went up. Run `git status` again to see it under "Changes to be committed".',
+    },
+  ],
+  pages: [
+    {
+      kind: 'read',
+      id: 'question',
+      kicker: 'The question',
+      title: 'Which files does Git see?',
+      body: 'You are in a repo with two files in it. Git can tell you what it sees at any time.',
+      visual: { kind: 'stage', show: ['folder'] },
+    },
+    {
+      kind: 'do',
+      id: 'status',
+      kicker: 'The command you will use most',
+      title: 'Ask Git for the status',
+      body: 'Run it whenever you are unsure what is going on.',
+      visual: { kind: 'stage', show: ['folder'], hot: 'folder' },
+      step: 0,
+      command: [
+        { text: 'git', say: 'talk to Git' },
+        { text: 'status', say: 'what is going on?' },
+      ],
+      done: '**That is your checklist.** You are on **main**, nothing is saved yet, and both files are untracked.',
+      report: (world) => {
+        const n = getStatus(world)?.untracked.length ?? 0
+        return n > 0 ? `Git listed ${n} ${n === 1 ? 'file' : 'files'} under "Untracked files".` : null
+      },
+    },
+    {
+      kind: 'read',
+      id: 'untracked',
+      kicker: 'New word',
+      title: 'Untracked means not saved yet',
+      body: 'Git can see the file, but it is not keeping the file\'s history yet.',
+      visual: { kind: 'stage', show: ['folder'] },
+    },
+    {
+      kind: 'read',
+      id: 'staging',
+      kicker: 'The big idea',
+      title: 'You choose what goes into a save',
+      body: 'Git does not save every file by itself. You pick files by adding them to the **staging area**, a list of changes chosen for the next save.',
+      visual: { kind: 'stage', show: ['folder', 'staged'] },
+    },
+    {
+      kind: 'do',
+      id: 'add',
+      kicker: 'Try it',
+      title: 'Choose a file',
+      body: '`add` puts a file on the list. Picking files one by one lets you keep unrelated changes in separate saves.',
+      visual: { kind: 'stage', show: ['folder', 'staged'], hot: 'folder' },
+      step: 1,
+      command: [
+        { text: 'git add', say: 'put it on the list' },
+        { text: 'notes.txt', say: 'this file' },
+      ],
+      done: '**Staged.** notes.txt is on the list for your next save.',
+    },
+    {
+      kind: 'read',
+      id: 'again',
+      kicker: 'Good habit',
+      title: 'Check the status again',
+      body: 'Run `git status` after staging and the file moves under "Changes to be committed". A **commit** is one saved snapshot, and you will make one soon.',
+      visual: { kind: 'stage', show: ['folder', 'staged'], hot: 'staged' },
+    },
+    {
+      kind: 'finish',
+      id: 'done',
+      title: 'You can read the status',
+      body: 'You asked Git what it sees and chose a file for the next save.',
     },
   ],
 }

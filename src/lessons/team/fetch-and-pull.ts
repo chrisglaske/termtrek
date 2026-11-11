@@ -1,5 +1,5 @@
 import type { Lesson } from '../schema'
-import { inSync, ranAfter, ranGit, serverTip, trackingTip, workFile } from '../checks'
+import { inSync, ranGit, serverTip, trackingTip, workFile } from '../checks'
 import { CLONED, VENUE, alexAddsVenue } from './setups'
 
 export const fetchAndPull: Lesson = {
@@ -27,15 +27,25 @@ export const fetchAndPull: Lesson = {
       id: 'fetch',
       title: 'Fetch',
       learn:
-        'Run `git fetch`. It asks the server what is new and downloads it into your repo, updating **origin/main**. It does not touch your branch or your files, so it is always safe.\n\nThen run `git status` again.',
-      task: 'Fetch, then check the status.',
-      hints: ['Fetching downloads without changing your files.', 'Type `git fetch`, then `git status`.'],
-      solution: ['git fetch', 'git status'],
-      check: (c) => trackingTip(c.world, 'origin/main') === serverTip(c.world, 'main') && ranAfter(c, 'fetch', 'status'),
+        'Run `git fetch`. It asks the server what is new and downloads it into your repo, updating **origin/main**. It does not touch your branch or your files, so it is always safe.',
+      task: 'Fetch from the server.',
+      hints: ['Fetching downloads without changing your files.', 'Type `git fetch` and press Enter.'],
+      solution: ['git fetch'],
+      check: (c) => trackingTip(c.world, 'origin/main') === serverTip(c.world, 'main') && ranGit(c, 'fetch'),
       nudge: (c) =>
         ranGit(c, 'pull') && !ranGit(c, 'fetch')
           ? { kind: 'tip', text: 'That was a pull, which is a fetch plus a merge, so it changed your files too. This lesson is about the fetch half on its own: run `git fetch` in full, then `git status`.' }
           : null,
+      success: '**Downloaded.** **origin/main** now points at the new commit, and your files have not changed.',
+    },
+    {
+      id: 'status-again',
+      title: 'Check again',
+      learn: 'Run `git status` again. Now that Git has fresh news from the server, the answer changes.',
+      task: 'Check the status.',
+      hints: ['The same command as before.', 'Type `git status` and press Enter.'],
+      solution: ['git status'],
+      check: (c) => ranGit(c, 'status'),
       success: '**Behind by 1.** Now Git knows. Your **main** is one commit behind **origin/main**, and your files have not changed yet.',
     },
     {
@@ -47,6 +57,89 @@ export const fetchAndPull: Lesson = {
       solution: ['git pull'],
       check: (c) => inSync(c.world, 'main') && (workFile(c.world, 'notes.txt') ?? '').includes(VENUE),
       success: '**You have the venue line.** `notes.txt` now includes it, and **main** matches the server again.',
+    },
+  ],  pages: [
+    {
+      kind: 'read',
+      id: 'teammates',
+      kicker: 'The setup',
+      title: 'Teammates push too',
+      body: 'While you were away, **Alex Kim** pushed a new commit to **main** on the server.',
+      visual: { kind: 'server' },
+    },
+    {
+      kind: 'do',
+      id: 'status-first',
+      kicker: 'Try it',
+      title: 'Ask Git where you stand',
+      body: 'Read what it says.',
+      visual: { kind: 'none' },
+      step: 0,
+      command: [{ text: 'git status', say: 'where do I stand?' }],
+      done: '**"Up to date"?** Git says so, even though the server changed.',
+    },
+    {
+      kind: 'read',
+      id: 'memory',
+      kicker: 'Why',
+      title: 'Git only knows what it last downloaded',
+      body: 'Git does not call the server by itself. `git status` compares you with **origin/main**, its memory of the server. That memory is out of date.',
+      visual: { kind: 'server' },
+    },
+    {
+      kind: 'read',
+      id: 'fetch-idea',
+      kicker: 'The idea',
+      title: 'Fetch downloads, and nothing else',
+      body: '`git fetch` asks the server what is new and moves **origin/main**. Your branch and your files stay as they are, so it is always safe.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'do',
+      id: 'fetch',
+      kicker: 'Try it',
+      title: 'Fetch',
+      body: 'Watch origin/main on your computer.',
+      visual: { kind: 'server' },
+      step: 1,
+      command: [{ text: 'git fetch', say: 'download what is new' }],
+      done: '**Downloaded.** origin/main now points at Alex\'s commit.',
+    },
+    {
+      kind: 'do',
+      id: 'status-again',
+      kicker: 'Try it',
+      title: 'Ask again',
+      body: 'Now Git has fresh news from the server.',
+      visual: { kind: 'none' },
+      step: 2,
+      command: [{ text: 'git status', say: 'where do I stand?' }],
+      done: '**"Behind by 1 commit."** Your files have not changed yet.',
+    },
+    {
+      kind: 'read',
+      id: 'pull-idea',
+      kicker: 'The idea',
+      title: 'Pull brings it into your branch',
+      body: '`git pull` is a fetch followed by a merge. You have no new commits of your own, so your **main** simply moves forward.',
+      visual: { kind: 'server' },
+    },
+    {
+      kind: 'do',
+      id: 'pull',
+      kicker: 'Try it',
+      title: 'Pull',
+      body: 'Watch your main catch up.',
+      visual: { kind: 'server' },
+      step: 3,
+      command: [{ text: 'git pull', say: 'download and merge' }],
+      done: '**You have the venue line.** Your main matches the server again.',
+    },
+    {
+      kind: 'finish',
+      id: 'done',
+      title: 'You can get your team\'s work',
+      body: '`git fetch` shows you what is new without changing anything. `git pull` brings it into your branch.',
     },
   ],
 }

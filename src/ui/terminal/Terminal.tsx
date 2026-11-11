@@ -26,6 +26,10 @@ export interface TerminalProps {
   intro?: Explain
   /** While set, the live line shows this muted text instead of a prompt, and input is disabled. */
   waiting?: string
+  /** Hides the live line, e.g. once a calm lesson page is passed. */
+  done?: boolean
+  /** Puts this text in the input (without running it) each time `seq` changes. */
+  prefill?: { text: string; seq: number }
 }
 
 function Prompt({
@@ -55,6 +59,8 @@ export function Terminal({
   autoFocus,
   intro,
   waiting,
+  done,
+  prefill,
 }: TerminalProps): React.JSX.Element {
   const [value, setValue] = useState('')
   const [options, setOptions] = useState<string[]>([])
@@ -75,6 +81,14 @@ export function Terminal({
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus()
   }, [autoFocus])
+
+  useEffect(() => {
+    if (!prefill) return
+    setValue(prefill.text)
+    setOptions([])
+    cursor.current = null
+    inputRef.current?.focus()
+  }, [prefill])
 
   const history = (): string[] => hist.current ?? []
 
@@ -171,30 +185,32 @@ export function Terminal({
             </div>
           ))}
         </div>
-        <div className="term-line term-live">
-          {waiting ? (
-            <span className="t-wait tone-muted">{waiting}</span>
-          ) : (
-            <Prompt cwd={cwdLabel} branch={branch} />
-          )}
-          <input
-            ref={inputRef}
-            className="term-input"
-            aria-label="Terminal input"
-            disabled={!!waiting}
-            value={value}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoComplete="off"
-            autoCorrect="off"
-            onChange={(e) => {
-              setValue(e.target.value)
-              setOptions([])
-              cursor.current = null
-            }}
-            onKeyDown={onKeyDown}
-          />
-        </div>
+        {!done && (
+          <div className="term-line term-live">
+            {waiting ? (
+              <span className="t-wait tone-muted">{waiting}</span>
+            ) : (
+              <Prompt cwd={cwdLabel} branch={branch} />
+            )}
+            <input
+              ref={inputRef}
+              className="term-input"
+              aria-label="Terminal input"
+              disabled={!!waiting}
+              value={value}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+              autoCorrect="off"
+              onChange={(e) => {
+                setValue(e.target.value)
+                setOptions([])
+                cursor.current = null
+              }}
+              onKeyDown={onKeyDown}
+            />
+          </div>
+        )}
         {options.length > 0 && (
           <div className="term-line tone-muted">{options.join(' ')}</div>
         )}

@@ -40,22 +40,44 @@ export function LessonDone({
       ) : (
         <p className="done-next">You've finished every lesson that's out so far.</p>
       )}
-      <div className="learn-btns">
-        {next && (
-          <Link className="btn btn-p btn-sm" to={`/learn/${next.id}`}>
-            Next lesson
-            <span aria-hidden="true">→</span>
-          </Link>
-        )}
-        <Link className="btn btn-s btn-sm" to="/#course">
-          Back to course
-        </Link>
-        {lesson.section === 'team' && next?.section !== 'team' && (
-          <Link className="btn btn-s btn-sm" to="/playground">
-            Keep practicing in the Playground
-          </Link>
-        )}
-      </div>
+      <DoneLinks lesson={lesson} next={next} className="learn-btns" size="btn-sm" />
     </section>
+  )
+}
+
+/** Where to go after a lesson: the next one, the course, and the Playground after the team section. */
+export function DoneLinks({
+  lesson,
+  next,
+  className,
+  size = '',
+  nextRef,
+  nextLabel = 'Next lesson',
+}: {
+  lesson: Lesson
+  next: Lesson | undefined
+  className: string
+  size?: string
+  nextRef?: React.Ref<HTMLAnchorElement>
+  nextLabel?: string
+}): React.JSX.Element {
+  const sz = size ? ` ${size}` : ''
+  return (
+    <div className={className}>
+      {next && (
+        <Link className={`btn btn-p${sz}`} to={`/learn/${next.id}`} ref={nextRef}>
+          {nextLabel}
+          <span aria-hidden="true">→</span>
+        </Link>
+      )}
+      <Link className={`btn btn-s${sz}`} to="/#course">
+        Back to course
+      </Link>
+      {lesson.section === 'team' && next?.section !== 'team' && (
+        <Link className={`btn btn-s${sz}`} to="/playground">
+          Keep practicing in the Playground
+        </Link>
+      )}
+    </div>
   )
 }

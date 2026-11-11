@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router'
 import { course } from '../../lessons/course'
 import { useProgress } from '../../progress/ProgressContext'
@@ -12,26 +12,29 @@ function Check(): React.JSX.Element {
   )
 }
 
-export function Sidebar({ currentId }: { currentId: string }): React.JSX.Element {
+export const COURSE_DRAWER_ID = 'course-drawer'
+
+/** The course list, as a drawer that the lesson header's Course button opens. */
+export function Sidebar({ currentId, open, onClose }: { currentId: string; open: boolean; onClose: () => void }): React.JSX.Element {
   const { progress } = useProgress()
-  const [open, setOpen] = useState(false)
-  const listId = useId()
+  const setOpen = (o: boolean) => {
+    if (!o) onClose()
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onClose])
 
   return (
-    <nav className="side" aria-label="Course">
-      <button
-        type="button"
-        className="side-toggle"
-        aria-expanded={open}
-        aria-controls={listId}
-        onClick={() => setOpen((o) => !o)}
-      >
-        Course
-        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <div id={listId} className={open ? 'side-body open' : 'side-body'}>
+    <>
+      {open && <div className="side-backdrop" onClick={onClose} aria-hidden="true" />}
+      <nav id={COURSE_DRAWER_ID} className="side" aria-label="Course" hidden={!open}>
+      <div className="side-body">
         {course.map((section) => {
           const later = section.status === 'later'
           return (
@@ -70,6 +73,7 @@ export function Sidebar({ currentId }: { currentId: string }): React.JSX.Element
           )
         })}
       </div>
-    </nav>
+      </nav>
+    </>
   )
 }

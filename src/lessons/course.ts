@@ -1,4 +1,5 @@
 import type { Lesson, Section } from './schema'
+import { terminalBasics } from './foundations/terminal-basics'
 import { whatIsGit } from './foundations/what-is-git'
 import { introduceYourself } from './foundations/introduce-yourself'
 import { createARepo } from './foundations/create-a-repo'
@@ -42,6 +43,7 @@ export const course: Section[] = [
     commands: ['git init', 'git status', 'git add', 'git commit', 'git log', 'git diff'],
     status: 'launch',
     lessons: [
+      terminalBasics,
       whatIsGit,
       introduceYourself,
       createARepo,
