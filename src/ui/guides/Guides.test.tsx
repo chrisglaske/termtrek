@@ -42,7 +42,7 @@ describe('guide page', () => {
   it('shows the intro line, related lessons and the check', () => {
     at('/guides/sign-in-to-github')
     expect(screen.getByText('This page is not simulated. You do these steps on your own computer.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Clone a repo' })).toHaveAttribute('href', '/learn/clone-a-repo')
+    expect(screen.getByRole('link', { name: 'Copy a project from the server' })).toHaveAttribute('href', '/learn/clone-a-repo')
     expect(screen.getByRole('heading', { name: 'Check it worked' })).toBeInTheDocument()
     expect(screen.getAllByText('ssh -T git@github.com').length).toBeGreaterThan(0)
   })

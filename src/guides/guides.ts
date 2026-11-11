@@ -83,7 +83,7 @@ export const guides: Guide[] = [
     minutes: 5,
     related: [
       { id: 'what-is-git', label: 'What is Git?' },
-      { id: 'start-a-project', label: 'Start a project' },
+      { id: 'start-a-project', label: 'Scenario: start a real project' },
     ],
     byOs: {
       macos: [
@@ -132,8 +132,8 @@ export const guides: Guide[] = [
     summary: 'Let your computer push to GitHub without asking every time.',
     minutes: 10,
     related: [
-      { id: 'clone-a-repo', label: 'Clone a repo' },
-      { id: 'push-your-work', label: 'Push your work' },
+      { id: 'clone-a-repo', label: 'Copy a project from the server' },
+      { id: 'push-your-work', label: 'Send your commits to the server' },
     ],
     common: [
       {

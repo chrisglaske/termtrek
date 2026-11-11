@@ -96,7 +96,7 @@ export const openAPullRequest: Lesson = {
       id: 'open',
       kicker: 'Try it',
       title: 'Open a pull request',
-      body: 'It compares **homepage** into **main**, and the title is filled in for you. Click **Create pull request**.',
+      body: 'You are asking to merge **homepage** into **main**. The title is filled in for you. Click **Create pull request**.',
       visual: { kind: 'none' },
       step: 0,
       command: [],

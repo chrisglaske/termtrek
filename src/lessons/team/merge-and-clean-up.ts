@@ -112,7 +112,7 @@ export const mergeAndCleanUp: Lesson = {
       id: 'switch',
       kicker: 'Try it',
       title: 'Go to main',
-      body: 'Update the branch you are on.',
+      body: 'You are still on **homepage**. Move to **main** first, so you can update it.',
       visual: { kind: 'none' },
       step: 1,
       command: [
