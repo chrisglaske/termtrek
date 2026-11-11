@@ -11,7 +11,7 @@ const only = (a: string, b: string): string[] => {
  * The two versions of the lines that clash in `file`, side by side, from the live world:
  * the branch you are on (current) against `theirs` (incoming). The words match the editor's Keep buttons.
  */
-export function ConflictVisual({ world, file, theirs }: { world: World; file: string; theirs: string }): React.JSX.Element | null {
+export function ConflictVisual({ world, file, theirs, markers }: { world: World; file: string; theirs: string; markers?: boolean }): React.JSX.Element | null {
   const repo = world.repo
   const ours = treeFile(world, 'HEAD', file)
   const incoming = treeFile(world, theirs, file)
@@ -20,6 +20,19 @@ export function ConflictVisual({ world, file, theirs }: { world: World; file: st
   const their = only(incoming, ours)
   if (mine.length === 0 && their.length === 0) return null
   const here = repo.head.kind === 'branch' ? repo.head.name : 'HEAD'
+  if (markers) {
+    const raw = ['<<<<<<< HEAD', ...mine, '=======', ...their, '>>>>>>> ' + theirs].join('\n')
+    return (
+      <figure className="pf-conflict">
+        <pre className="cv-raw" aria-label={`${file} with conflict markers`}>
+          {raw}
+        </pre>
+        <figcaption>
+          What Git wrote into <code>{file}</code>
+        </figcaption>
+      </figure>
+    )
+  }
   const side = (kind: 'cur' | 'inc', label: string, branch: string, lines: string[]) => (
     <section className={`cv-side cv-${kind}`} aria-label={`${label}, ${branch}`}>
       <h3>

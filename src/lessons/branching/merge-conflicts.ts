@@ -145,7 +145,7 @@ export const mergeConflicts: Lesson = {
       kicker: 'In the file',
       title: 'Git wrote both lines into the file',
       body: '**<<<<<<< HEAD** starts your side, what main has. **=======** separates the two sides. **>>>>>>> launch-date** ends the other side.',
-      visual: { kind: 'conflict', file: 'notes.txt', theirs: 'launch-date' },
+      visual: { kind: 'conflict', file: 'notes.txt', theirs: 'launch-date', markers: true },
     },
     {
       kind: 'read',

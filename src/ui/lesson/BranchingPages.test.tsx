@@ -114,6 +114,11 @@ describe('Branching lessons as calm pages', () => {
     await toPage(user, 'merge-conflicts', 'Run into a conflict')
     await user.type(input(), typed('git merge launch-date'))
     expect(screen.getByText(/Merging launch-date: paused, 1 file to fix/)).toBeInTheDocument()
+    await toPage(user, 'merge-conflicts', 'Git wrote both lines into the file')
+    expect(screen.getByLabelText('notes.txt with conflict markers').textContent).toBe(
+      '<<<<<<< HEAD\nWe launch on Friday.\n=======\nWe launch on Thursday.\n>>>>>>> launch-date',
+    )
+    await toPage(user, 'merge-conflicts', 'The team agreed on Thursday')
     await toPage(user, 'merge-conflicts', 'Choose what to keep')
     // The editor only appears once the learner opens the file on this page.
     expect(screen.queryByRole('textbox', { name: 'Edit notes.txt' })).toBeNull()

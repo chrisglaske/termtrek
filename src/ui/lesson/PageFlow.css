@@ -827,6 +827,20 @@
   color: var(--t-ink);
   overflow-wrap: anywhere;
 }
+.cv-raw {
+  margin: 0;
+  padding: 14px 16px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--t-ink);
+  background: var(--t-bg);
+  border: 1px solid var(--t-bd);
+  border-radius: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .pf-conflict figcaption {
   margin-top: 10px;
   font-size: 14px;

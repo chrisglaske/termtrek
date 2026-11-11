@@ -60,7 +60,7 @@ export type PageVisual =
   | { kind: 'graph'; all?: boolean; branches?: boolean }
   | { kind: 'tree' }
   | { kind: 'rewind' }
-  | { kind: 'conflict'; file: string; theirs: string }
+  | { kind: 'conflict'; file: string; theirs: string; markers?: boolean }
   | { kind: 'server'; branch?: string }
   | { kind: 'pr' }
   | { kind: 'none' }
