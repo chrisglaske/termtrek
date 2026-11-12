@@ -1,0 +1,34 @@
+.pg-run {
+  flex: 1;
+  min-width: 0;
+}
+.pg-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px 20px;
+  color: var(--ink);
+}
+.pg-card h1 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.pg-card p {
+  margin: 0 0 12px;
+  color: var(--ink2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.pg-try {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--mute);
+}
+.pg-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 14px;
+}

@@ -1,0 +1,1595 @@
+/* Calm lesson pages: one idea per page, centred, one visual and one action. */
+.pf {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: calc(100dvh - var(--nav-h));
+  background: var(--bg);
+}
+.pf-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 12px 24px 0;
+}
+.pf-lesson {
+  margin: 0;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pf-top .lh-menu {
+  margin-left: -6px;
+}
+.pf-top :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.pf-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex: none;
+}
+.pf-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line2);
+  transition: width 0.3s, background-color 0.3s;
+}
+.pf-dots i.d {
+  background: var(--ok);
+}
+.pf-dots i.c {
+  width: 22px;
+  border-radius: 5px;
+  background: var(--accent);
+}
+
+.pf-stage {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+.pf-page {
+  width: 100%;
+  max-width: 760px;
+  padding: 18px 28px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes pf-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.pf-kick {
+  margin: 10px 0 12px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.pf-title {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  color: var(--ink);
+}
+.pf-title:focus {
+  outline: none;
+}
+.pf-title:focus-visible {
+  /* Focus lands here only so screen readers read the new page; it is not a control. */
+  outline: none;
+}
+.pf-lead {
+  max-width: 32em;
+  margin: 0 auto 22px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink2);
+}
+.pf-lead p {
+  margin: 0;
+}
+.pf-lead p + p {
+  margin-top: 8px;
+}
+.pf-lead strong {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* The three boxes */
+.sv {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 22px;
+}
+.sv-box {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 210px;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+  transition: opacity 0.5s, box-shadow 0.4s, transform 0.5s;
+}
+.sv-box h3 {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.sv-box small {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--mute);
+}
+.sv-off {
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+  visibility: hidden;
+}
+.sv-dim {
+  opacity: 0.8;
+}
+.sv-hot-accent {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.sv-hot-ok {
+  box-shadow: 0 0 0 2px var(--ok);
+}
+.sv-arrow {
+  align-self: center;
+  flex: none;
+  color: var(--mute);
+  font-size: 16px;
+  transition: opacity 0.5s;
+}
+.sv-in {
+  padding-top: 10px;
+}
+.sv-in ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sv-empty {
+  margin: 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--mute);
+}
+.sv-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--t-ink);
+  background: var(--t-bg);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--t-bd);
+  overflow-wrap: anywhere;
+  animation: pf-in 0.4s both;
+}
+.sv-file i {
+  flex: none;
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: var(--warn);
+}
+.sv-ghost {
+  padding: 6px 9px;
+  color: var(--ink2);
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed var(--line2);
+}
+.sv-ghost i {
+  background: var(--mute);
+}
+.sv-tag {
+  margin-left: auto;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--mute);
+  white-space: nowrap;
+}
+.sv-staged .sv-file i {
+  background: var(--ok);
+}
+.sv-snap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--ink2);
+  animation: pf-in 0.5s both;
+}
+.sv-snap b {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.sv-more {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+/* The commit graph page */
+.pf-graph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 18px 28px;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+}
+.pf-graph .g-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pf-land 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes pf-land {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+.pf-graph .repomap-graph {
+  zoom: 1.35;
+  max-width: 100%;
+}
+.pf-graph-all {
+  overflow-x: auto;
+}
+.pf-graph-all .repomap-graph {
+  zoom: 1.1;
+  max-width: 100%;
+}
+.pf-graph figcaption {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 14px;
+  color: var(--ink2);
+}
+.pf-graph figcaption code {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* The command, on one line, with its parts explained underneath */
+.cc {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 12px 18px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+}
+.cc-k {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mute);
+}
+.cc-box {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  max-width: 100%;
+  /* A long command (a server address) scrolls inside the card instead of widening the page. */
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.cc-line {
+  display: inline-block;
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre;
+  color: var(--cmd-ink);
+  background: var(--cmd-bg);
+  border: 1px solid var(--cmd-bd);
+  border-radius: 9px;
+}
+.cc-tok {
+  /* A quiet underline marks where each part starts and ends, without breaking the line. */
+  border-bottom: 1px solid color-mix(in srgb, var(--cmd-ink) 35%, transparent);
+}
+.cc-more {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+.cc-says {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cc-flow {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 8px;
+}
+.cc-wire {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  background: var(--line2);
+}
+.cc-say {
+  position: absolute;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--ink2);
+}
+.cc-flow .cc-say {
+  position: static;
+}
+
+/* The terminal for the current move */
+.pf-term {
+  width: 100%;
+  text-align: left;
+}
+.pf-term .term {
+  border-radius: 14px;
+  font-size: 14.5px;
+}
+.pf-term .term-log {
+  max-height: 300px;
+  padding: 12px 16px;
+}
+.pf-term .term-entry:last-child {
+  margin-bottom: 0;
+}
+.pf-editor {
+  height: 200px;
+  margin-top: 10px;
+  border: 1px solid var(--t-bd);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.pf-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 2px 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--mute);
+}
+.pf-note-text p,
+.pf-report p {
+  margin: 0;
+}
+.pf-note .cmd,
+.pf-report .cmd {
+  font-size: 12.5px;
+  padding: 1px 6px;
+}
+.pf-note-x {
+  flex: none;
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--mute);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pf-note-x:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
+.pf-note-x:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.pf-report {
+  margin: 8px 2px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.pf-hint {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--mute);
+}
+.pf-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+.pf-link:hover {
+  text-decoration: underline;
+}
+.pf-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.pf-result {
+  width: 100%;
+  scroll-margin-bottom: 110px;
+}
+.pf-good {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0 0;
+  font-size: 17px;
+  color: var(--ink);
+  animation: pf-in 0.45s both;
+}
+.pf-good p {
+  display: inline;
+  margin: 0;
+}
+.pf-good strong {
+  color: var(--ok-ink);
+}
+.pf-good-i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-fill);
+  background: var(--ok-fill);
+}
+
+/* Back and Continue */
+.pf-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+/* Continue stays in reach: the bar sticks to the bottom of the screen whenever a page is taller than the window. */
+.pf-nav-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  box-sizing: border-box;
+  width: calc(100% + 56px);
+  margin: 22px -28px 0;
+  padding: 12px 28px 14px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+.pf-nav .btn {
+  padding: 13px 26px;
+  font-size: 16px;
+}
+.pf-back {
+  background: none;
+  color: var(--mute);
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+.pf-back:hover {
+  color: var(--ink);
+}
+.pf-key {
+  margin: 0;
+  padding: 0 0 18px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+/* The last page */
+.pf-big {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 18px 0 18px;
+  border-radius: 50%;
+  color: var(--ok-ink);
+  background: var(--ok-t);
+  border: 2px solid var(--ok);
+  animation: pf-land 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.pf-saved {
+  font-size: 15px;
+  color: var(--mute);
+}
+
+@media (max-width: 560px) {
+  .pf-graph {
+    padding: 16px 14px;
+  }
+  .pf-top {
+    flex-wrap: wrap;
+    padding: 10px 16px 0;
+    gap: 6px 10px;
+  }
+  /* The lesson title gets its own line so it is not cut to a few letters beside the dots. */
+  .pf-lesson {
+    order: 3;
+    flex: 1 0 100%;
+  }
+  .pf-top .lh-course {
+    padding: 6px 10px;
+  }
+  .pf-dots {
+    gap: 5px;
+  }
+  .pf-dots i {
+    width: 7px;
+    height: 7px;
+  }
+  .pf-dots i.c {
+    width: 16px;
+  }
+  .pf-page {
+    padding: 8px 16px 0;
+  }
+  .pf-finish {
+    padding-bottom: 40px;
+  }
+  .pf-title {
+    font-size: 27px;
+  }
+  .pf-lead {
+    font-size: 16px;
+  }
+  .sv:not(.sv-compact) {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  /* On do pages the boxes stay side by side and small, so the command and terminal fit above the fold. */
+  .sv-compact {
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+  .sv-compact .sv-box {
+    min-height: 0;
+    padding: 9px 8px;
+    border-radius: 12px;
+  }
+  .sv-compact .sv-box small {
+    display: none;
+  }
+  .sv-compact .sv-in {
+    padding-top: 6px;
+  }
+  .sv-compact .sv-file {
+    padding: 5px 6px;
+    font-size: 11.5px;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .sv-compact .sv-tag {
+    margin-left: 0;
+    padding: 0 4px;
+    font-size: 10px;
+    /* Stay inside the file chip on the narrowest phones: wrap instead of poking out. */
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .sv-compact .sv-arrow {
+    font-size: 13px;
+  }
+  .sv-compact .sv-empty {
+    font-size: 11.5px;
+  }
+  .pf-kick {
+    margin: 4px 0 8px;
+  }
+  /* Continue is always in reach on a phone. */
+  .pf-nav-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    width: calc(100% + 32px);
+    margin: 18px -16px 0;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+  }
+  .pf-nav-bar .btn-p {
+    flex: 1;
+  }
+  .pf-key {
+    display: none;
+  }
+  .sv:not(.sv-compact) .sv-box {
+    width: 100%;
+    max-width: 320px;
+    min-height: 0;
+    flex: none;
+  }
+  .sv-off {
+    display: none;
+  }
+  .sv:not(.sv-compact) .sv-arrow {
+    transform: rotate(90deg);
+  }
+  .sv-arrow.sv-off {
+    display: none;
+  }
+  .cc {
+    padding: 12px 12px 14px;
+  }
+  .cc-line {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  .pf-term .term {
+    font-size: 13.5px;
+  }
+  .pf-nav .btn {
+    padding: 12px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-page,
+  .sv-file,
+  .sv-snap,
+  .pf-good,
+  .pf-big,
+  .pf-graph .g-node {
+    animation: none;
+  }
+  .sv-box,
+  .sv-arrow,
+  .pf-dots i {
+    transition: none;
+  }
+}
+
+/* Folder tree for the terminal lessons */
+.pf-tree {
+  margin: 0;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  min-width: min(100%, 300px);
+}
+.pf-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.pf-tree li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink2);
+  min-height: 24px;
+}
+.pf-tree-i {
+  color: var(--mute);
+  width: 10px;
+}
+.pf-tree-dir {
+  color: var(--ink);
+}
+.pf-tree-here .pf-tree-dir {
+  font-weight: 600;
+}
+.pf-tree-tag {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--accent-ink);
+  box-shadow: 0 0 0 1px var(--accent);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+/* After ls: mark what it listed (bar + weight + label), quiet the rest. */
+.pf-tree ul {
+  margin: 0 -8px;
+}
+.pf-tree li {
+  padding-right: 8px;
+  transition: color 0.25s ease, background-color 0.25s ease;
+}
+.pf-tree-hit {
+  background: var(--accent-t);
+  box-shadow: inset 3px 0 0 var(--accent);
+  border-radius: 4px;
+  animation: pf-tree-in 0.3s ease both;
+}
+.pf-tree-hit .pf-tree-dir,
+.pf-tree-hit .pf-tree-file {
+  font-weight: 600;
+  color: var(--ink);
+}
+.pf-tree-ls .pf-tree-dim,
+.pf-tree-ls .pf-tree-dim .pf-tree-dir {
+  color: var(--mute);
+}
+.pf-tree-ls-tag {
+  margin-left: auto;
+}
+@keyframes pf-tree-in {
+  from {
+    background-color: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-tree li {
+    transition: none;
+  }
+  .pf-tree-hit {
+    animation: none;
+  }
+}
+.pf-skip {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--mute);
+  text-align: center;
+}
+.pf-skip a {
+  color: var(--accent-ink);
+}
+
+/* One line of history that also shows commits a reset left behind */
+.pf-rewind {
+  max-width: 100%;
+}
+.pf-rewind-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.pf-rewind-scroll svg {
+  display: block;
+  margin: 0 auto;
+  /* On a phone the line shrinks to fit instead of hiding its newest commits off to the right. */
+  max-width: 100%;
+  height: auto;
+}
+.pf-rewind .rw-node,
+.pf-rewind .rw-lost {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pf-land 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.pf-rewind figcaption {
+  text-align: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-rewind .rw-node,
+  .pf-rewind .rw-lost {
+    animation: none;
+  }
+}
+
+/* A file opened with `code` on a do page, e.g. to fix a conflict */
+.pf-editor-file {
+  height: 300px;
+}
+
+/* The two versions of a conflicting line, side by side */
+.pf-conflict {
+  width: 100%;
+  margin: 0 0 22px;
+}
+.cv-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.cv-side {
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--t-bg);
+  border: 1px solid var(--t-bd);
+  border-radius: 12px;
+}
+.cv-cur {
+  border-top: 3px solid var(--g-head);
+}
+.cv-inc {
+  border-top: 3px solid var(--g-branch);
+}
+.cv-side h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.cv-side h3 code {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.cv-side p {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--t-ink);
+  overflow-wrap: anywhere;
+}
+.cv-raw {
+  margin: 0;
+  padding: 14px 16px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--t-ink);
+  background: var(--t-bg);
+  border: 1px solid var(--t-bd);
+  border-radius: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pf-conflict figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--ink2);
+}
+@media (max-width: 560px) {
+  .cv-sides {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Your computer next to the server, for one branch */
+.pf-server {
+  width: 100%;
+  margin: 0 0 22px;
+}
+.sv-sides {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 10px;
+}
+.sv-side {
+  min-width: 0;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--t-bg);
+  border: 1px solid var(--t-bd);
+  border-radius: 12px;
+}
+.sv-you {
+  border-top: 3px solid var(--g-head);
+}
+.sv-server {
+  border-top: 3px solid var(--g-main);
+}
+.sv-side h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.sv-side h3 code {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.sv-side ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sv-side li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--t-ink);
+}
+.sv-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--g-main);
+}
+.sv-only .sv-dot {
+  background: var(--g-hollow);
+  box-shadow: inset 0 0 0 2px var(--accent-ink);
+}
+.sv-msg {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sv-chip,
+.sv-tag {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 0 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.sv-chip {
+  color: var(--ink2);
+  border: 1px solid var(--line2);
+}
+.sv-tag {
+  color: var(--accent-ink);
+  background: var(--accent-t);
+}
+.sv-more,
+.sv-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mute);
+}
+.sv-link {
+  align-self: center;
+  font-size: 20px;
+  color: var(--mute);
+}
+.pf-server figcaption,
+.pf-pr figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--ink2);
+}
+@media (max-width: 560px) {
+  .sv-sides {
+    grid-template-columns: 1fr;
+  }
+  .sv-link {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}
+
+/* The newest pull request, as a small card */
+.pf-pr {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 22px;
+}
+.prv-card {
+  padding: 14px 16px;
+  text-align: left;
+  background: var(--t-bg);
+  border: 1px solid var(--t-bd);
+  border-radius: 12px;
+}
+.prv-card h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.prv-n {
+  font-weight: 600;
+  color: var(--mute);
+}
+.prv-state {
+  margin-left: auto;
+  padding: 1px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  color: var(--on-fill);
+  background: var(--ok-fill);
+}
+.prv-merged {
+  background: var(--g-main-lbl);
+  color: var(--on-accent);
+}
+.prv-row,
+.prv-review {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--t-ink);
+}
+.prv-size {
+  margin-left: 8px;
+  color: var(--mute);
+}
+.prv-review {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--t-bd);
+}
+.prv-review q {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink2);
+}
+
+/* The server's website on a do page you pass with clicks */
+.pf-server-site {
+  width: 100%;
+  margin: 0 0 8px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* A do page has a left part (the idea and its picture) and a right part (the command, the terminal and the result).
+   Stacked, they read as one calm column; on a wide, short screen they sit side by side so nothing needs scrolling. */
+.pf-body,
+.pf-left,
+.pf-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+.pf-right {
+  /* Don't stack a margin on top of the left part's own bottom margin. */
+  margin-top: 0;
+}
+
+@media (min-width: 900px) and (max-height: 900px) {
+  .pf-top {
+    max-width: 1080px;
+  }
+  /* The three boxes get about 470px here: file names take a whole line and their tags wrap below, instead of squeezing the name. */
+  .pf-do .sv-compact .sv-box {
+    padding: 10px 9px;
+  }
+  .pf-do .sv-compact .sv-box small {
+    display: none;
+  }
+  .pf-do .sv-compact .sv-file {
+    flex-wrap: wrap;
+    gap: 2px 6px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+  }
+  .pf-do .sv-compact .sv-tag {
+    margin-left: 0;
+    padding: 0 4px;
+    font-size: 10.5px;
+    white-space: normal;
+  }
+  .pf-do .sv-compact .sv-arrow {
+    font-size: 13px;
+  }
+  /* The server's site is as tall as the room allows and scrolls inside itself; its own spacing is trimmed so the merge button is in view. */
+  .pf-do .pf-server-site {
+    max-height: calc(100dvh - 200px);
+    overflow-y: auto;
+  }
+  .pf-server-site .rp-prh {
+    padding-top: 8px;
+    padding-bottom: 6px;
+  }
+  .pf-server-site .rp-thread {
+    gap: 6px;
+  }
+  .pf-server-site .rp-c {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .pf-server-site .rp-mbox {
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  .pf-do .pf-good {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .pf-do {
+    max-width: 1080px;
+  }
+  .pf-stage {
+    align-items: flex-start;
+  }
+  .pf-do .pf-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    column-gap: 40px;
+    align-items: start;
+  }
+  .pf-do .pf-left {
+    padding-top: 6px;
+  }
+  .pf-do .pf-left .pf-lead {
+    margin-bottom: 18px;
+  }
+  .pf-do .pf-left .sv,
+  .pf-do .pf-left .pf-graph,
+  .pf-do .pf-left .pf-pr,
+  .pf-do .pf-left .pf-rewind,
+  .pf-do .pf-left .pf-conflict {
+    margin-bottom: 0;
+  }
+  .pf-do .pf-right {
+    padding-top: 14px;
+  }
+  .pf-do .cc {
+    margin-bottom: 12px;
+  }
+  .pf-do .pf-good {
+    margin-top: 12px;
+    font-size: 16px;
+  }
+}
+
+/* Short windows (a laptop, a phone on its side): tighter type and spacing, and a terminal that scrolls inside itself. */
+@media (max-height: 860px) and (min-width: 561px) {
+  .pf-top {
+    padding-top: 6px;
+  }
+  .pf-page {
+    padding-top: 6px;
+  }
+  .pf-kick {
+    margin: 4px 0 6px;
+  }
+  .pf-title {
+    margin-bottom: 6px;
+    font-size: 27px;
+  }
+  .pf-lead {
+    margin-bottom: 14px;
+    font-size: 15.5px;
+    line-height: 1.5;
+  }
+  .sv {
+    margin-bottom: 14px;
+  }
+  .sv-box {
+    min-height: 92px;
+    padding: 10px 12px;
+  }
+  .cc {
+    margin-bottom: 10px;
+    padding: 8px 14px 10px;
+  }
+  .cc-k {
+    margin-bottom: 6px;
+  }
+  .cc-line {
+    font-size: 15px;
+    padding: 4px 12px;
+  }
+  .pf-term .term {
+    font-size: 13.5px;
+  }
+  .pf-term .term-log {
+    max-height: clamp(96px, calc(100dvh - 520px), 240px);
+    padding: 8px 14px;
+  }
+  .pf-hint {
+    margin-top: 8px;
+  }
+  .pf-good {
+    margin-top: 10px;
+    font-size: 15.5px;
+  }
+  .pf-nav {
+    margin-top: 12px;
+  }
+  .pf-nav-bar {
+    margin-top: 12px;
+    padding-top: 8px;
+    padding-bottom: 10px;
+  }
+  .pf-nav .btn {
+    padding: 9px 24px;
+    font-size: 15px;
+  }
+  .pf-key {
+    display: none;
+  }
+  /* Once the editor is open the command has been typed; the editor gets the room. */
+  .pf-right:has(.pf-editor) .cc {
+    display: none;
+  }
+  .pf-editor {
+    height: 170px;
+  }
+  .pf-editor-file {
+    height: 200px;
+  }
+  .pf-big {
+    width: 56px;
+    height: 56px;
+    margin: 6px 0 10px;
+  }
+  .pf-tree {
+    padding: 10px 14px;
+  }
+  .pf-tree ul {
+    gap: 2px;
+  }
+  /* Pictures shrink with the window so the idea and its picture share one screen. */
+  .pf-graph {
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 10px 20px;
+  }
+  .pf-graph .repomap-graph {
+    zoom: 1.05;
+  }
+  .pf-graph-all .repomap-graph {
+    zoom: 0.95;
+  }
+  .pf-graph figcaption {
+    font-size: 13px;
+  }
+}
+
+/* What the last command did to the boxes, in one sentence */
+.sv-change {
+  margin: 12px 0 14px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ok);
+  animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.sv-change-warn {
+  color: var(--warn);
+}
+.sv-shelf {
+  margin: 6px 0 12px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+.sv-ignored {
+  opacity: 0.7;
+  text-decoration: line-through;
+  text-decoration-color: var(--mute);
+}
+.sv-ignored .sv-tag {
+  text-decoration: none;
+}
+
+/* Letters of the command light up as they are typed correctly; the first wrong one turns red */
+.cc-ok {
+  color: var(--ok);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--ok) 70%, transparent);
+}
+.cc-bad {
+  color: #fff;
+  background: var(--err, #d64545);
+  border-radius: 3px;
+}
+.cc-extra {
+  margin-left: 1px;
+}
+
+/* Something the last command made: a green "new" pill and a short note */
+.pf-tree-new-tag {
+  margin-left: auto;
+  color: var(--ok-ink);
+  background: var(--ok-t);
+  box-shadow: 0 0 0 1px var(--ok);
+  font-weight: 600;
+}
+.pf-tree-fresh {
+  animation: pf-tree-in 0.3s ease both;
+}
+.pf-tree-note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ok);
+  animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Commits that just travelled between your computer and the server */
+.sv-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.sv-link small {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ok-ink);
+}
+.sv-link-go {
+  color: var(--ok);
+  font-weight: 700;
+  animation: pf-nudge-r 0.9s ease-in-out 2;
+}
+.sv-link-toYou {
+  animation-name: pf-nudge-l;
+}
+.sv-new {
+  color: var(--ok-ink);
+  background: var(--ok-t);
+}
+.sv-fresh {
+  animation: pf-arrive-r 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.sv-fresh-you {
+  animation-name: pf-arrive-l;
+}
+.sv-fresh .sv-msg {
+  font-weight: 600;
+}
+.sv-moved {
+  display: block;
+  font-weight: 600;
+  color: var(--ok);
+}
+.sv-state {
+  display: block;
+}
+@keyframes pf-arrive-r {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+}
+@keyframes pf-arrive-l {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+}
+@keyframes pf-nudge-r {
+  50% {
+    transform: translateX(6px);
+  }
+}
+@keyframes pf-nudge-l {
+  50% {
+    transform: translateX(-6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sv-fresh,
+  .sv-link-go {
+    animation: none;
+  }
+}
+@media (max-width: 560px) {
+  .sv-link-go small {
+    transform: rotate(-90deg);
+  }
+}
+
+/* What the last command did to the graph, and what git log listed */
+.pf-gchange {
+  display: block;
+  font-weight: 600;
+  color: var(--ok);
+  animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pf-graph figcaption {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pf-graph figcaption .pf-gchange {
+  flex: 1 1 100%;
+  text-align: center;
+}
+.pf-loglist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.pf-loglist li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 8px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--accent-t);
+  border-radius: 4px;
+  box-shadow: inset 3px 0 0 var(--accent);
+  animation: pf-in 0.4s ease both;
+}
+.pf-loglist code {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+.pf-loglist em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+.pf-loglist .pf-loglist-more {
+  background: none;
+  box-shadow: none;
+  color: var(--mute);
+  font-size: 12.5px;
+}
+.pf-ident {
+  margin: 0;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  text-align: left;
+  min-width: min(100%, 300px);
+}
+.pf-ident-k {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.pf-ident dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.pf-ident dl div {
+  display: flex;
+  gap: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+.pf-ident dt {
+  width: 52px;
+  color: var(--mute);
+  font-size: 13px;
+}
+.pf-ident dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+}
+.pf-ident dd i {
+  font-family: var(--sans);
+  font-style: italic;
+  color: var(--mute);
+}
+.pf-ident-set {
+  background: var(--ok-t);
+  box-shadow: inset 3px 0 0 var(--ok);
+  animation: pf-tree-in 0.3s ease both;
+}
+.pf-tree-hint {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--mute);
+  font-style: italic;
+}
+.sv-change-err {
+  color: #d64545;
+}
+
+/* The two places git diff compares */
+.sv-cmp {
+  box-shadow: 0 0 0 2px var(--accent);
+  border-style: dashed;
+}
+.sv-cmp-tag {
+  margin-left: 6px;
+  padding: 0 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent-t);
+  border-radius: 999px;
+}
+
+/* A switch Git refused: the unsaved chips are marked */
+.sv-refused {
+  box-shadow: inset 0 0 0 2px #d64545;
+  animation: pf-shake 0.35s ease 1;
+}
+.sv-refused .sv-tag {
+  color: #d64545;
+}
+@keyframes pf-shake {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sv-refused {
+    animation: none;
+  }
+}

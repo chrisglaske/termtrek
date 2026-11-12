@@ -1,0 +1,26 @@
+.page {
+  min-height: calc(100dvh - var(--nav-h));
+  background: var(--glow), var(--bg);
+}
+.page-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 96px 24px;
+}
+.page-main:focus {
+  outline: none;
+}
+.page-main h1 {
+  margin: 0 0 16px;
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  color: var(--ink);
+}
+.page-main p {
+  margin: 0 0 28px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink2);
+}

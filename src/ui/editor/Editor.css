@@ -1,0 +1,150 @@
+.ed {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--t-bg);
+  color: var(--t-ink);
+  font-family: var(--sans);
+}
+.ed-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 7px 10px 7px 14px;
+  background: var(--t-bar);
+  border-bottom: 1px solid var(--t-bd);
+}
+.ed-file {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t-ink);
+}
+.ed-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--t-mute);
+}
+.ed-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--t-branch);
+}
+.ed-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.ed .btn-sm {
+  padding: 5px 11px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+.ed-note,
+.ed-ask,
+.ed-conflict {
+  margin: 0;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--t-bd);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ed-note {
+  background: var(--t-why-bg);
+  color: var(--t-why-ink);
+}
+.ed-ask,
+.ed-conflict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.ed-ask {
+  background: var(--t-why-bg);
+  color: var(--t-why-h);
+  font-weight: 600;
+}
+.ed-conflict {
+  background: var(--warn-t);
+  color: var(--t-ink);
+}
+.ed-ctitle {
+  margin-right: 4px;
+  font-weight: 700;
+  color: var(--warn-ink);
+}
+.ed-lbl {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mute);
+}
+.ed-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.ed-gutter {
+  position: sticky;
+  left: 0;
+  padding: 12px 10px 12px 14px;
+  text-align: right;
+  color: var(--t-mute);
+  background: var(--t-bg);
+  border-right: 1px solid var(--t-bd);
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+.ed-gutter > div,
+.ed-back > div {
+  height: 1.6em;
+}
+.ed-code {
+  position: relative;
+  min-width: 0;
+}
+/* The textarea draws no outline of its own, so the code area shows focus. */
+.ed-code:focus-within {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.ed-back {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+.ed-mark {
+  background: var(--warn-t);
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+.ed-area {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 12px 14px;
+  border: 0;
+  outline: 0;
+  resize: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: transparent;
+  color: var(--t-ink);
+  caret-color: var(--t-cur);
+  font: inherit;
+  line-height: inherit;
+  white-space: pre;
+}

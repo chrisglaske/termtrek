@@ -28,8 +28,8 @@ $RECYCLE.BIN/
 .idea/
 
 # ==========================================
-# Python (Just in case students run it locally)
+# Node / Vite
 # ==========================================
-__pycache__/
-*.py[cod]
-*$py.class
+node_modules/
+dist/
+*.tsbuildinfo
