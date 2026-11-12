@@ -20,7 +20,9 @@ const files = walk(DIST)
 
 let failed = 0
 for (const path of files) {
-  const url = origin + (path === '/index.html' ? '/' : path)
+  // A throwaway query string makes every request skip the edge cache. Without it, an asset requested before its deploy finished
+  // can get the single-page fallback (the home page, with a 200) cached for that URL, and later tries keep seeing it.
+  const url = origin + (path === '/index.html' ? '/' : path) + `?verify=${Date.now()}`
   let verdict
   try {
     const res = await fetch(url, { cache: 'no-store' })
