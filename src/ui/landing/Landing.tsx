@@ -219,7 +219,7 @@ export function Landing(): React.JSX.Element {
               </div>
               <div>
                 <dt><Tick size={11} />Open source</dt>
-                <dd>Free under the GPL-3.0 license. Read the code, suggest a lesson, or run your own copy.</dd>
+                <dd>Free under the AGPL-3.0 license. Read the code, suggest a lesson, or run your own copy.</dd>
               </div>
             </dl>
           </div>
@@ -242,7 +242,7 @@ export function Landing(): React.JSX.Element {
             <Logo size={24} />
             TermTrek
           </span>
-          <span>Free and open source under GPL-3.0</span>
+          <span>Free and open source under AGPL-3.0</span>
           <nav aria-label="Footer">
             <a href="#course">Course</a>
             <Link to="/playground">Playground</Link>

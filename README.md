@@ -4,7 +4,7 @@
 
 **See what Git is doing.** A free, hands-on Git course that runs in your browser.
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](LICENSE)
 [![Live site matches this code](https://img.shields.io/github/actions/workflow/status/chrisglaske/termtrek/live.yml?branch=main&label=live%20site%20matches%20this%20code&logo=githubactions&logoColor=white)](https://github.com/chrisglaske/termtrek/actions/workflows/live.yml)
 
 [**Start learning at termtrek.work**](https://termtrek.work)
@@ -21,7 +21,7 @@ TermTrek teaches Git by letting you use it. You type real Git commands into a si
 
 - **No account, no install.** Open the site and start.
 - **Nothing saved about you.** There is no backend and no sign-in. Your progress and theme stay in your own browser (localStorage) and are never sent anywhere.
-- **Free and open source**, under GPL-3.0.
+- **Free and open source**, under AGPL-3.0.
 
 ## A look inside
 
@@ -90,4 +90,6 @@ TermTrek sets no tracking cookies. It uses Cloudflare Web Analytics for anonymou
 
 ## License
 
-GPL-3.0. See [LICENSE](LICENSE).
+TermTrek is open source under the [GNU Affero General Public License v3.0](LICENSE). You may use, study, change and share it. If you share a changed version, or run one for other people over a network, you must make its full source available under the same license.
+
+The name **TermTrek**, its logo, the lesson text and the screenshots are not covered by this license. If you publish your own version, please give it a different name, logo and wording so people don't mistake it for this one.
