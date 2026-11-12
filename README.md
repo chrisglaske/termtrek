@@ -6,8 +6,6 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Live site matches this code](https://img.shields.io/github/actions/workflow/status/chrisglaske/termtrek/live.yml?branch=main&label=live%20site%20matches%20this%20code&logo=githubactions&logoColor=white)](https://github.com/chrisglaske/termtrek/actions/workflows/live.yml)
-[![No account](https://img.shields.io/badge/account-none-brightgreen.svg)](https://termtrek.work)
-[![Open source](https://img.shields.io/badge/open%20source-yes-brightgreen.svg)](#license)
 
 [**Start learning at termtrek.work**](https://termtrek.work)
 
