@@ -57,7 +57,8 @@ export type StageBox = 'folder' | 'staged' | 'saved'
  */
 export type PageVisual =
   | { kind: 'stage'; show: StageBox[]; hot?: StageBox }
-  | { kind: 'graph'; all?: boolean; branches?: boolean }
+  | { kind: 'graph'; all?: boolean; branches?: boolean; log?: boolean }
+  | { kind: 'identity' }
   | { kind: 'tree' }
   | { kind: 'rewind' }
   | { kind: 'conflict'; file: string; theirs: string; markers?: boolean }

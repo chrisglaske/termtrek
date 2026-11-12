@@ -24,6 +24,11 @@ describe('diffStage', () => {
     const b = { ...base, saved: ['abc1234'], branch: 'homepage' }
     expect(diffStage(base, b)?.caption).toMatch(/^Switched to homepage/)
   })
+  it('calls an amend a replacement, not a new save', () => {
+    const a = { ...base, staged: { 'a.txt': 'new' as const }, saved: ['old1111'] }
+    const b = { ...base, saved: ['new2222'] }
+    expect(diffStage(a, b)?.caption).toMatch(/replaced by new2222/)
+  })
   it('returns null when nothing visible changed', () => {
     expect(diffStage(base, base)).toBeNull()
   })

@@ -136,7 +136,7 @@ export const cloneARepo: Lesson = {
       kicker: 'Try it',
       title: 'Find the address again',
       body: 'Ask Git which servers this repo knows.',
-      visual: { kind: 'none' },
+      visual: { kind: 'server' },
       step: 3,
       command: [
         { text: 'git remote', say: 'list the saved servers' },

@@ -57,6 +57,14 @@ export function diffStage(a: StageSnap, b: StageSnap): StageChange | null {
   }
   const newSaves = b.saved.filter((id) => !a.saved.includes(id))
 
+  if (newSaves.length && a.saved.some((id) => !b.saved.includes(id))) {
+    const n = left.length
+    return {
+      caption: `Your last save was replaced by ${(newSaves[0] ?? '').slice(0, 7)}${n > 0 ? `: it now includes ${files(n)} more` : ''}. The old one is gone from the list.`,
+      advanced: true,
+      tone: 'ok',
+    }
+  }
   if (newSaves.length) {
     const n = left.length
     const what = n > 0 ? `${files(n)} saved` : 'Saved'

@@ -85,7 +85,7 @@ export const createARepo: Lesson = {
       kicker: 'Step 2 of 2',
       title: 'Turn the folder into a repo',
       body: '`init` is short for "initialize", which means set up. Your files stay exactly as they are.',
-      visual: { kind: 'none' },
+      visual: { kind: 'tree' },
       step: 1,
       command: [
         { text: 'git', say: 'talk to Git' },

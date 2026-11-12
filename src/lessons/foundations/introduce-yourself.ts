@@ -70,7 +70,7 @@ export const introduceYourself: Lesson = {
       kicker: 'Setting 1 of 2',
       title: 'Tell Git your name',
       body: 'Use your own name, or Sam Rivera. The quotes keep the first and last name together as one value.',
-      visual: { kind: 'none' },
+      visual: { kind: 'identity' },
       step: 0,
       command: [
         { text: 'git config', say: 'change a Git setting' },
@@ -94,7 +94,7 @@ export const introduceYourself: Lesson = {
       kicker: 'Setting 2 of 2',
       title: 'Tell Git your email',
       body: 'On your own computer, use the email you will sign up with.',
-      visual: { kind: 'none' },
+      visual: { kind: 'identity' },
       step: 1,
       command: [
         { text: 'git config', say: 'change a Git setting' },

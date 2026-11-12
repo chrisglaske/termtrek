@@ -216,7 +216,7 @@ export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: R
               <circle key={n.id} className="node-lost" cx={n.x} cy={n.y} r="7" fill="var(--g-hollow)" stroke="var(--g-main)" strokeWidth="2" strokeDasharray="3 3" opacity="0.4" />
             ) : (
               <g key={n.id} className="g-node">
-                {n.isHead && <circle cx={n.x} cy={n.y} r="13" fill="none" stroke="var(--g-head)" strokeWidth="3" />}
+                {n.isHead && <circle data-flip="ring" cx={n.x} cy={n.y} r="13" fill="none" stroke="var(--g-head)" strokeWidth="3" />}
                 <circle cx={n.x} cy={n.y} r="8" fill={n.lane === 0 ? 'var(--g-main)' : 'var(--g-branch)'} />
               </g>
             ),
@@ -243,14 +243,14 @@ export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: R
             if (l.remote) {
               const stroke = amber ? 'var(--g-branch)' : 'var(--g-main)'
               return (
-                <g key={l.name} className="label-remote">
+                <g key={l.name} className="label-remote" data-flip={`label:${l.name}`}>
                   <rect x={n.x - w / 2} y={y} width={w} height={LABEL_H} rx={LABEL_H / 2} fill="var(--surface)" stroke={stroke} strokeWidth="2" />
                   <text x={n.x} y={y + 15} textAnchor="middle" fontFamily="var(--mono)" fontSize="12" fontWeight="600" fill="var(--ink2)">{text}</text>
                 </g>
               )
             }
             return (
-              <g key={l.name} className="g-label">
+              <g key={l.name} className="g-label" data-flip={`label:${l.name}`}>
                 <rect x={n.x - w / 2} y={y} width={w} height={LABEL_H} rx={LABEL_H / 2} fill={amber ? 'var(--g-branch)' : 'var(--g-main-lbl)'} stroke={l.current ? 'var(--g-head)' : 'none'} strokeWidth="2" />
                 <text x={n.x} y={y + 15} textAnchor="middle" fontFamily="var(--mono)" fontSize="12" fontWeight="600" fill={amber ? 'var(--cmd-bg)' : 'var(--on-accent)'}>{text}</text>
               </g>

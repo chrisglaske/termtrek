@@ -75,7 +75,7 @@ export const shareAProject: Lesson = {
       kicker: 'Try it',
       title: 'Point your repo at the server',
       body: 'This only saves the address. Nothing is sent yet.',
-      visual: { kind: 'none' },
+      visual: { kind: 'server' },
       step: 0,
       command: [
         { text: 'git remote add', say: 'save a server address' },
@@ -114,7 +114,7 @@ export const shareAProject: Lesson = {
       kicker: 'Try it',
       title: 'Check where you stand',
       body: 'With the link set, status compares you with the server.',
-      visual: { kind: 'none' },
+      visual: { kind: 'server' },
       step: 2,
       command: [{ text: 'git status', say: 'where do I stand?' }],
       done: '**Up to date.** Your main and the server\'s match.',

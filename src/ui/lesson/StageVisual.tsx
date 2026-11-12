@@ -48,12 +48,18 @@ export function StageVisual({
   hot,
   advance = false,
   compact = false,
+  last,
+  refused = false,
 }: {
   world: World
   show: StageBox[]
   hot?: StageBox
   /** True once the page's command has passed: the ring then follows the file, but only if a file really moved. */
   advance?: boolean
+  /** The line the learner just ran, so read-only commands (status, diff) can be tied to the boxes. */
+  last?: string
+  /** Git refused a switch because the Folder holds unsaved changes. */
+  refused?: boolean
   /** Smaller boxes kept side by side on phones, so the command and terminal stay in view. */
   compact?: boolean
 }): React.JSX.Element {
@@ -132,6 +138,42 @@ export function StageVisual({
       : [],
   }
 
+  // Read-only commands change nothing; tie what they print to the boxes instead.
+  const cmd = last?.trim() ?? ''
+  let read: { caption: string; cmp?: [StageBox, StageBox] } | null = null
+  const tagItems = (box: StageBox, tag: (path: string) => string | undefined) => {
+    items[box] = items[box].map((it) => {
+      const path = it.key.startsWith('file:') ? it.key.slice(5) : null
+      const t = path ? tag(path) : undefined
+      return t ? { ...it, tag: t, ghost: undefined } : it
+    })
+  }
+  if (status && /^git status\b/.test(cmd)) {
+    const kind = (p: string) => (snap.changed[p] === 'new' ? 'untracked' : snap.changed[p] === 'deleted' ? 'deleted' : 'modified')
+    tagItems('folder', (p) => (p in snap.changed ? kind(p) : undefined))
+    tagItems('staged', () => 'to be committed')
+    const parts = [
+      status.untracked.length ? `${status.untracked.length} untracked` : '',
+      status.unstaged.length ? `${status.unstaged.length} changed but not staged` : '',
+      status.staged.length ? `${status.staged.length} staged` : '',
+    ].filter(Boolean)
+    read = { caption: parts.length ? `git status listed ${parts.join(', ')}. Each file below carries the same label.` : 'git status found nothing to do: the Folder matches your last save.' }
+  } else if (status && /^git diff\b/.test(cmd)) {
+    const cached = /--(staged|cached)\b/.test(cmd)
+    const pair: [StageBox, StageBox] = cached ? ['staged', 'saved'] : ['folder', show.includes('staged') ? 'staged' : 'saved']
+    const names = { folder: 'the Folder', staged: 'Staged', saved: 'your last save' } as const
+    const paths = cached ? status.staged.map((c) => c.path) : status.unstaged.map((c) => c.path)
+    tagItems(cached ? 'staged' : 'folder', (p) => (paths.includes(p) ? 'differs' : undefined))
+    read = {
+      caption: paths.length
+        ? `git diff compares ${names[pair[0]]} with ${names[pair[1]]}. ${paths.join(' and ')} ${paths.length === 1 ? 'differs' : 'differ'}, so that is what it printed.`
+        : `git diff compares ${names[pair[0]]} with ${names[pair[1]]}. Nothing differs, so it printed nothing.${!cached && status.untracked.length ? ' (A new file Git has never saved is not part of a diff.)' : ''}`,
+      cmp: pair,
+    }
+  }
+
+  if (refused) tagItems('folder', (p) => (p in snap.changed ? 'would be overwritten' : undefined))
+
   // FLIP: remember where every chip was, and slide any that moved (or just arrived from a staged file).
   useLayoutEffect(() => {
     const root = rootRef.current
@@ -169,7 +211,7 @@ export function StageVisual({
         {BOXES.map((b, i) => {
           const on = show.includes(b.key)
           const list = items[b.key]
-          const cls = ['sv-box', `sv-${b.key}`, on ? '' : 'sv-off', ringHot === b.key ? `sv-hot sv-hot-${tone}` : ringHot && on ? 'sv-dim' : '']
+          const cls = ['sv-box', `sv-${b.key}`, read?.cmp?.includes(b.key) ? 'sv-cmp' : '', on ? '' : 'sv-off', ringHot === b.key ? `sv-hot sv-hot-${tone}` : ringHot && on ? 'sv-dim' : '']
             .filter(Boolean)
             .join(' ')
           return (
@@ -180,7 +222,10 @@ export function StageVisual({
                 </span>
               )}
               <section className={cls} aria-hidden={on ? undefined : true} aria-label={on ? b.title : undefined}>
-                <h3>{b.title}</h3>
+                <h3>
+                  {b.title}
+                  {read?.cmp?.includes(b.key) && <span className="sv-cmp-tag">compared</span>}
+                </h3>
                 <small>{b.sub}</small>
                 <div className="sv-in">
                   {list.length === 0 ? (
@@ -192,7 +237,7 @@ export function StageVisual({
                           key={it.key}
                           data-fly={it.key}
                           data-from={it.from}
-                          className={b.key === 'saved' ? 'sv-snap' : it.ghost ? 'sv-file sv-ghost' : 'sv-file'}
+                          className={b.key === 'saved' ? 'sv-snap' : it.ghost ? 'sv-file sv-ghost' : refused && b.key === 'folder' && it.tag ? 'sv-file sv-refused' : 'sv-file'}
                         >
                           {b.key !== 'saved' && <i aria-hidden="true" />}
                           {it.node}
@@ -216,9 +261,9 @@ export function StageVisual({
           )
         })}
       </div>
-      {change && (
-        <p className={`sv-change sv-change-${change.tone}`} role="status" key={key}>
-          {change.caption}
+      {(read ?? change) && (
+        <p className={`sv-change sv-change-${read ? 'ok' : change!.tone}`} role="status" key={read ? cmd : key}>
+          {read ? read.caption : change!.caption}
         </p>
       )}
       {snap.shelf > 0 && <p className="sv-shelf">On the shelf: {snap.shelf === 1 ? '1 stash entry' : `${snap.shelf} stash entries`}</p>}

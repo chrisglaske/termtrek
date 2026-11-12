@@ -7,6 +7,8 @@ interface Row {
   dir: boolean
   depth: number
   here: boolean
+  /** A quiet label after the name, for things the learner cannot see in a normal list. */
+  hint?: string
 }
 
 const HOME_LABEL = (): string => '~ home'
@@ -16,6 +18,7 @@ function rows(world: World): Row[] {
   const out: Row[] = []
   const walk = (dir: string, depth: number): void => {
     const prefix = dir + '/'
+    if (world.repo && dir === world.repo.root) out.push({ key: `${dir}/.git`, name: '.git', dir: true, depth, here: false, hint: "Git's hidden folder" })
     const dirs = [...world.dirs].filter((d) => d.startsWith(prefix) && !d.slice(prefix.length).includes('/')).sort()
     const files = Object.keys(world.files)
       .filter((f) => f.startsWith(prefix) && !f.slice(prefix.length).includes('/'))
@@ -90,7 +93,7 @@ export function TreeVisual({ world, last }: { world: World; last?: string }): Re
   const pwd = last?.trim() === 'pwd'
   // Compare with the moment before: what is new, what went, and where you moved.
   const seen = useRef<Seen | null>(null)
-  const paths = [...world.dirs, ...Object.keys(world.files)].filter((x) => x.startsWith(world.home + '/'))
+  const paths = [...world.dirs, ...Object.keys(world.files), ...(world.repo ? [`${world.repo.root}/.git`] : [])].filter((x) => x.startsWith(world.home + '/'))
   const sig = paths.join('|') + '#' + world.cwd + '#' + (last ?? '')
   if (!seen.current)
     seen.current = {
@@ -143,6 +146,7 @@ export function TreeVisual({ world, last }: { world: World; last?: string }): Re
                   {r.dir && !r.name.startsWith('~ ') ? '/' : ''}
                 </span>
                 {r.here && <span className="pf-tree-tag">you are here</span>}
+                {r.hint && <span className="pf-tree-hint">{r.hint}</span>}
                 {isNew && <span className="pf-tree-tag pf-tree-new-tag">new</span>}
                 {r.key === catted && <span className="pf-tree-tag pf-tree-ls-tag">cat shows this file</span>}
                 {pwd && r.here && <span className="pf-tree-tag pf-tree-ls-tag">pwd prints this path</span>}

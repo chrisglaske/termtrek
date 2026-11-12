@@ -6,7 +6,7 @@ import { nextLesson } from '../../lessons/course'
 import { useLessonRunner } from '../../lessons/useLessonRunner'
 import { useProgress } from '../../progress/ProgressContext'
 import { savedNote } from '../../progress/store'
-import { activeRepo, headCommitId } from '../../engine/git/repoState'
+import { activeRepo } from '../../engine/git/repoState'
 import { branchOf } from '../../engine/git/refs'
 import { displayPath } from '../../engine/paths'
 import { complete as completeLine } from '../../engine/suggest'
@@ -14,7 +14,6 @@ import { Terminal } from '../terminal/Terminal'
 import type { TermEntry } from '../terminal/Terminal'
 import { Editor } from '../editor/Editor'
 import { RichText } from '../RichText'
-import { RepoGraph, ariaSummary, savedCommits } from '../repomap/RepoMap'
 import { FeedbackCard } from '../terminal/FeedbackCard'
 import { COURSE_DRAWER_ID } from './Sidebar'
 import { OptionsMenu } from './LessonHeader'
@@ -25,6 +24,8 @@ import { RewindVisual } from './RewindVisual'
 import { ConflictVisual } from './ConflictVisual'
 import { ServerVisual } from './ServerVisual'
 import { PrVisual } from './PrVisual'
+import { GraphVisual } from './GraphVisual'
+import { IdentityVisual } from './IdentityVisual'
 import { RemotePanel } from '../remote/RemotePanel'
 import type { RemotePanelProps } from '../remote/RemotePanel'
 import { CommandCard } from './CommandCard'
@@ -43,6 +44,18 @@ function pageEntries(entries: TermEntry[], from: number): TermEntry[] {
     .slice(from)
     .map((e) => (e.explain?.kind === 'ok' ? { ...e, explain: undefined } : e))
     .filter((e) => !e.note || e.lines.length > 0 || e.explain)
+}
+
+/** True when the command the learner just ran on this page printed an error. */
+function failedLast(state: RunnerState, from: number): boolean {
+  const last = pageEntries(state.entries, from).at(-1)
+  return !!last && !last.note && last.lines.some((l) => l.some((sp) => sp.tone === 'error'))
+}
+
+/** True when Git refused because unsaved changes would be overwritten (a switch with a dirty Folder). */
+function refusedOverwrite(state: RunnerState, from: number): boolean {
+  const last = pageEntries(state.entries, from).at(-1)
+  return !!last && !last.note && last.lines.some((l) => l.map((sp) => sp.text).join('').includes('would be overwritten'))
 }
 
 function Dots({ count, at }: { count: number; at: number }): React.JSX.Element {
@@ -77,62 +90,18 @@ function Head({ page, headRef }: { page: ReadPage | DoPage; headRef: React.Ref<H
   )
 }
 
-function Visual({ page, state, done }: { page: ReadPage | DoPage; state: RunnerState; done: boolean }): React.JSX.Element | null {
+function Visual({ page, state, done, refused = false }: { page: ReadPage | DoPage; state: RunnerState; done: boolean; refused?: boolean }): React.JSX.Element | null {
   const v = page.visual
   if (v.kind === 'stage') {
-    return <StageVisual world={state.world} show={v.show} hot={v.hot} advance={done} compact={page.kind === 'do'} />
+    return <StageVisual world={state.world} show={v.show} hot={v.hot} advance={done} compact={page.kind === 'do'} last={state.ran[state.ran.length - 1]} refused={refused} />
   }
   if (v.kind === 'tree') return <TreeVisual world={state.world} last={state.ran[state.ran.length - 1]} />
   if (v.kind === 'rewind') return <RewindVisual world={state.world} />
   if (v.kind === 'conflict') return <ConflictVisual world={state.world} file={v.file} theirs={v.theirs} markers={v.markers} />
   if (v.kind === 'server') return <ServerVisual world={state.world} branch={v.branch} last={state.ran[state.ran.length - 1]} />
   if (v.kind === 'pr') return <PrVisual world={state.world} />
-  if (v.kind === 'graph') {
-    const repo = state.world.repo
-    const id = repo ? headCommitId(repo) : null
-    const commit = id ? repo?.commits[id] : undefined
-    if (!repo || !commit) return null
-    if (v.branches) {
-      const op = repo.op?.kind === 'merge' ? repo.op : null
-      const shelf = repo.stash.length
-      return (
-        <figure className="pf-graph pf-graph-all pf-branches">
-          <RepoGraph repo={repo} stub={false} ids label={`Your branches: ${ariaSummary(repo)}`} />
-          <figcaption>
-            <span>
-              {op
-                ? op.conflicts.length
-                  ? `Merging ${op.theirsLabel}: paused, ${op.conflicts.length === 1 ? '1 file' : `${op.conflicts.length} files`} to fix`
-                  : `Merging ${op.theirsLabel}: fixed, ready to commit`
-                : 'Each label is a branch. The ring marks HEAD, where you are.'}
-              {shelf > 0 && ` On the shelf: ${shelf === 1 ? '1 stash entry' : `${shelf} stash entries`}.`}
-            </span>
-          </figcaption>
-        </figure>
-      )
-    }
-    if (v.all) {
-      const n = savedCommits(repo).length
-      return (
-        <figure className="pf-graph pf-graph-all">
-          <RepoGraph repo={repo} stub={false} ids label={`Your history: ${n} commits in a row, the newest on the right.`} />
-          <figcaption>
-            <span>Oldest on the left, newest on the right</span>
-          </figcaption>
-        </figure>
-      )
-    }
-    const branch = repo.head.kind === 'branch' ? repo.head.name : 'HEAD'
-    return (
-      <figure className="pf-graph">
-        <RepoGraph repo={repo} stub={false} label={`Your history: one dot, labelled ${branch} and HEAD, with the ID ${id!.slice(0, 7)}.`} />
-        <figcaption>
-          <code>{commit.id.slice(0, 7)}</code>
-          <span>{commit.message}</span>
-        </figcaption>
-      </figure>
-    )
-  }
+  if (v.kind === 'graph') return <GraphVisual world={state.world} v={v} last={state.ran[state.ran.length - 1]} />
+  if (v.kind === 'identity') return <IdentityVisual world={state.world} />
   return null
 }
 
@@ -479,7 +448,14 @@ export function PageRun({
             <div className="pf-body">
               <div className="pf-left">
                 <Head page={page} headRef={headRef} />
-                <Visual page={page} state={state} done={page.kind === 'do' && ok} />
+                <Visual page={page} state={state} done={page.kind === 'do' && ok} refused={page.kind === 'do' && !ok && refusedOverwrite(state, starts.current[page.step] ?? 0)} />
+                {page.kind === 'do' && !ok && page.visual.kind !== 'none' && failedLast(state, starts.current[page.step] ?? 0) && (
+                  <p className="sv-change sv-change-err" role="status">
+                    {refusedOverwrite(state, starts.current[page.step] ?? 0)
+                      ? 'Git refused: the changes in your Folder would be overwritten, so it stayed where it was.'
+                      : 'That command did not work, so nothing changed. The terminal says why.'}
+                  </p>
+                )}
               </div>
               {page.kind === 'do' && (
                 <div className="pf-right">

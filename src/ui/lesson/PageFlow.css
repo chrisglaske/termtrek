@@ -1442,3 +1442,155 @@
     transform: rotate(-90deg);
   }
 }
+
+/* What the last command did to the graph, and what git log listed */
+.pf-gchange {
+  display: block;
+  font-weight: 600;
+  color: var(--ok);
+  animation: pf-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pf-graph figcaption {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pf-graph figcaption .pf-gchange {
+  flex: 1 1 100%;
+  text-align: center;
+}
+.pf-loglist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.pf-loglist li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 8px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--accent-t);
+  border-radius: 4px;
+  box-shadow: inset 3px 0 0 var(--accent);
+  animation: pf-in 0.4s ease both;
+}
+.pf-loglist code {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+.pf-loglist em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+.pf-loglist .pf-loglist-more {
+  background: none;
+  box-shadow: none;
+  color: var(--mute);
+  font-size: 12.5px;
+}
+.pf-ident {
+  margin: 0;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  text-align: left;
+  min-width: min(100%, 300px);
+}
+.pf-ident-k {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.pf-ident dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.pf-ident dl div {
+  display: flex;
+  gap: 12px;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+.pf-ident dt {
+  width: 52px;
+  color: var(--mute);
+  font-size: 13px;
+}
+.pf-ident dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+}
+.pf-ident dd i {
+  font-family: var(--sans);
+  font-style: italic;
+  color: var(--mute);
+}
+.pf-ident-set {
+  background: var(--ok-t);
+  box-shadow: inset 3px 0 0 var(--ok);
+  animation: pf-tree-in 0.3s ease both;
+}
+.pf-tree-hint {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--mute);
+  font-style: italic;
+}
+.sv-change-err {
+  color: #d64545;
+}
+
+/* The two places git diff compares */
+.sv-cmp {
+  box-shadow: 0 0 0 2px var(--accent);
+  border-style: dashed;
+}
+.sv-cmp-tag {
+  margin-left: 6px;
+  padding: 0 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent-t);
+  border-radius: 999px;
+}
+
+/* A switch Git refused: the unsaved chips are marked */
+.sv-refused {
+  box-shadow: inset 0 0 0 2px #d64545;
+  animation: pf-shake 0.35s ease 1;
+}
+.sv-refused .sv-tag {
+  color: #d64545;
+}
+@keyframes pf-shake {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sv-refused {
+    animation: none;
+  }
+}

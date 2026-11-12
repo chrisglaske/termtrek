@@ -92,7 +92,7 @@ export const mergeAndCleanUp: Lesson = {
       kicker: 'Try it',
       title: 'Merge the pull request',
       body: 'Click **Create a merge commit**.',
-      visual: { kind: 'none' },
+      visual: { kind: 'pr' },
       step: 0,
       command: [],
       on: 'server',
@@ -113,7 +113,7 @@ export const mergeAndCleanUp: Lesson = {
       kicker: 'Try it',
       title: 'Go to main',
       body: 'You are still on **homepage**. Move to **main** first, so you can update it.',
-      visual: { kind: 'none' },
+      visual: { kind: 'graph', branches: true },
       step: 1,
       command: [
         { text: 'git switch', say: 'move to a branch' },
