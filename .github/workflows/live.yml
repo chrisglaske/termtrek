@@ -1,0 +1,47 @@
+# Builds the site from this repository and checks that termtrek.work serves exactly those files,
+# on pushes to main that change the site or its build, once a day, and on request. It only reads public URLs, so it needs no secrets.
+name: live site matches this code
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'tsconfig*.json'
+      - 'scripts/verify-live.mjs'
+      - '.github/workflows/live.yml'
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      # Cloudflare Pages builds with Node 22 and `npm ci && npm run build`; this does the same.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build the site
+        run: npm ci && npm run build
+      # Cloudflare builds a push on its own, so a push gets 20 minutes to go live; other runs check once.
+      - name: Compare with termtrek.work
+        run: |
+          tries=1
+          if [ "$GITHUB_EVENT_NAME" = push ]; then tries=40; fi
+          for try in $(seq 1 "$tries"); do
+            node scripts/verify-live.mjs && exit 0
+            if [ "$try" -lt "$tries" ]; then sleep 30; fi
+          done
+          exit 1
