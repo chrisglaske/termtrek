@@ -28,8 +28,8 @@ export const amend: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add meeting notes', files: { 'notes.txt': NOTES } },
-        { message: 'Add the lanch date', files: { 'notes.txt': NOTES_V2 } },
+        { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } },
+        { message: 'docs: add the lanch date', files: { 'notes.txt': NOTES_V2 } },
       ],
     },
   },
@@ -38,8 +38,8 @@ export const amend: Lesson = {
       id: 'message',
       title: 'Fix a typo in the message',
       learn:
-        "Your last commit says \"Add the lanch date\". Typos happen, and you can fix the last commit as long as you haven't shared it yet.\n\nRun `git commit --amend`. `--amend` means \"replace the last commit\" instead of adding a new one. Git opens the message in an **editor tab**, the way it would open your code editor on your own computer:\n1. Fix the typo in the first line. Lines that start with **#** are Git's notes to you and are left out of the message.\n2. Click **Save and close**. Git waits until you do, then saves the fixed commit.\n\nFor a quick fix you can skip the editor and give the new message right away: `git commit --amend -m \"Add the launch date\"`.",
-      task: 'Change the last commit message to "Add the launch date".',
+        "Your last commit says \"docs: add the lanch date\". Typos happen, and you can fix the last commit as long as you haven't shared it yet.\n\nRun `git commit --amend`. `--amend` means \"replace the last commit\" instead of adding a new one. Git opens the message in an **editor tab**, the way it would open your code editor on your own computer:\n1. Fix the typo in the first line. Lines that start with **#** are Git's notes to you and are left out of the message.\n2. Click **Save and close**. Git waits until you do, then saves the fixed commit.\n\nFor a quick fix you can skip the editor and give the new message right away: `git commit --amend -m \"docs: add the launch date\"`.",
+      task: 'Change the last commit message to "docs: add the launch date".',
       hints: [
         'Use `git commit` with the option that replaces the last commit, then fix the message in the editor tab.',
         'Type `git commit --amend`, change "lanch" to "launch", then click **Save and close**.',
@@ -47,7 +47,7 @@ export const amend: Lesson = {
       solution: ['git commit --amend'],
       solve: [
         { type: 'run', line: 'git commit --amend' },
-        { type: 'editor-done', text: 'Add the launch date' },
+        { type: 'editor-done', text: 'docs: add the launch date' },
       ],
       check: (c) => /launch/.test(headMessage(c.world) ?? '') && sameLength(c),
       nudge: newCommitNudge,
@@ -88,7 +88,7 @@ export const amend: Lesson = {
       id: 'situation',
       kicker: 'The problem',
       title: 'A typo in your last commit',
-      body: 'The last commit says "Add the lanch date". Typos happen. You can fix the last commit as long as you have not shared it.',
+      body: 'The last commit says "docs: add the lanch date". Typos happen. You can fix the last commit as long as you have not shared it.',
       visual: { kind: 'graph', all: true },
     },
     {

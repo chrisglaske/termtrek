@@ -20,7 +20,7 @@ export const rewindWithReset: Lesson = {
       id: 'soft',
       title: 'Undo a commit, keep the work staged',
       learn:
-        "Your last two commits, \"Draft the agenda\" and \"Tidy the agenda\", were made in a rush and haven't been shared. `git reset` moves your branch back to an earlier commit, as if the later ones never happened. How much of the work it keeps depends on one option.\n\nStart gently with `git reset --soft HEAD~1`:\n- `reset` moves your branch, and **HEAD** with it.\n- `--soft` keeps the undone changes staged, ready to commit again.\n- `HEAD~1` means \"one commit before HEAD\". `HEAD~2` would be two before.",
+        "Your last two commits, \"docs: draft the agenda\" and \"docs: tidy the agenda\", were made in a rush and haven't been shared. `git reset` moves your branch back to an earlier commit, as if the later ones never happened. How much of the work it keeps depends on one option.\n\nStart gently with `git reset --soft HEAD~1`:\n- `reset` moves your branch, and **HEAD** with it.\n- `--soft` keeps the undone changes staged, ready to commit again.\n- `HEAD~1` means \"one commit before HEAD\". `HEAD~2` would be two before.",
       task: 'Undo the last commit and keep its changes staged.',
       hints: [
         'Use `git reset` with the gentlest option, pointing one commit back.',
@@ -33,7 +33,7 @@ export const rewindWithReset: Lesson = {
           ? { kind: 'tip', text: 'That undid the commit and unstaged its changes too. Stage them again with `git add agenda.txt` to finish this step.' }
           : null,
       success:
-        '**One commit back.** "Tidy the agenda" is gone from the history, but its changes are staged in **Your repo**. You could commit them again right now.',
+        '**One commit back.** "docs: tidy the agenda" is gone from the history, but its changes are staged in **Your repo**. You could commit them again right now.',
     },
     {
       id: 'mixed',
@@ -51,7 +51,7 @@ export const rewindWithReset: Lesson = {
       id: 'hard',
       title: 'Throw it all away',
       learn:
-        "Now say the agenda was a bad idea altogether. `git reset --hard HEAD~1` goes back one more commit, to before \"Draft the agenda\", and makes your folder match it exactly:\n- `--hard` throws away staged changes and changes in your folder too.\n- `HEAD~1` is one commit before where you are now.\n\n`--hard` is the one to be careful with: unsaved edits are gone for good. Commits you reset away can still be found for a while, as the next lesson shows.\n\n**The rule from amend applies here too:** only reset commits you haven't shared. For shared commits, use `git revert`.",
+        "Now say the agenda was a bad idea altogether. `git reset --hard HEAD~1` goes back one more commit, to before \"docs: draft the agenda\", and makes your folder match it exactly:\n- `--hard` throws away staged changes and changes in your folder too.\n- `HEAD~1` is one commit before where you are now.\n\n`--hard` is the one to be careful with: unsaved edits are gone for good. Commits you reset away can still be found for a while, as the next lesson shows.\n\n**The rule from amend applies here too:** only reset commits you haven't shared. For shared commits, use `git revert`.",
       task: 'Go back to before the agenda, and leave nothing behind.',
       hints: [
         'Use `git reset` with the option that also cleans your folder, pointing one commit back.',
@@ -61,10 +61,10 @@ export const rewindWithReset: Lesson = {
       check: (c) => isClean(c.world) && workFile(c.world, 'agenda.txt') === undefined,
       nudge: (c) =>
         isClean(c.world) && workFile(c.world, 'agenda.txt') !== undefined
-          ? { kind: 'tip', text: 'Your changes are gone, but the branch is still on "Draft the agenda". Run `git reset --hard HEAD~1` to go one commit further back.' }
+          ? { kind: 'tip', text: 'Your changes are gone, but the branch is still on "docs: draft the agenda". Run `git reset --hard HEAD~1` to go one commit further back.' }
           : null,
       success:
-        "**A clean slate.** `agenda.txt` is gone, the history ends at \"Add the launch date\", and there's nothing to commit. Three levels to remember: `--soft` keeps changes staged, `--mixed` keeps them in your folder, and `--hard` throws them away.",
+        "**A clean slate.** `agenda.txt` is gone, the history ends at \"docs: add the launch date\", and there's nothing to commit. Three levels to remember: `--soft` keeps changes staged, `--mixed` keeps them in your folder, and `--hard` throws them away.",
     },
   ],  pages: [
     {
@@ -72,7 +72,7 @@ export const rewindWithReset: Lesson = {
       id: 'situation',
       kicker: 'The problem',
       title: 'Two commits made in a rush',
-      body: '"Draft the agenda" and "Tidy the agenda" were made in a hurry and have not been shared. You want to go back to before them.',
+      body: '"docs: draft the agenda" and "docs: tidy the agenda" were made in a hurry and have not been shared. You want to go back to before them.',
       visual: { kind: 'rewind' },
     },
     {
@@ -104,7 +104,7 @@ export const rewindWithReset: Lesson = {
         { text: '--soft', say: 'keep the changes staged' },
         { text: 'HEAD~1', say: 'one commit back' },
       ],
-      done: '**One commit back.** "Tidy the agenda" is off the branch, and its changes are staged.',
+      done: '**One commit back.** "docs: tidy the agenda" is off the branch, and its changes are staged.',
       report: (world) => {
         const n = getStatus(world)?.staged.length ?? 0
         return `Git moved the branch back one commit. ${n} changed ${n === 1 ? 'file is' : 'files are'} waiting in Staged.`
@@ -158,7 +158,7 @@ export const rewindWithReset: Lesson = {
       id: 'hard',
       kicker: 'Try it',
       title: 'Throw it all away',
-      body: 'This goes one commit further back, to before "Draft the agenda".',
+      body: 'This goes one commit further back, to before "docs: draft the agenda".',
       visual: { kind: 'rewind' },
       step: 2,
       command: [
@@ -166,7 +166,7 @@ export const rewindWithReset: Lesson = {
         { text: '--hard', say: 'and clean the folder' },
         { text: 'HEAD~1', say: 'one commit back' },
       ],
-      done: '**A clean slate.** agenda.txt is gone, the history ends at "Add the launch date", and there is nothing to commit.',
+      done: '**A clean slate.** agenda.txt is gone, the history ends at "docs: add the launch date", and there is nothing to commit.',
       report: (world) => {
         const gone = world.repo ? Object.keys(world.repo.commits).length - historyLength(world) : 0
         return gone > 0 ? `Git moved the branch back. The ${gone} newer ${gone === 1 ? 'commit is' : 'commits are'} off the branch now, drawn dashed, but still saved.` : null

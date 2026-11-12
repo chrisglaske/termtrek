@@ -8,10 +8,10 @@ export const AGENDA_HISTORY: WorldSetup = {
   repo: {
     at: 'project',
     commits: [
-      { message: 'Add meeting notes', files: { 'notes.txt': NOTES } },
-      { message: 'Add the launch date', files: { 'notes.txt': NOTES_V2 } },
-      { message: 'Draft the agenda', files: { 'agenda.txt': AGENDA } },
-      { message: 'Tidy the agenda', files: { 'agenda.txt': AGENDA_V2 } },
+      { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } },
+      { message: 'docs: add the launch date', files: { 'notes.txt': NOTES_V2 } },
+      { message: 'docs: draft the agenda', files: { 'agenda.txt': AGENDA } },
+      { message: 'docs: tidy the agenda', files: { 'agenda.txt': AGENDA_V2 } },
     ],
   },
 }

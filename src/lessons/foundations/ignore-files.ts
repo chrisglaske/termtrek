@@ -43,8 +43,8 @@ export const ignoreFiles: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add meeting notes', files: { 'notes.txt': NOTES } },
-        { message: 'Add README with a project summary', files: { 'README.md': README } },
+        { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } },
+        { message: 'docs: add README with a project summary', files: { 'README.md': README } },
       ],
     },
   },
@@ -108,13 +108,13 @@ export const ignoreFiles: Lesson = {
     {
       id: 'commit',
       title: 'Commit the ignore file',
-      learn: 'Commit it with a clear message that says what it does, for example `git commit -m "Ignore secrets and log files"`.',
+      learn: 'Commit it with a clear message that says what it does, for example `git commit -m "chore: ignore secrets and logs"`. Upkeep like this gets the `chore` type.',
       task: 'Commit `.gitignore` with a clear message.',
       hints: [
         'Use `git commit -m` with your message in quotes.',
-        'Type `git commit -m "Ignore secrets and log files"`.',
+        'Type `git commit -m "chore: ignore secrets and logs"`.',
       ],
-      solution: ['git commit -m "Ignore secrets and log files"'],
+      solution: ['git commit -m "chore: ignore secrets and logs"'],
       check: (c) => isTracked(c.world, '.gitignore') && SECRETS.every((f) => !isTracked(c.world, f)),
       success:
         "**Your team is protected too.** `.gitignore` is now part of the history, and the **Folder** area in **Your repo** is empty again. Secrets stay on your machine.",
@@ -242,13 +242,13 @@ export const ignoreFiles: Lesson = {
       id: 'commit',
       kicker: 'Step 2 of 2',
       title: 'Save it',
-      body: 'Describe what the commit does.',
+      body: 'Describe what the commit does. Upkeep like this gets the **chore** type.',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'staged' },
       step: 4,
       command: [
         { text: 'git commit', say: 'save what is chosen' },
         { text: '-m', say: 'add a message' },
-        { text: '"Ignore secrets and log files"', say: 'the message' },
+        { text: '"chore: ignore secrets and logs"', say: 'the message' },
       ],
       done: '**Your team is protected too.** Secrets stay on your machine.',
     },

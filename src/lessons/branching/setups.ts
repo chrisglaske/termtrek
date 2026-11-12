@@ -12,15 +12,15 @@ export const README_TYPO = README.replace('weekly', 'weekley')
 type SetupCommit = { message: string; files: Record<string, string> }
 
 const TWO_COMMITS: SetupCommit[] = [
-  { message: 'Add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README } },
-  { message: 'Add the launch date', files: { 'notes.txt': NOTES_V2 } },
+  { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README } },
+  { message: 'docs: add the launch date', files: { 'notes.txt': NOTES_V2 } },
 ]
 
 /** An `echo` that writes (`>`) or appends (`>>`) one line of `home.html`, built from the same constants the checks use. */
 export const echoHome = (line: string, op: '>' | '>>'): string => `echo "${line.trimEnd()}" ${op} home.html`
 const ADD_WELCOME = echoHome(WELCOME, '>>')
 
-const ADD_HOME_PAGE = [echoHome(HOME_PAGE, '>'), 'git add home.html', 'git commit -m "Add a home page"']
+const ADD_HOME_PAGE = [echoHome(HOME_PAGE, '>'), 'git add home.html', 'git commit -m "feat: add a home page"']
 
 /** Two commits on `main`. */
 export const TWO_ON_MAIN: WorldSetup = { cwd: 'project', config: IDENTITY, repo: { at: 'project', commits: TWO_COMMITS } }
@@ -35,7 +35,7 @@ export const HOMEPAGE_AHEAD: WorldSetup = {
     'git switch -c homepage',
     ...ADD_HOME_PAGE,
     ADD_WELCOME,
-    'git commit -am "Add a welcome line to the home page"',
+    'git commit -am "feat: add a welcome line to the home page"',
     'git switch main',
   ],
 }
@@ -47,7 +47,7 @@ export const DIVERGED: WorldSetup = {
     ...(HOMEPAGE_BRANCH.run ?? []),
     'echo "Launch day agenda" > agenda.txt',
     'git add agenda.txt',
-    'git commit -m "Start the launch day agenda"',
+    'git commit -m "docs: start the launch day agenda"',
   ],
 }
 
@@ -59,10 +59,10 @@ export const LAUNCH_CONFLICT: WorldSetup = {
   run: [
     'git switch -c launch-date',
     'echo "We launch on Thursday." >> notes.txt',
-    'git commit -am "Move the launch to Thursday"',
+    'git commit -am "docs: move the launch to Thursday"',
     'git switch main',
     'echo "We launch on Friday." >> notes.txt',
-    'git commit -am "Add the launch date"',
+    'git commit -am "docs: add the launch date"',
   ],
 }
 
@@ -75,7 +75,7 @@ export const UNFINISHED_HOMEPAGE: WorldSetup = {
     'git switch main',
     echoHome('<h1>Coming soon</h1>', '>'),
     'git add home.html',
-    'git commit -m "Add a placeholder home page"',
+    'git commit -m "feat: add a placeholder home page"',
     'git switch homepage',
     ADD_WELCOME,
   ],
@@ -85,7 +85,7 @@ export const UNFINISHED_HOMEPAGE: WorldSetup = {
 export const URGENT_FIX: WorldSetup = {
   cwd: 'project',
   config: IDENTITY,
-  repo: { at: 'project', commits: [{ message: 'Add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README_TYPO } }] },
+  repo: { at: 'project', commits: [{ message: 'docs: add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README_TYPO } }] },
   run: ['git switch -c homepage', ...ADD_HOME_PAGE, ADD_WELCOME],
 }
 

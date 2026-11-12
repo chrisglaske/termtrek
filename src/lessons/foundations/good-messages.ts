@@ -1,5 +1,5 @@
 import type { Lesson, StepContext } from '../schema'
-import { commitCount, isStaged, messageQuality } from '../checks'
+import { commitCount, conventionalMessage, isStaged } from '../checks'
 import { headCommitId } from '../../engine/git/repoState'
 import { IDENTITY, NOTES, README, README_V2 } from '../sample'
 
@@ -44,22 +44,22 @@ export const goodMessages: Lesson = {
       id: 'message',
       title: 'Write a message your team can read',
       learn:
-        "Months from now, someone will scroll through the history to find out when and why something changed. That someone is often you. A message like \"Fix stuff\" tells them nothing. This matters even more when an AI tool writes code for you: the messages are how you keep track of what changed.\n\nA good message:\n- says what the commit does, in a few words\n- is written as a command, like \"Add\", \"Fix\" or \"Remove\", not \"Added\" or \"Fixing\"\n- keeps the first line short, about 50 characters\n\nFor example: `git commit -m \"Explain how to name meeting files\"`. A handy test: \"If applied, this commit will…\" should lead into your message.",
-      task: 'Commit the `README.md` change with a clear message.',
+        "Months from now, someone will scroll through the history to find out when and why something changed. That someone is often you. A message like \"Fix stuff\" tells them nothing. This matters even more when an AI tool writes code for you: the messages are how you keep track of what changed.\n\nA good message:\n- says what the commit does, in a few words\n- is written as a command, like \"Add\", \"Fix\" or \"Remove\", not \"Added\" or \"Fixing\"\n- keeps the first line short, about 50 characters\n\nA handy test: \"If applied, this commit will…\" should lead into your message.\n\nMany teams also follow a shared format called **Conventional Commits**: start with a **type** and a colon, then the summary in lowercase, like `docs: explain meeting file names`. An optional **scope** in brackets names the part you changed: `feat(ui): add search`. The common types:\n- `feat` adds something new, `fix` fixes a bug, `docs` changes only text for people\n- `chore` is upkeep like settings, `refactor` reshapes code without changing what it does, `test` adds tests, `style` is formatting only\n\nTeams use it because the history is quick to scan, and tools can read the types to write a changelog for each release. Commit with `git commit -m \"docs: explain meeting file names\"`.",
+      task: 'Commit the `README.md` change with a clear message in the `type: summary` format.',
       hints: [
-        'Say what the change does, starting with a verb like "Add" or "Explain".',
-        'Use `git commit -m` with your message in quotes.',
-        'Type `git commit -m "Explain how to name meeting files"`.',
+        'This change only touches text for people, so the type is `docs`. Then say what it does, starting with a verb like "explain".',
+        'Use `git commit -m` with your message in quotes, starting with `docs:`.',
+        'Type `git commit -m "docs: explain meeting file names"`.',
       ],
-      solution: ['git commit -m "Explain how to name meeting files"'],
-      check: (c) => commitCount(c.world) > SETUP_COMMITS && messageQuality(latestMessage(c)).ok,
+      solution: ['git commit -m "docs: explain meeting file names"'],
+      check: (c) => commitCount(c.world) > SETUP_COMMITS && conventionalMessage(latestMessage(c)).ok,
       nudge: (c) => {
         if (commitCount(c.world) <= SETUP_COMMITS) return null
-        const q = messageQuality(latestMessage(c))
+        const q = conventionalMessage(latestMessage(c))
         if (q.ok) return null
         return {
           kind: 'warn',
-          text: `${q.reason} The commit is saved, but let's practice once more. Add a line to the file with \`echo "Ask questions in the team chat." >> README.md\` (\`echo\` prints the text, and \`>>\` adds it as a new last line of the file), then stage it with \`git add README.md\` and commit again with a better message.`,
+          text: `${q.reason} The commit is saved, but let's practice once more. Add a line to the file with \`echo "Ask questions in the team chat." >> README.md\` (\`echo\` prints the text, and \`>>\` adds it as a new last line of the file), then stage it with \`git add README.md\` and commit again with a message like \`docs: add where to ask questions\`.`,
         }
       },
       success:
@@ -110,7 +110,7 @@ export const goodMessages: Lesson = {
       id: 'says',
       kicker: 'Rule 1 of 3',
       title: 'Say what the commit does',
-      body: 'Use a few words, like "Explain how to name meeting files".',
+      body: 'Use a few words, like "Explain meeting file names".',
       visual: { kind: 'none' },
     },
     {
@@ -130,17 +130,57 @@ export const goodMessages: Lesson = {
       visual: { kind: 'none' },
     },
     {
+      kind: 'read',
+      id: 'format',
+      kicker: 'Conventional Commits',
+      title: 'Put a type in front',
+      body: 'Many teams use a shared format: a **type**, a colon, then the summary. The summary follows the three rules, starting lowercase.\n\n`type: summary`\n`docs: explain meeting file names`',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
+      id: 'scope',
+      kicker: 'Optional',
+      title: 'Add a scope if it helps',
+      body: 'A **scope** in brackets names the part of the project you changed. Leave it out when it adds nothing.\n\n`type(scope): summary`\n`feat(ui): add search`',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
+      id: 'types-new',
+      kicker: 'Types 1 of 2',
+      title: 'New work, fixes and docs',
+      body: '**feat** adds something new: `feat: add a search box`\n**fix** fixes a bug: `fix: stop the menu closing early`\n**docs** changes only text for people: `docs: add setup steps`',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
+      id: 'types-upkeep',
+      kicker: 'Types 2 of 2',
+      title: 'Upkeep and tidying',
+      body: '**chore** is upkeep, like settings: `chore: ignore log files`\n**refactor** reshapes code, same result: `refactor: split the menu code`\n**test** adds or fixes tests: `test: cover an empty search`\n**style** is formatting only: `style: indent the menu code`',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
+      id: 'why-format',
+      kicker: 'Why teams use it',
+      title: 'Quick to scan, easy to automate',
+      body: 'You can spot every fix in the history at a glance. Tools read the types too, and can write the changelog for each release for you.',
+      visual: { kind: 'none' },
+    },
+    {
       kind: 'do',
       id: 'commit',
       kicker: 'Step 2 of 2',
       title: 'Save it with a clear message',
-      body: 'Use this message, or write your own in the same style.',
+      body: 'This change is text for people, so the type is **docs**. Use this message, or write your own in the same format.',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'staged' },
       step: 1,
       command: [
         { text: 'git commit', say: 'save what is chosen' },
         { text: '-m', say: 'add a message' },
-        { text: '"Explain how to name meeting files"', say: 'the message' },
+        { text: '"docs: explain meeting file names"', say: 'type: summary' },
       ],
       done: '**Clear message saved.** Anyone reading the history later will know what it did.',
     },
@@ -148,7 +188,7 @@ export const goodMessages: Lesson = {
       kind: 'finish',
       id: 'done',
       title: 'You write clear messages',
-      body: 'Say what changed, start with a verb, and keep it short. Next, you will learn to read the history.',
+      body: 'Pick a type, say what changed with a verb, and keep it short. Next, you will learn to read the history.',
     },
   ],
 }

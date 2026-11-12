@@ -19,7 +19,7 @@ export const scenarioMessyAfternoon: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README } },
+        { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README } },
         { message: 'fix', files: { 'notes.txt': NOTES_V2 } },
       ],
       staged: { 'draft.txt': DRAFT },
@@ -68,9 +68,9 @@ export const scenarioMessyAfternoon: Lesson = {
       hints: [
         'You fixed a commit message in the amend lesson. Use the editor tab, or give the message with `-m`.',
         'Use `git commit --amend`, with or without `-m`.',
-        'Type `git commit --amend -m "Add the launch date to the notes"`.',
+        'Type `git commit --amend -m "docs: add the launch date"`.',
       ],
-      solution: ['git commit --amend -m "Add the launch date to the notes"'],
+      solution: ['git commit --amend -m "docs: add the launch date"'],
       check: (c) =>
         messageQuality(headMessage(c.world) ?? '').ok &&
         treeOf(c, 'world') === treeOf(c, 'start') &&

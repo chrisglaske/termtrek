@@ -39,11 +39,11 @@ export const scenarioUrgentFix: Lesson = {
       id: 'hotfix',
       title: 'Fix the typo on its own branch',
       learn:
-        "Go to **main** and start a branch called **hotfix** for the fix. Then open `README.md`, change \"weekley\" to \"weekly\", save, and commit on **hotfix**.\n\nA separate branch keeps the fix easy to review on its own, even when it's one word.",
+        "Go to **main** and start a branch called **hotfix** for the fix. Then open `README.md`, change \"weekley\" to \"weekly\", save, and commit on **hotfix**.\n\nA separate branch keeps the fix easy to review on its own, even when it's one word. A message for a fix starts with the `fix` type.",
       task: 'Fix the typo in a commit on a new hotfix branch made from main.',
       hints: [
         'Switch to main, create and switch to hotfix, then edit the README with `code` and commit with `-am`.',
-        'Type `git switch main`, then `git switch -c hotfix`, then `code README.md`. Fix the word, click **Save**, and run `git commit -am "Fix a typo in the README"`.',
+        'Type `git switch main`, then `git switch -c hotfix`, then `code README.md`. Fix the word, click **Save**, and run `git commit -am "fix: correct a typo in the README"`.',
       ],
       // Show me fixes the file from the terminal, so it finishes the step on its own; the editor works too.
       solution: [
@@ -51,7 +51,7 @@ export const scenarioUrgentFix: Lesson = {
         'git switch -c hotfix',
         'echo "# Team notes" > README.md',
         'echo "Shared notes from our weekly meetings." >> README.md',
-        'git commit -am "Fix a typo in the README"',
+        'git commit -am "fix: correct a typo in the README"',
       ],
       check: (c) => fixed(treeFile(c.world, 'hotfix', 'README.md')) && !mainMoved(c),
       nudge: (c) =>

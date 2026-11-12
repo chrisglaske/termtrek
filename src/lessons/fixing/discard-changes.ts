@@ -16,8 +16,8 @@ export const discardChanges: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add README with a project summary', files: { 'README.md': README } },
-        { message: 'Add meeting notes with the launch date', files: { 'notes.txt': NOTES_V2 } },
+        { message: 'docs: add README with a project summary', files: { 'README.md': README } },
+        { message: 'docs: add meeting notes with the launch date', files: { 'notes.txt': NOTES_V2 } },
       ],
     },
   },

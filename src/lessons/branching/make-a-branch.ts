@@ -61,10 +61,10 @@ export const makeABranch: Lesson = {
       id: 'commit',
       title: 'Commit on the branch',
       learn:
-        'Commit the change. This time, save a step: `git commit -am` stages and commits in one go.\n- `-a` means "all": it stages every change to a file Git already tracks. New files still need `git add`.\n- `-m` is the message, as before. `-am` is the two together.\n\nType `git commit -am "Note where home page work happens"`.',
+        'Commit the change. This time, save a step: `git commit -am` stages and commits in one go.\n- `-a` means "all": it stages every change to a file Git already tracks. New files still need `git add`.\n- `-m` is the message, as before. `-am` is the two together.\n\nType `git commit -am "docs: note the homepage branch"`.',
       task: 'Commit the change to `README.md` on homepage.',
-      hints: ['Commit with `-am`, so the change is staged and saved in one go.', 'Type `git commit -am "Note where home page work happens"` and press Enter.'],
-      solution: ['git commit -am "Note where home page work happens"'],
+      hints: ['Commit with `-am`, so the change is staged and saved in one go.', 'Type `git commit -am "docs: note the homepage branch"` and press Enter.'],
+      solution: ['git commit -am "docs: note the homepage branch"'],
       check: (c) => historyLength(c.world, 'homepage') === 3 && c.world.repo?.branches.main === c.start.repo?.branches.main,
       nudge: (c) => {
         if (c.world.repo?.branches.main !== c.start.repo?.branches.main) {
@@ -192,7 +192,7 @@ export const makeABranch: Lesson = {
       command: [
         { text: 'git commit', say: 'save a commit' },
         { text: '-am', say: 'stage all, add a message' },
-        { text: '"Note where home page work happens"', say: 'the message' },
+        { text: '"docs: note the homepage branch"', say: 'the message' },
       ],
       done: '**homepage moved ahead.** It is one commit past main, and main did not move.',
     },

@@ -18,9 +18,9 @@ export const undoACommit: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add meeting notes', files: { 'notes.txt': NOTES } },
-        { message: 'Add the launch date', files: { 'notes.txt': NOTES_V2 } },
-        { message: 'Remove the launch date', files: { 'notes.txt': NOTES } },
+        { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } },
+        { message: 'docs: add the launch date', files: { 'notes.txt': NOTES_V2 } },
+        { message: 'docs: remove the launch date', files: { 'notes.txt': NOTES } },
       ],
     },
   },
@@ -35,14 +35,14 @@ export const undoACommit: Lesson = {
       solution: ['git log'],
       check: (c) => ranGit(c, 'log'),
       success:
-        '**There it is.** "Remove the launch date" is the newest commit, the one **HEAD** points at.',
+        '**There it is.** "docs: remove the launch date" is the newest commit, the one **HEAD** points at.',
     },
     {
       id: 'revert',
       title: 'Undo it with a new commit',
       learn:
-        "Run `git revert HEAD`:\n- `revert` makes a **new** commit that does the exact opposite of an old one. Lines it removed come back, and lines it added go away.\n- `HEAD` means the commit you're on now, the newest one here. You can also use any commit's ID from `git log`.\n\nThe old commit stays in the history, so nothing is rewritten. That's why revert is the safe way to undo a commit you've already shared.\n\nGit opens the message in the editor tab, already written for you: `Revert \"Remove the launch date\"`. It's fine as it is, so click **Save and close**. (To skip the editor and keep that message, add `--no-edit`: `git revert --no-edit HEAD`.)",
-      task: 'Undo the "Remove the launch date" commit.',
+        "Run `git revert HEAD`:\n- `revert` makes a **new** commit that does the exact opposite of an old one. Lines it removed come back, and lines it added go away.\n- `HEAD` means the commit you're on now, the newest one here. You can also use any commit's ID from `git log`.\n\nThe old commit stays in the history, so nothing is rewritten. That's why revert is the safe way to undo a commit you've already shared.\n\nGit opens the message in the editor tab, already written for you: `Revert \"docs: remove the launch date\"`. It's fine as it is, so click **Save and close**. (To skip the editor and keep that message, add `--no-edit`: `git revert --no-edit HEAD`.)",
+      task: 'Undo the "docs: remove the launch date" commit.',
       hints: [
         'Use `git revert` with the commit you want to undo. The newest commit is `HEAD`.',
         'Type `git revert HEAD`, then click **Save and close** in the editor tab.',
@@ -50,7 +50,7 @@ export const undoACommit: Lesson = {
       solution: ['git revert HEAD'],
       solve: [{ type: 'run', line: 'git revert HEAD' }, { type: 'editor-done' }],
       check: (c) =>
-        (headMessage(c.world) ?? '').startsWith('Revert "Remove the launch date"') &&
+        (headMessage(c.world) ?? '').startsWith('Revert "docs: remove the launch date"') &&
         (workFile(c.world, 'notes.txt') ?? '').includes(LAUNCH_LINE) &&
         historyLength(c.world) === historyLength(c.start) + 1,
       success:
@@ -77,7 +77,7 @@ export const undoACommit: Lesson = {
         { text: 'git', say: 'talk to Git' },
         { text: 'log', say: 'list the commits' },
       ],
-      done: '**There it is.** "Remove the launch date" is the newest commit, the one HEAD points at.',
+      done: '**There it is.** "docs: remove the launch date" is the newest commit, the one HEAD points at.',
     },
     {
       kind: 'read',

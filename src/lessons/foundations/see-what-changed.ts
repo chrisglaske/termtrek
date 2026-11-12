@@ -23,8 +23,8 @@ export const seeWhatChanged: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add meeting notes', files: { 'notes.txt': NOTES } },
-        { message: 'Add README with a project summary', files: { 'README.md': README } },
+        { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } },
+        { message: 'docs: add README with a project summary', files: { 'README.md': README } },
       ],
     },
   },

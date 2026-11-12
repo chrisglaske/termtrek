@@ -16,7 +16,7 @@ export const getItBack: Lesson = {
       id: 'lose',
       title: 'Lose two commits',
       learn:
-        "Time for a mistake on purpose. Run `git reset --hard HEAD~2`. `HEAD~2` means \"two commits before HEAD\", so this throws away \"Draft the agenda\" and \"Tidy the agenda\", and `agenda.txt` disappears from your folder.",
+        "Time for a mistake on purpose. Run `git reset --hard HEAD~2`. `HEAD~2` means \"two commits before HEAD\", so this throws away \"docs: draft the agenda\" and \"docs: tidy the agenda\", and `agenda.txt` disappears from your folder.",
       task: 'Reset two commits back, throwing them away.',
       hints: ['Use `git reset --hard` and point two commits back.', 'Type `git reset --hard HEAD~2` and press Enter.'],
       solution: ['git reset --hard HEAD~2'],
@@ -34,13 +34,13 @@ export const getItBack: Lesson = {
       solution: ['git reflog'],
       check: (c) => ranGit(c, 'reflog'),
       success:
-        '**There\'s your lost commit.** The line **HEAD@{1}** is "Tidy the agenda", where you were just before the reset.',
+        '**There\'s your lost commit.** The line **HEAD@{1}** is "docs: tidy the agenda", where you were just before the reset.',
     },
     {
       id: 'restore',
       title: 'Jump back to it',
       learn:
-        "To get everything back, reset to where HEAD was one move ago: `git reset --hard HEAD@{1}`.\n\nYou can also use the commit ID from the reflog line instead of `HEAD@{1}`. Either way, your branch points at \"Tidy the agenda\" again, and `agenda.txt` comes back.\n\nThe reflog is your safety net for commits, not for edits you never committed. Git cleans it up after about 90 days, and it only exists on your computer.",
+        "To get everything back, reset to where HEAD was one move ago: `git reset --hard HEAD@{1}`.\n\nYou can also use the commit ID from the reflog line instead of `HEAD@{1}`. Either way, your branch points at \"docs: tidy the agenda\" again, and `agenda.txt` comes back.\n\nThe reflog is your safety net for commits, not for edits you never committed. Git cleans it up after about 90 days, and it only exists on your computer.",
       task: 'Bring back the two lost commits.',
       hints: [
         'Use `git reset --hard` with the reflog name for one move ago.',
@@ -65,7 +65,7 @@ export const getItBack: Lesson = {
       id: 'lose',
       kicker: 'Try it',
       title: 'Lose two commits',
-      body: '`HEAD~2` means "two commits before HEAD". This throws away "Draft the agenda" and "Tidy the agenda", and agenda.txt disappears.',
+      body: '`HEAD~2` means "two commits before HEAD". This throws away "docs: draft the agenda" and "docs: tidy the agenda", and agenda.txt disappears.',
       visual: { kind: 'rewind' },
       step: 0,
       command: [
@@ -103,7 +103,7 @@ export const getItBack: Lesson = {
         { text: 'git', say: 'talk to Git' },
         { text: 'reflog', say: "show where HEAD has been" },
       ],
-      done: '**There is your lost commit.** The line HEAD@{1} is "Tidy the agenda", where you were just before the reset.',
+      done: '**There is your lost commit.** The line HEAD@{1} is "docs: tidy the agenda", where you were just before the reset.',
     },
     {
       kind: 'read',
@@ -118,7 +118,7 @@ export const getItBack: Lesson = {
       id: 'restore',
       kicker: 'Try it',
       title: 'Bring back the two commits',
-      body: 'Your branch points at "Tidy the agenda" again, and agenda.txt comes back.',
+      body: 'Your branch points at "docs: tidy the agenda" again, and agenda.txt comes back.',
       visual: { kind: 'rewind' },
       step: 2,
       command: [

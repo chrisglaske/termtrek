@@ -23,14 +23,14 @@ export const openAPullRequest: Lesson = {
       id: 'open',
       title: 'Open a pull request',
       learn:
-        'Your **homepage** branch is on the server, but **main** does not have it, and it should not until a teammate has looked at it. A **pull request** (PR) is a request to merge your branch into another one. It shows your changes as a diff, and teammates read them, comment, and approve.\n\nPull requests are a feature of the server, not of Git, so you make this one with clicks:\n1. Open the **Remote** tab.\n2. Click **New pull request**.\n3. Compare **homepage** with **main**.\n4. Type the title `Add a home page`.\n5. Click **Create pull request**.',
-      task: 'Open a pull request for homepage with the title "Add a home page".',
+        'Your **homepage** branch is on the server, but **main** does not have it, and it should not until a teammate has looked at it. A **pull request** (PR) is a request to merge your branch into another one. It shows your changes as a diff, and teammates read them, comment, and approve.\n\nPull requests are a feature of the server, not of Git, so you make this one with clicks:\n1. Open the **Remote** tab.\n2. Click **New pull request**.\n3. Compare **homepage** with **main**.\n4. Type the title `feat: add a home page`.\n5. Click **Create pull request**.',
+      task: 'Open a pull request for homepage with the title "feat: add a home page".',
       hints: [
         'Use the **Remote** tab, not the terminal.',
-        'Open **Remote**, click **New pull request**, choose **homepage**, type the title `Add a home page`, then click **Create pull request**.',
+        'Open **Remote**, click **New pull request**, choose **homepage**, type the title `feat: add a home page`, then click **Create pull request**.',
       ],
       solution: [],
-      solve: [{ type: 'pr-open', head: 'homepage', base: 'main', title: 'Add a home page', body: '' }],
+      solve: [{ type: 'pr-open', head: 'homepage', base: 'main', title: 'feat: add a home page', body: '' }],
       check: (c) => prFor(c.world, 'homepage')?.state === 'open',
       success: '**Pull request #1 is open.** Your teammates can read the changes in it now. Nothing has been merged yet.',
     },
@@ -53,10 +53,10 @@ export const openAPullRequest: Lesson = {
     {
       id: 'commit',
       title: 'Commit it',
-      learn: 'Save the change with `git commit -am "Add a welcome line"`.',
+      learn: 'Save the change with `git commit -am "feat: add a welcome line"`.',
       task: 'Commit the welcome line.',
-      hints: ['Commit with `-am` and a message.', 'Type `git commit -am "Add a welcome line"` and press Enter.'],
-      solution: ['git commit -am "Add a welcome line"'],
+      hints: ['Commit with `-am` and a message.', 'Type `git commit -am "feat: add a welcome line"` and press Enter.'],
+      solution: ['git commit -am "feat: add a welcome line"'],
       check: (c) => treeFile(c.world, 'HEAD', 'home.html')?.includes(WELCOME) ?? false,
       success: '**Committed.** The pull request only shows what is on the server, so it does not have it yet.',
     },
@@ -70,7 +70,7 @@ export const openAPullRequest: Lesson = {
       check: (c) => homepageFile(c)?.includes(WELCOME) ?? false,
       nudge: (c) =>
         ranGit(c, 'push') && !homepageFile(c)?.includes(WELCOME)
-          ? { kind: 'tip', text: 'The server\'s `home.html` does not have the welcome line yet. Commit it with `git commit -am "Add a welcome line"`, then push again with `git push`.' }
+          ? { kind: 'tip', text: 'The server\'s `home.html` does not have the welcome line yet. Commit it with `git commit -am "feat: add a welcome line"`, then push again with `git push`.' }
           : null,
       success: '**The pull request updated by itself.** Open it in the **Remote** tab: the welcome line is part of it now.',
     },
@@ -97,7 +97,7 @@ export const openAPullRequest: Lesson = {
       kicker: 'Try it',
       title: 'Open a pull request',
       body: 'You are asking to merge **homepage** into **main**. The title is filled in for you. Click **Create pull request**.',
-      visual: { kind: 'none' },
+      visual: { kind: 'pr' },
       step: 0,
       command: [],
       on: 'server',
@@ -139,7 +139,7 @@ export const openAPullRequest: Lesson = {
       command: [
         { text: 'git commit', say: 'save a snapshot' },
         { text: '-am', say: 'of every changed file' },
-        { text: '"Add a welcome line"', say: 'with this message' },
+        { text: '"feat: add a welcome line"', say: 'with this message' },
       ],
       done: '**Committed.** One step left: send it.',
     },

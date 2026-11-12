@@ -14,8 +14,8 @@ export const SERVER: RemoteSetup = {
   slug: 'team/notes',
   author: TEAMMATE,
   commits: [
-    { message: 'Add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README } },
-    { message: 'Add the launch date', files: { 'notes.txt': NOTES_V2 } },
+    { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES, 'README.md': README } },
+    { message: 'docs: add the launch date', files: { 'notes.txt': NOTES_V2 } },
   ],
 }
 
@@ -30,7 +30,7 @@ export const VENUE = 'The launch party is at the library.\n'
 /** Alex pushes a commit to `main` on the server. */
 export const alexAddsVenue = teammatePush({
   branch: 'main',
-  message: 'Add the venue',
+  message: 'docs: add the venue',
   files: { 'notes.txt': NOTES_V2 + VENUE },
   author: TEAMMATE,
 })
@@ -43,7 +43,7 @@ export const HOMEPAGE_PUSHED: WorldSetup = {
     'git switch -c homepage',
     `echo "${HOME_PAGE.trimEnd()}" > home.html`,
     'git add home.html',
-    'git commit -m "Add a home page"',
+    'git commit -m "feat: add a home page"',
     'git push -u origin homepage',
   ],
 }
@@ -57,7 +57,7 @@ const openPullRequest =
     return r.world
   }
 
-const openHomepagePr = openPullRequest({ head: 'homepage', base: 'main', title: 'Add a home page', body: '' })
+const openHomepagePr = openPullRequest({ head: 'homepage', base: 'main', title: 'feat: add a home page', body: '' })
 
 export const ALEX_ASKS_FOR_A_WELCOME = {
   pr: 1,
@@ -74,7 +74,7 @@ export const PR_OPEN: WorldSetup = {
     openHomepagePr,
     teammateComment(ALEX_ASKS_FOR_A_WELCOME),
     echoHome(WELCOME, '>>'),
-    'git commit -am "Add a welcome line"',
+    'git commit -am "feat: add a welcome line"',
     'git push',
   ],
 }
@@ -87,9 +87,9 @@ export const BRANCH_BEHIND: WorldSetup = {
     'git switch -c agenda',
     (w) => writeFile(w, `${w.repo?.root ?? w.cwd}/agenda.txt`, AGENDA),
     'git add agenda.txt',
-    'git commit -m "Start the launch day agenda"',
+    'git commit -m "docs: start the launch day agenda"',
     'git push -u origin agenda',
-    openPullRequest({ head: 'agenda', base: 'main', title: 'Start the launch day agenda', body: '' }),
+    openPullRequest({ head: 'agenda', base: 'main', title: 'docs: start the launch day agenda', body: '' }),
     alexAddsVenue,
   ],
 }
@@ -102,7 +102,7 @@ export const PUSHED_FIRST: WorldSetup = {
   run: [
     ...(CLONED.run ?? []),
     'echo "Bring name tags." >> notes.txt',
-    'git commit -am "Add a name tag reminder"',
-    teammatePush({ branch: 'main', message: 'Add a guest list reminder', files: { 'notes.txt': NOTES_V2 + GUEST_LIST }, author: TEAMMATE }),
+    'git commit -am "docs: add a name tag reminder"',
+    teammatePush({ branch: 'main', message: 'docs: add a guest list reminder', files: { 'notes.txt': NOTES_V2 + GUEST_LIST }, author: TEAMMATE }),
   ],
 }

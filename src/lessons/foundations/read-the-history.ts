@@ -19,10 +19,10 @@ export const readTheHistory: Lesson = {
     repo: {
       at: 'project',
       commits: [
-        { message: 'Add meeting notes', files: { 'notes.txt': NOTES } },
-        { message: 'Add README with a project summary', files: { 'README.md': README } },
-        { message: 'Add Friday launch to meeting notes', files: { 'notes.txt': NOTES_V2 } },
-        { message: 'Explain how to name meeting files', files: { 'README.md': README_V2 } },
+        { message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } },
+        { message: 'docs: add README with a project summary', files: { 'README.md': README } },
+        { message: 'docs: add Friday launch to meeting notes', files: { 'notes.txt': NOTES_V2 } },
+        { message: 'docs: explain meeting file names', files: { 'README.md': README_V2 } },
       ],
     },
   },
@@ -73,7 +73,7 @@ export const readTheHistory: Lesson = {
       kicker: 'Try it',
       title: 'List the commits',
       body: 'Git names this after a ship\'s log, a record of what happened. It lists every commit on your branch, newest first.',
-      visual: { kind: 'none' },
+      visual: { kind: 'graph', all: true, log: true },
       step: 0,
       command: [
         { text: 'git', say: 'talk to Git' },
@@ -115,7 +115,7 @@ export const readTheHistory: Lesson = {
       kicker: 'Try it',
       title: 'Get the short version',
       body: 'This is how most people skim a history.',
-      visual: { kind: 'none' },
+      visual: { kind: 'graph', all: true, log: true },
       step: 1,
       command: [
         { text: 'git log', say: 'show the history' },

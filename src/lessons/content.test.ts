@@ -381,6 +381,14 @@ describe('course content', () => {
     expect(explain?.text).toContain('Write it as a command: `Add`, not `Added`.')
   })
 
+  it('good-messages asks for the type: summary format', () => {
+    let s = play(lessonById('good-messages'), ['git add README.md', 'git commit -m "Explain how to name meeting files"'])
+    expect(s.status).toBe('working')
+    expect(s.entries.at(-1)!.explain?.text).toContain('Start with a type and a colon')
+    s = play(lessonById('good-messages'), ['git add README.md', 'git commit -m "docs(readme): explain meeting file names"'])
+    expect(s.status).toBe('lesson-done')
+  })
+
   it('see-what-changed points to --staged when the learner stages first', () => {
     let s = play(lessonById('see-what-changed'), ['git add notes.txt', 'git diff'])
     expect(s.status).toBe('working')
@@ -412,7 +420,7 @@ describe('course content', () => {
       'git commit -m "Added stuff"',
       'echo "Ask questions in the team chat." >> README.md',
       'git add README.md',
-      'git commit -m "Add a note about where to ask questions"',
+      'git commit -m "docs: add a note about where to ask questions"',
     ])
     expect(s.status).toBe('lesson-done')
   })
@@ -431,7 +439,7 @@ describe('course content', () => {
     expect(s.entries.at(-1)!.explain?.text).toContain('`echo` prints the text')
     run('echo "Ask questions in the team chat." >> README.md')
     run('git add README.md')
-    run('git commit -m "Add a note about where to ask questions"')
+    run('git commit -m "docs: add a note about where to ask questions"')
     expect(s.status).toBe('lesson-done')
   })
 

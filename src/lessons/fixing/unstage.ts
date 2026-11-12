@@ -14,7 +14,7 @@ export const unstage: Lesson = {
     config: IDENTITY,
     repo: {
       at: 'project',
-      commits: [{ message: 'Add meeting notes', files: { 'notes.txt': NOTES } }],
+      commits: [{ message: 'docs: add meeting notes', files: { 'notes.txt': NOTES } }],
       staged: { 'notes.txt': NOTES_V2, 'draft.txt': DRAFT },
     },
   },
@@ -38,13 +38,13 @@ export const unstage: Lesson = {
       id: 'commit',
       title: 'Commit just the notes',
       learn:
-        'Now the staging area holds exactly what you meant to save: the new line in `notes.txt`. Commit it the usual way, for example `git commit -m "Add the launch date to the notes"`.',
+        'Now the staging area holds exactly what you meant to save: the new line in `notes.txt`. Commit it the usual way, for example `git commit -m "docs: add the launch date"`.',
       task: 'Commit the change to `notes.txt` without `draft.txt`.',
       hints: [
         'Only `notes.txt` is staged, so a normal commit saves just that.',
-        'Type `git commit -m "Add the launch date to the notes"` and press Enter.',
+        'Type `git commit -m "docs: add the launch date"` and press Enter.',
       ],
-      solution: ['git commit -m "Add the launch date to the notes"'],
+      solution: ['git commit -m "docs: add the launch date"'],
       check: (c) =>
         historyLength(c.world) > historyLength(c.start) &&
         treeFile(c.world, 'HEAD', 'notes.txt') === NOTES_V2 &&
@@ -118,7 +118,7 @@ export const unstage: Lesson = {
       command: [
         { text: 'git commit', say: 'save what is chosen' },
         { text: '-m', say: 'add a message' },
-        { text: '"Add the launch date to the notes"', say: 'the message' },
+        { text: '"docs: add the launch date"', say: 'the message' },
       ],
       done: '**Just what you meant.** The save has the launch date and nothing else. draft.txt waits in your folder.',
     },

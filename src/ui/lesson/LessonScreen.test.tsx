@@ -156,7 +156,7 @@ describe('LessonScreen', () => {
     const { user } = open()
     await user.type(input(), 'git restore --staged draft.txt{Enter}')
     await user.keyboard('{Enter}')
-    await user.type(input(), 'git commit -m "Add the launch date to the notes"{Enter}')
+    await user.type(input(), 'git commit -m "docs: add the launch date"{Enter}')
     expect(screen.getByRole('heading', { name: 'Lesson complete' })).toBeInTheDocument()
     expect(input()).toHaveFocus()
     expect(screen.getByRole('status')).toHaveTextContent('Lesson complete')
@@ -275,7 +275,7 @@ describe('LessonScreen', () => {
     await user.click(screen.getByRole('tab', { name: 'Terminal' }))
     const count = container.querySelectorAll('.term-entry').length
     const learn = container.querySelector('.lesson-learn') as HTMLElement
-    await user.click(within(learn).getByRole('button', { name: 'git commit -m "Add the launch date to the notes"' }))
+    await user.click(within(learn).getByRole('button', { name: 'git commit -m "docs: add the launch date"' }))
     expect(container.querySelectorAll('.term-entry')).toHaveLength(count)
     expect(screen.getByRole('tab', { name: 'COMMIT_EDITMSG' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('textbox', { name: 'Edit COMMIT_EDITMSG' })).toHaveFocus()

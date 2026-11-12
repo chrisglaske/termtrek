@@ -106,11 +106,17 @@ const ED_ING_OK = new Set([
   'bleed', 'breed', 'bring', 'string', 'ping', 'ring', 'sing', 'spring', 'sting', 'swing', 'cling', 'thing',
 ])
 
+/** The `type(scope): ` prefix of a Conventional Commits first line, e.g. `feat(ui): `. The type and scope are lowercase words. */
+const CONVENTIONAL = /^([a-z]+)(\([a-z0-9][a-z0-9._/-]*\))?!?: */
+
 export function messageQuality(msg: string): { ok: true } | { ok: false; reason: string } {
   const trimmed = msg.trim()
   if (!trimmed) return { ok: false, reason: 'Add a message that says what changed.' }
-  const summary = (trimmed.split('\n')[0] ?? '').trim()
-  if (summary.length > 72) return { ok: false, reason: 'Keep the first line under 72 characters.' }
+  const line = (trimmed.split('\n')[0] ?? '').trim()
+  if (line.length > 72) return { ok: false, reason: 'Keep the first line under 72 characters.' }
+  // Judge the summary after a `type: ` or `type(scope): ` prefix, so `docs: added notes` is caught too.
+  const summary = line.replace(CONVENTIONAL, '').trim()
+  if (!summary) return { ok: false, reason: 'Add a short summary after the colon.' }
   if (VAGUE.has(summary.toLowerCase().replace(/\.$/, ''))) {
     return { ok: false, reason: 'Say what changed, like `Add meeting notes`.' }
   }
@@ -119,6 +125,21 @@ export function messageQuality(msg: string): { ok: true } | { ok: false; reason:
     return { ok: false, reason: 'Write it as a command: `Add`, not `Added`.' }
   }
   return { ok: true }
+}
+
+/**
+ * A clear message in the Conventional Commits shape: `type: summary` or `type(scope): summary`, judged by `messageQuality` too.
+ * The type can be any lowercase word, not only the ones the course teaches (feat, fix, docs, chore, refactor, test, style).
+ */
+export function conventionalMessage(msg: string): { ok: true } | { ok: false; reason: string } {
+  const line = (msg.trim().split('\n')[0] ?? '').trim()
+  const reasons: string[] = []
+  const q = messageQuality(msg)
+  if (!q.ok) reasons.push(q.reason)
+  if (!CONVENTIONAL.test(line)) {
+    reasons.push('Start with a type and a colon, like `docs: explain meeting file names`.')
+  }
+  return reasons.length ? { ok: false, reason: reasons.join(' ') } : { ok: true }
 }
 
 /** The commit the server's `branch` points at, or null when the server or branch doesn't exist. */

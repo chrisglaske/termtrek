@@ -6,6 +6,7 @@ import type { StepContext } from './schema'
 import {
   branchExists,
   commitCount,
+  conventionalMessage,
   hasIdentity,
   hasMarkers,
   headMessage,
@@ -65,6 +66,32 @@ describe('messageQuality', () => {
     expect(messageQuality('Added: notes').ok).toBe(false)
     expect(messageQuality('Embed video').ok).toBe(true)
     expect(messageQuality('Ping server').ok).toBe(true)
+  })
+  it('judges the summary after a type prefix', () => {
+    expect(messageQuality('docs: add meeting notes').ok).toBe(true)
+    expect(messageQuality('feat(ui): add search').ok).toBe(true)
+    expect(messageQuality('docs: added notes').ok).toBe(false)
+    expect(messageQuality('fix: stuff').ok).toBe(false)
+    expect(messageQuality('fix: ').ok).toBe(false)
+  })
+})
+
+describe('conventionalMessage', () => {
+  it('accepts type: summary and type(scope): summary', () => {
+    expect(conventionalMessage('docs: explain meeting file names').ok).toBe(true)
+    expect(conventionalMessage('feat(ui): add search').ok).toBe(true)
+    expect(conventionalMessage('build: bump the version').ok).toBe(true)
+  })
+  it('rejects a message without a lowercase type, or with a weak summary', () => {
+    const plain = conventionalMessage('Explain how to name meeting files')
+    expect(plain.ok).toBe(false)
+    if (!plain.ok) expect(plain.reason).toContain('`docs: explain meeting file names`')
+    expect(conventionalMessage('Docs: explain naming').ok).toBe(false)
+    expect(conventionalMessage('docs:').ok).toBe(false)
+    const weak = conventionalMessage('Added stuff')
+    expect(weak.ok).toBe(false)
+    if (!weak.ok) expect(weak.reason).toContain('Write it as a command')
+    expect(conventionalMessage('docs: added notes').ok).toBe(false)
   })
 })
 
