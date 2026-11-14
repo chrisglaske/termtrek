@@ -18,7 +18,7 @@ export const DEMO_SETUP: WorldSetup = {
   cwd: 'my-project',
   files: { 'my-project/notes.txt': NOTES + '- Write the first page\n' },
   config: { 'user.name': 'You', 'user.email': 'you@example.com' },
-  repo: { at: 'my-project', commits: [{ message: 'Start project', files: { 'README.md': README, 'notes.txt': NOTES } }] },
+  repo: { at: 'my-project', commits: [{ message: 'chore: start the project', files: { 'README.md': README, 'notes.txt': NOTES } }] },
 }
 
 const INTRO: Explain = {
@@ -61,7 +61,7 @@ export function demoSuggestions(world: World): string[] {
   const first = s.staged[0]
   let c: string[]
   if (changed.length) c = ['git status', 'git diff', `git add ${changed[0]}`]
-  else if (first) c = [`git commit -m "${first.kind === 'new' ? 'Add' : 'Update'} ${first.path}"`, 'git status']
+  else if (first) c = [`git commit -m "docs: ${first.kind === 'new' ? 'add' : 'update'} ${first.path}"`, 'git status']
   else c = branchTour(activeRepo(world))
   return [...c, 'help']
 }
@@ -73,8 +73,8 @@ export const TOUR_SETUP: WorldSetup = {
   repo: {
     at: 'my-project',
     commits: [
-      { message: 'Start project', files: { 'README.md': README, 'notes.txt': NOTES } },
-      { message: 'Plan the homepage', files: { 'notes.txt': NOTES + '- Build a homepage\n' } },
+      { message: 'chore: start the project', files: { 'README.md': README, 'notes.txt': NOTES } },
+      { message: 'docs: plan the homepage', files: { 'notes.txt': NOTES + '- Build a homepage\n' } },
     ],
   },
 }
@@ -82,10 +82,10 @@ export const TOUR_SETUP: WorldSetup = {
 /** Each step: an optional quiet file edit, then the Git command the map shows. */
 const TOUR: { edit?: string; cmd: string }[] = [
   { cmd: 'git switch -c homepage' },
-  { edit: 'echo "## Welcome" >> README.md', cmd: 'git commit -am "Add a welcome line"' },
-  { edit: 'echo "See notes.txt for ideas." >> README.md', cmd: 'git commit -am "Link to the notes"' },
+  { edit: 'echo "## Welcome" >> README.md', cmd: 'git commit -am "docs: add a welcome line"' },
+  { edit: 'echo "See notes.txt for ideas." >> README.md', cmd: 'git commit -am "docs: link to the notes"' },
   { cmd: 'git switch main' },
-  { edit: 'echo "- Pick a font" >> notes.txt', cmd: 'git commit -am "Add a to-do"' },
+  { edit: 'echo "- Pick a font" >> notes.txt', cmd: 'git commit -am "docs: add a font to-do"' },
   { cmd: 'git merge homepage' },
 ]
 

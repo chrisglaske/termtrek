@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { axe } from 'vitest-axe'
 import { Landing } from './Landing'
+import { TOUR_SETUP, demoSuggestions, tourFrames } from './HeroDemo'
+import { createWorld } from '../../engine/world'
+import { runLine } from '../../engine/interpreter'
 import { course } from '../../lessons/course'
 
 function open(path = '/') {
@@ -119,7 +122,7 @@ describe('Landing', () => {
   it('moves the suggestions along as the repo changes', async () => {
     const { user } = await openTerminal()
     await user.click(within(suggestions()).getByRole('button', { name: 'git add notes.txt' }))
-    await user.click(within(suggestions()).getByRole('button', { name: 'git commit -m "Update notes.txt"' }))
+    await user.click(within(suggestions()).getByRole('button', { name: 'git commit -m "docs: update notes.txt"' }))
     expect(within(suggestions()).getByRole('button', { name: 'git switch -c new-idea' })).toBeInTheDocument()
     expect(localStorage.length).toBe(0)
   })
@@ -129,13 +132,13 @@ describe('Landing', () => {
     const click = (name: string) => user.click(within(suggestions()).getByRole('button', { name }))
     const noWarn = () => expect(container.querySelector('.fb-warn')).toBeNull()
     await click('git add notes.txt')
-    await click('git commit -m "Update notes.txt"')
+    await click('git commit -m "docs: update notes.txt"')
     await click('git switch -c new-idea')
     expect(container.querySelector('.demo-map svg')?.textContent).toContain('new-idea')
     noWarn()
     await click('echo "- Try a dark theme" >> notes.txt')
     await click('git add notes.txt')
-    await click('git commit -m "Update notes.txt"')
+    await click('git commit -m "docs: update notes.txt"')
     await click('git switch main')
     await click('git merge new-idea')
     noWarn()
@@ -163,7 +166,7 @@ describe('Landing', () => {
     const { user, container } = await openTerminal()
     const run = async (line: string) => user.type(input(), `${line}{Enter}`)
     await run('git add notes.txt')
-    await run('git commit -m "Update notes.txt"')
+    await run('git commit -m "docs: update notes.txt"')
     await run('git switch -c new-idea')
     await run('echo one > notes.txt')
     await run('git commit -am "Idea side"')
@@ -233,5 +236,20 @@ describe('Landing', () => {
   it('has no axe violations with the practice terminal open', async () => {
     const { container } = await openTerminal()
     expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
+  })
+})
+
+describe('hero demo commit messages', () => {
+  it('uses Conventional Commit messages in the tour', () => {
+    const commits = tourFrames().map((f) => f.cmd).filter((c) => c.startsWith('git commit'))
+    expect(commits).toHaveLength(3)
+    for (const c of commits) expect(c).toMatch(/^git commit -am "(feat|fix|docs|chore): [a-z]/)
+    const repo = createWorld(TOUR_SETUP)
+    let w = runLine(repo, 'echo "- x" >> notes.txt').world
+    w = runLine(w, 'git add notes.txt').world
+    expect(demoSuggestions(w)).toContain('git commit -m "docs: update notes.txt"')
+    w = runLine(repo, 'echo hi > fresh.txt').world
+    w = runLine(w, 'git add fresh.txt').world
+    expect(demoSuggestions(w)).toContain('git commit -m "docs: add fresh.txt"')
   })
 })
