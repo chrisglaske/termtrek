@@ -32,6 +32,8 @@ export interface TerminalProps {
   prefill?: { text: string; seq: number }
   /** Called with the current input text whenever it changes (empty after a command runs). */
   onInput?: (text: string) => void
+  /** Shown in the empty input line, inviting the first command. */
+  placeholder?: string
 }
 
 function Prompt({
@@ -64,6 +66,7 @@ export function Terminal({
   done,
   prefill,
   onInput,
+  placeholder,
 }: TerminalProps): React.JSX.Element {
   const [value, setValue] = useState('')
   useEffect(() => {
@@ -203,6 +206,7 @@ export function Terminal({
               className="term-input"
               aria-label="Terminal input"
               disabled={!!waiting}
+              placeholder={placeholder}
               value={value}
               spellCheck={false}
               autoCapitalize="off"

@@ -1,4 +1,5 @@
-/* "How it works": the four lesson parts beside a live preview drawn by the real lesson page parts. */
+/* "How it works": the four lesson parts beside a live preview drawn by the real lesson page parts.
+   The lesson page at a smaller scale (.lp-prev) is shared with the landing hero (HeroLesson). */
 .lp {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
@@ -141,14 +142,14 @@
   font-weight: 600;
   color: var(--mute);
 }
-.lp .lp-top .pf-dots {
+.lp-prev .lp-top .pf-dots {
   gap: 4px;
 }
-.lp .lp-top .pf-dots i {
+.lp-prev .lp-top .pf-dots i {
   width: 6px;
   height: 6px;
 }
-.lp .lp-top .pf-dots i.c {
+.lp-prev .lp-top .pf-dots i.c {
   width: 18px;
   border-radius: 3px;
 }
@@ -173,17 +174,6 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-/* Try it / Watch again: the one primary control in the header */
-.lp-top .lp-try {
-  flex: none;
-  padding: 4px 12px;
-  border-radius: 7px;
-  font-size: 12.5px;
-}
-.lp-top .lp-try:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
 
 /* The lesson page, at a smaller scale than in the app */
 .lp-body {
@@ -205,100 +195,92 @@
   align-items: center;
   min-width: 0;
 }
-.lp .pf-kick {
+.lp-prev .pf-kick {
   margin: 2px 0 6px;
   font-size: 11px;
 }
-.lp .pf-title {
+.lp-prev .pf-title {
   margin: 0 0 6px;
   font-size: 22px;
   letter-spacing: -0.02em;
 }
-.lp .pf-lead {
+.lp-prev .pf-lead {
   margin: 0 0 14px;
   font-size: 13.5px;
   line-height: 1.5;
 }
-.lp .pf-lead strong {
+.lp-prev .pf-lead strong {
   white-space: normal;
 }
-.lp .sv {
+.lp-prev .sv {
   gap: 6px;
   margin: 0;
 }
 /* The page keeps room for boxes it does not use yet; the smaller preview gives that room to the boxes it shows. */
-.lp .sv-off {
+.lp-prev .sv-off {
   display: none;
 }
-.lp .sv-box {
+.lp-prev .sv-box {
   max-width: 170px;
   min-height: 96px;
   padding: 9px 8px;
 }
-.lp .sv-box small {
+.lp-prev .sv-box small {
   display: none;
 }
-.lp .sv-file {
+.lp-prev .sv-file {
   flex-wrap: wrap;
   gap: 2px 6px;
   font-size: 12px;
 }
-.lp .sv-tag {
+.lp-prev .sv-tag {
   margin-left: 0;
   white-space: normal;
 }
-.lp .sv-change {
+.lp-prev .sv-change {
   margin: 10px 0 0;
   font-size: 12.5px;
 }
-.lp .cc {
+.lp-prev .cc {
   margin: 0 0 10px;
   padding: 10px 12px 10px;
   border-radius: 12px;
 }
-.lp .cc-k {
+.lp-prev .cc-k {
   margin-bottom: 6px;
   font-size: 11.5px;
 }
-.lp .cc-line {
+.lp-prev .cc-line {
   font-size: 13px;
   padding: 4px 10px;
 }
-.lp .cc-say {
+.lp-prev .cc-say {
   font-size: 11px;
 }
-.lp .pf-term .term {
+.lp-prev .pf-term .term {
   border-radius: 10px;
   font-size: 12px;
 }
-.lp .pf-term .term-bar {
+.lp-prev .pf-term .term-bar {
   padding: 5px 10px;
   font-size: 11px;
 }
-.lp .pf-term .term-log {
+.lp-prev .pf-term .term-log {
   min-height: 70px;
   padding: 8px 10px;
   cursor: default;
 }
-.lp .pf-term .fb {
+.lp-prev .pf-term .fb {
   margin: 8px 0 0;
   font-size: 12px;
 }
-/* Trying: the visitor types here, so the terminal acts like one and keeps its output in a short scroll. */
+/* Live (the landing hero): the visitor types here, so the terminal acts like one and keeps its output in a short scroll. */
 .lp-live .lp-page {
   user-select: auto;
 }
 .lp-live .pf-term .term-log {
   max-height: 170px;
   cursor: text;
-}
-.lp-live .lp-foot .btn-p.lp-go {
-  cursor: pointer;
-  text-decoration: none;
-}
-.lp-live .lp-foot .btn-p.lp-go:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 /* A blinking cursor while the command is being typed */
 .lp-typing .term-entry:last-child .t-input::after {
@@ -316,17 +298,17 @@
     opacity: 0;
   }
 }
-.lp .pf-result {
+.lp-prev .pf-result {
   width: 100%;
 }
-.lp .pf-good {
+.lp-prev .pf-good {
   justify-content: flex-start;
   gap: 8px;
   margin-top: 10px;
   font-size: 13px;
   text-align: left;
 }
-.lp .pf-good-i {
+.lp-prev .pf-good-i {
   width: 20px;
   height: 20px;
   font-size: 11px;
@@ -372,8 +354,7 @@
   .lp .lp-top .pf-dots {
     display: none;
   }
-  .lp-pause,
-  .lp-trying .lp-try {
+  .lp-pause {
     margin-left: auto;
   }
   .lp-page {

@@ -5,7 +5,7 @@ import { Logo } from '../layout/Logo'
 import { ISSUES_URL, SOURCE_URL } from '../layout/links'
 import { BackupDialog } from '../BackupDialog'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
-import { HeroDemo } from './HeroDemo'
+import { HeroLesson } from './HeroLesson'
 import { CourseRail } from './CourseRail'
 import { Faq } from './Faq'
 import { HowItWorks } from './LessonPreview'
@@ -54,7 +54,7 @@ export function Landing(): React.JSX.Element {
                 <span>See what Git</span> <span>is doing.</span>
               </h1>
               <p className="lede">
-                <strong>Learn Git by using it.</strong> Type real commands and watch your project's history change on the map. A free, hands-on course in your browser, from your first commit to your first merged pull request.
+                <strong>Learn Git by using it.</strong> Type real commands and see exactly what each one does to your files. A free, hands-on course in your browser, from your first commit to your first merged pull request.
               </p>
               <div className="ctas">
                 <Link className="btn btn-p" to="/learn">
@@ -70,7 +70,7 @@ export function Landing(): React.JSX.Element {
                 <li><Tick />Open source</li>
               </ul>
             </div>
-            <HeroDemo />
+            <HeroLesson />
           </div>
         </section>
 

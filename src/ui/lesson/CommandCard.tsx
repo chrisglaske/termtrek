@@ -16,11 +16,24 @@ const LINE = 12
 
 /**
  * Places each label under its token, pushing a label to a lower row when it would touch another label
- * or when a connector line would have to run through a label.
+ * or when a connector line would have to run through a label. Labels are placed left to right; when that
+ * leaves a connector running through a label (a wide first label reaching past a short token), they are
+ * placed right to left instead, which puts the wide label below the short one's connector.
  */
 export function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Placed[] {
+  const order = tokens.map((_, i) => i)
+  const ltr = placeInOrder(tokens, labels, origin, order)
+  if (ltr.clean) return ltr.placed
+  const rtl = placeInOrder(tokens, labels, origin, [...order].reverse())
+  return rtl.clean ? rtl.placed : ltr.placed
+}
+
+function placeInOrder(tokens: DOMRect[], labels: number[], origin: DOMRect, order: number[]): { placed: Placed[]; clean: boolean } {
   const done: Array<Placed & { w: number }> = []
-  tokens.forEach((t, i) => {
+  const placed: Placed[] = []
+  let clean = true
+  for (const i of order) {
+    const t = tokens[i]!
     const w = labels[i] ?? 0
     const x = t.left - origin.left + t.width / 2
     const left = Math.max(0, Math.min(x - w / 2, origin.width - w))
@@ -38,10 +51,14 @@ export function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Pla
       if (!wireHits && !lowerWire) break
     }
     // When no row is clear of every connector, take the nearest row that at least keeps labels apart.
-    if (row > done.length) row = free
+    if (row > done.length) {
+      row = free
+      clean = false
+    }
     done.push({ x, left, row, w })
-  })
-  return done.map(({ x, left, row }) => ({ x, left, row }))
+    placed[i] = { x, left, row }
+  }
+  return { placed, clean }
 }
 
 /** The command exactly as it is typed, on one line, with what each part means written under it. */
