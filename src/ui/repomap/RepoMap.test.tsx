@@ -3,7 +3,7 @@ import { axe } from 'vitest-axe'
 import { createWorld } from '../../engine/world'
 import { buildWorld } from '../../engine/setup'
 import { runLine } from '../../engine/interpreter'
-import { RepoMap, tightIds } from './RepoMap'
+import { RepoGraph, RepoMap, tightIds } from './RepoMap'
 
 const config = { 'user.name': 'Sam', 'user.email': 's@x.com' }
 const built = (run: string[]) =>
@@ -243,5 +243,15 @@ describe('tightIds', () => {
     const row = (xs: number[]) => xs.map((x) => ({ id: `c${x}`, x, y: 0 }))
     expect([...tightIds(row([0, 46, 92, 138]))]).toEqual(['c46', 'c138'])
     expect(tightIds(row([0, 80, 160])).size).toBe(0)
+  })
+})
+
+describe('RepoGraph without the next-commit spot', () => {
+  it('centres a single commit: the same margin on both sides of the dot', () => {
+    const w = createWorld({ cwd: 'p', repo: { at: 'p', commits: [{ message: 'first', files: { 'a.txt': '1' } }] }, config: { 'user.name': 'A', 'user.email': 'a@b.c' } })
+    const { container } = render(<RepoGraph repo={w.repo!} stub={false} />)
+    const width = Number(container.querySelector('svg')!.getAttribute('viewBox')!.split(' ')[2])
+    const shift = Number(/translate\((\d+(?:\.\d+)?)/.exec(container.querySelector('svg > g')!.getAttribute('transform')!)![1])
+    expect(width).toBe(shift * 2)
   })
 })
