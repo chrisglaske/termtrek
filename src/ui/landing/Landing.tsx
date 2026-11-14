@@ -4,9 +4,9 @@ import { Nav } from '../layout/Nav'
 import { Logo } from '../layout/Logo'
 import { SOURCE_URL } from '../layout/links'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
-import { CommandPill } from '../CommandPill'
 import { HeroDemo } from './HeroDemo'
 import { CourseRail } from './CourseRail'
+import { HowItWorks } from './LessonPreview'
 import '../buttons.css'
 import './Landing.css'
 
@@ -17,65 +17,6 @@ function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
         <path d="M2.5 6.3l2.2 2.2L9.5 3.7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
-  )
-}
-
-/** A static picture of a lesson, drawn with the same tokens as the app. */
-function LessonShot(): React.JSX.Element {
-  return (
-    <div className="shot" role="img" aria-label="A lesson in TermTrek: the course list, a terminal with a saved commit, and the lesson card">
-      <div className="app">
-        <div className="sh-side">
-          <div className="lg">
-            <Logo size={18} />
-            TermTrek
-          </div>
-          <div className="grp">Foundations</div>
-          <div className="it done"><i>✓</i>What is Git?</div>
-          <div className="it done"><i>✓</i>Create a repo</div>
-          <div className="it now"><i>3</i>Your first commit</div>
-          <div className="it todo"><i />Read the history</div>
-          <div className="grp">Fixing mistakes</div>
-          <div className="it todo"><i />Undo a change</div>
-          <div className="it todo"><i />Fix your last commit</div>
-        </div>
-        <div className="main">
-          <div className="hdr">
-            <b>Your first commit</b>
-            <span className="tag">Beginner, 6 min</span>
-            <span className="bar"><i className="d" /><i className="d" /><i className="c" /><i /></span>
-          </div>
-          <div className="work">
-            <div className="t">
-              <div><span className="p">~/project</span> <span className="b">(main)</span> $ git add notes.txt</div>
-              <div><span className="p">~/project</span> <span className="b">(main)</span> $ git commit -m "Add meeting notes"</div>
-              <div className="m">[main a1f3c9e] Add meeting notes</div>
-              <div className="m">&nbsp;1 file changed, 3 insertions(+)</div>
-              <div className="ok"><i>✓</i><b>Snapshot saved.</b> Your commit got an ID and main moved forward to point at it.</div>
-            </div>
-            <div className="col">
-              <div className="pn">
-                <h4>Save a snapshot</h4>
-                <p>A commit saves a snapshot of your project. Stage files first with <CommandPill cmd="git add" /> so you choose what goes in.</p>
-                <div className="task">Commit notes.txt with a short message.</div>
-              </div>
-              <div className="pn">
-                <div className="tabs"><span className="on">Your repo</span><span>Remote</span></div>
-                <svg viewBox="0 0 170 50" width="100%">
-                  <path d="M16 32H96" stroke="var(--g-line)" strokeWidth="3" />
-                  <circle cx="16" cy="32" r="7" fill="var(--surface)" stroke="var(--g-main)" strokeWidth="2.6" />
-                  <circle cx="56" cy="32" r="7" fill="var(--surface)" stroke="var(--g-main)" strokeWidth="2.6" />
-                  <circle cx="96" cy="32" r="12" fill="none" stroke="var(--g-head)" strokeWidth="2" />
-                  <circle cx="96" cy="32" r="7" fill="var(--g-main)" />
-                  <rect x="114" y="24" width="40" height="16" rx="8" fill="var(--g-main-lbl)" />
-                  <text x="134" y="35" fontSize="9" textAnchor="middle" fill="#fff" fontFamily="var(--mono)">main</text>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -149,29 +90,7 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <h2 id="how-title" className="h2">Short lessons that end with you doing the thing.</h2>
             <p className="sub">Each lesson takes a few minutes and works the same way, so you always know what to expect.</p>
-            <div className="how">
-              <ol className="steps">
-                <li>
-                  <h3>Understand the idea</h3>
-                  <p>A few sentences on what the command does and why teams care, in plain words.</p>
-                </li>
-                <li>
-                  <h3>Type it yourself</h3>
-                  <p>Use real Git commands in a practice terminal. Any correct approach counts, not just one exact answer.</p>
-                </li>
-                <li>
-                  <h3>See what changed</h3>
-                  <p>The repo map redraws as you type, so commits, branches and merges stop being invisible.</p>
-                </li>
-                <li>
-                  <h3>Get unstuck fast</h3>
-                  <p>
-                    Ask for a hint, or have it show you the command. Type <CommandPill cmd="status" /> by mistake and it asks if you meant <CommandPill cmd="git status" />.
-                  </p>
-                </li>
-              </ol>
-              <LessonShot />
-            </div>
+            <HowItWorks />
           </div>
         </section>
 

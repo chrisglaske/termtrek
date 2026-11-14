@@ -228,6 +228,13 @@ describe('Landing', () => {
     expect(screen.getByText(/TermTrek has no server and no sign-in\. Your lessons run entirely in your browser/)).toBeInTheDocument()
   })
 
+  it('shows how lessons work with a live preview of a real lesson page', () => {
+    open()
+    const how = document.getElementById('how') as HTMLElement
+    expect(within(how).getByRole('img', { name: /^A TermTrek lesson: you type git add notes\.txt/ })).toHaveTextContent('Choose the file')
+    expect(within(how).getAllByRole('button', { pressed: true })).toHaveLength(1)
+  })
+
   it('has no axe violations', async () => {
     const { container } = open()
     expect(await axe(container, { rules: { 'color-contrast': { enabled: false } } })).toHaveNoViolations()
