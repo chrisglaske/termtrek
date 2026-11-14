@@ -1,15 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Nav } from '../layout/Nav'
 import { Logo } from '../layout/Logo'
+import { ISSUES_URL, SOURCE_URL } from '../layout/links'
+import { BackupDialog } from '../BackupDialog'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
-import { CommandPill } from '../CommandPill'
-import { HeroDemo } from './HeroDemo'
+import { HeroLesson } from './HeroLesson'
 import { CourseRail } from './CourseRail'
+import { Faq } from './Faq'
+import { HowItWorks, HowSteps } from './LessonPreview'
+import { SendToComputer } from '../phone/SendToComputer'
+import { usePhone } from '../phone/usePhone'
+import { courseStats, formatHoursShort } from '../../lessons/courseStats'
 import '../buttons.css'
 import './Landing.css'
-
-const SOURCE = 'https://github.com/chrisglaske/devcore'
 
 function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
   return (
@@ -21,68 +25,40 @@ function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
   )
 }
 
-/** A static picture of a lesson, drawn with the same tokens as the app. */
-function LessonShot(): React.JSX.Element {
-  return (
-    <div className="shot" role="img" aria-label="A lesson in TermTrek: the course list, a terminal with a saved commit, and the lesson card">
-      <div className="app">
-        <div className="sh-side">
-          <div className="lg">
-            <Logo size={18} />
-            TermTrek
-          </div>
-          <div className="grp">Foundations</div>
-          <div className="it done"><i>✓</i>What is Git?</div>
-          <div className="it done"><i>✓</i>Create a repo</div>
-          <div className="it now"><i>3</i>Your first commit</div>
-          <div className="it todo"><i />Read the history</div>
-          <div className="grp">Fixing mistakes</div>
-          <div className="it todo"><i />Undo a change</div>
-          <div className="it todo"><i />Fix your last commit</div>
-        </div>
-        <div className="main">
-          <div className="hdr">
-            <b>Your first commit</b>
-            <span className="tag">Beginner, 6 min</span>
-            <span className="bar"><i className="d" /><i className="d" /><i className="c" /><i /></span>
-          </div>
-          <div className="work">
-            <div className="t">
-              <div><span className="p">~/project</span> <span className="b">(main)</span> $ git add notes.txt</div>
-              <div><span className="p">~/project</span> <span className="b">(main)</span> $ git commit -m "Add meeting notes"</div>
-              <div className="m">[main a1f3c9e] Add meeting notes</div>
-              <div className="m">&nbsp;1 file changed, 3 insertions(+)</div>
-              <div className="ok"><i>✓</i><b>Snapshot saved.</b> Your commit got an ID and main moved forward to point at it.</div>
-            </div>
-            <div className="col">
-              <div className="pn">
-                <h4>Save a snapshot</h4>
-                <p>A commit saves a snapshot of your project. Stage files first with <CommandPill cmd="git add" /> so you choose what goes in.</p>
-                <div className="task">Commit notes.txt with a short message.</div>
-              </div>
-              <div className="pn">
-                <div className="tabs"><span className="on">Your repo</span><span>Remote</span></div>
-                <svg viewBox="0 0 170 50" width="100%">
-                  <path d="M16 32H96" stroke="var(--g-line)" strokeWidth="3" />
-                  <circle cx="16" cy="32" r="7" fill="var(--surface)" stroke="var(--g-main)" strokeWidth="2.6" />
-                  <circle cx="56" cy="32" r="7" fill="var(--surface)" stroke="var(--g-main)" strokeWidth="2.6" />
-                  <circle cx="96" cy="32" r="12" fill="none" stroke="var(--g-head)" strokeWidth="2" />
-                  <circle cx="96" cy="32" r="7" fill="var(--g-main)" />
-                  <rect x="114" y="24" width="40" height="16" rx="8" fill="var(--g-main-lbl)" />
-                  <text x="134" y="35" fontSize="9" textAnchor="middle" fill="#fff" fontFamily="var(--mono)">main</text>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function Landing(): React.JSX.Element {
   useDocumentTitle('TermTrek: learn Git by using it')
   const { hash } = useLocation()
+  const stats = courseStats()
+  // Phones get a shorter page to read: no live lesson, and a way to send the site to a computer.
+  const phone = usePhone()
+  const home = () => `${window.location.origin}/`
+  const [backup, setBackup] = useState(false)
+  const backupButton = useRef<HTMLButtonElement>(null)
+  // "Scroll for more" is pinned to the bottom-right corner while the page sits at the top and the
+  // next section is still out of sight, at every screen height. It fades out once the visitor scrolls,
+  // or starts typing in the hero, where on a short screen it would cover the terminal's output.
+  const [more, setMore] = useState(true)
+  useEffect(() => {
+    let typed = false
+    const check = () => {
+      const who = document.getElementById('who')
+      setMore(!typed && window.scrollY < 40 && (!who || who.getBoundingClientRect().top > window.innerHeight * 0.8))
+    }
+    const onInput = (e: Event) => {
+      if (!(e.target instanceof Element) || !e.target.closest('.hl-wrap')) return
+      typed = true
+      check()
+    }
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check)
+    document.addEventListener('input', onInput)
+    return () => {
+      window.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+      document.removeEventListener('input', onInput)
+    }
+  }, [])
 
   // Links such as "Back to course" arrive as /#course: scroll there once the page is drawn.
   useEffect(() => {
@@ -108,27 +84,66 @@ export function Landing(): React.JSX.Element {
                 <span>See what Git</span> <span>is doing.</span>
               </h1>
               <p className="lede">
-                <strong>Learn Git by using it.</strong> Type real commands and watch your project's history change on the map. A free, hands-on course in your browser, from your first commit to your first merged pull request.
+                <strong>Learn Git by using it.</strong> Type real commands and see exactly what each one does to your files. A free, hands-on course in your browser, from your first commit to your first merged pull request.
               </p>
-              <div className="ctas">
-                <Link className="btn btn-p" to="/learn">
-                  Start the course
-                </Link>
-                <a className="btn btn-s" href="#course">
-                  See what you'll learn
-                </a>
-              </div>
+              {phone ? (
+                <div className="pc">
+                  <div className="pc-h">
+                    <span className="pc-i" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
+                        <rect x="3" y="4" width="18" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+                        <path d="M2 20h20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <div>
+                      <h2 className="pc-t">Made for your computer</h2>
+                      <p>You type real commands and watch a picture change, so you'll want a keyboard and a bigger screen. Send yourself the link and start there.</p>
+                    </div>
+                  </div>
+                  <SendToComputer url={home} />
+                  <p className="pc-fine">Opens your phone's share menu. Nothing is sent to us.</p>
+                </div>
+              ) : (
+                <div className="ctas">
+                  <Link className="btn btn-p" to="/learn">
+                    Start the course
+                  </Link>
+                  <a className="btn btn-s" href="#course">
+                    See what you'll learn
+                  </a>
+                </div>
+              )}
               <ul className="promise">
                 <li><Tick />No account, no install, free forever</li>
                 <li><Tick />Your progress never leaves your device</li>
                 <li><Tick />Open source</li>
               </ul>
             </div>
-            <HeroDemo />
+            {!phone && <HeroLesson />}
           </div>
+          {!phone && (
+            <a
+              className={more ? 'more' : 'more more-off'}
+              href="#who"
+              tabIndex={more ? undefined : -1}
+              onClick={(e) => {
+                // Scroll smoothly to the next section instead of jumping, and leave the address as it is.
+                const who = document.getElementById('who')
+                if (!who || typeof who.scrollIntoView !== 'function') return
+                e.preventDefault()
+                const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+                who.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' })
+              }}
+            >
+              Scroll for more
+              <svg className="more-i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          )}
         </section>
 
-        <section className="who" aria-labelledby="who-title">
+        <section className="who" id="who" aria-labelledby="who-title">
           <h2 id="who-title" className="sr-only">Who it's for</h2>
           <div className="wrap">
             <div>
@@ -150,29 +165,7 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <h2 id="how-title" className="h2">Short lessons that end with you doing the thing.</h2>
             <p className="sub">Each lesson takes a few minutes and works the same way, so you always know what to expect.</p>
-            <div className="how">
-              <ol className="steps">
-                <li>
-                  <h3>Understand the idea</h3>
-                  <p>A few sentences on what the command does and why teams care, in plain words.</p>
-                </li>
-                <li>
-                  <h3>Type it yourself</h3>
-                  <p>Use real Git commands in a practice terminal. Any correct approach counts, not just one exact answer.</p>
-                </li>
-                <li>
-                  <h3>See what changed</h3>
-                  <p>The repo map redraws as you type, so commits, branches and merges stop being invisible.</p>
-                </li>
-                <li>
-                  <h3>Get unstuck fast</h3>
-                  <p>
-                    Ask for a hint, or have it show you the command. Type <CommandPill cmd="status" /> by mistake and it asks if you meant <CommandPill cmd="git status" />.
-                  </p>
-                </li>
-              </ol>
-              <LessonShot />
-            </div>
+            {phone ? <HowSteps /> : <HowItWorks />}
           </div>
         </section>
 
@@ -180,6 +173,17 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <h2 id="course-title" className="h2">From your first commit to your first merged pull request.</h2>
             <p className="sub">Go in order or jump to what you need. Every lesson is open, and your progress is saved in your browser.</p>
+            <ul className="stats" role="list" aria-label="Course size">
+              <li>
+                <b>{stats.lessons}</b>{' '}lessons
+              </li>
+              <li>
+                <b>{formatHoursShort(stats.minutes)}</b>{' '}at your own pace
+              </li>
+              <li>
+                <b>{stats.live}</b>{' '}sections live, {stats.later} coming
+              </li>
+            </ul>
             <CourseRail />
             <div className="guides">
               <span className="gicon" aria-hidden="true">
@@ -198,11 +202,13 @@ export function Landing(): React.JSX.Element {
           </div>
         </section>
 
+        <Faq />
+
         <section className="priv" id="privacy" aria-labelledby="privacy-title">
           <div className="wrap">
             <div>
-              <h2 id="privacy-title" className="h2">Learn in private. We couldn't watch if we wanted to.</h2>
-              <p className="sub">TermTrek has no server and no sign-in. Your lessons run entirely in your browser, and the code is public so anyone can check.</p>
+              <h2 id="privacy-title" className="h2">Learn in private.</h2>
+              <p className="sub">No sign-in and no account. Your lessons run entirely in your browser, and all we see is an anonymous count of page visits. The code is public, so anyone can check.</p>
             </div>
             <dl>
               <div>
@@ -227,30 +233,61 @@ export function Landing(): React.JSX.Element {
 
         <section className="end" aria-labelledby="end-title">
           <div className="wrap">
-            <h2 id="end-title" className="h2">Your next commit could be your first.</h2>
+            <h2 id="end-title" className="h2">
+              {phone ? "Ready when you're at your computer." : 'Your next commit could be your first.'}
+            </h2>
             <p className="sub">The first lesson takes about five minutes.</p>
-            <Link className="btn btn-p" to="/learn">
-              Start the course
-            </Link>
+            {phone ? (
+              <div className="end-send">
+                <SendToComputer url={home} />
+              </div>
+            ) : (
+              <Link className="btn btn-p" to="/learn">
+                Start the course
+              </Link>
+            )}
           </div>
         </section>
       </main>
 
       <footer className="landing-foot">
         <div className="wrap">
-          <span className="foot-logo">
-            <Logo size={24} />
-            TermTrek
-          </span>
-          <span>Free and open source under AGPL-3.0</span>
-          <nav aria-label="Footer">
-            <a href="#course">Course</a>
-            <Link to="/playground">Playground</Link>
-            <a href="#privacy">Privacy</a>
-            <a href={SOURCE}>Source code</a>
-          </nav>
+          <div className="fg">
+            <div>
+              <span className="foot-logo">
+                <Logo size={24} />
+                TermTrek
+              </span>
+              <p>A free, hands-on Git course that runs in your browser. No account, no tracking cookies.</p>
+            </div>
+            <nav aria-labelledby="foot-learn">
+              <h2 id="foot-learn">Learn</h2>
+              <a href="#course">Course</a>
+              <Link to="/playground">Playground</Link>
+              <Link to="/guides">Guides</Link>
+            </nav>
+            <nav aria-labelledby="foot-project">
+              <h2 id="foot-project">Project</h2>
+              <a href={SOURCE_URL}>Source on GitHub</a>
+              <a href={ISSUES_URL}>Report a problem</a>
+              <a href={ISSUES_URL}>Suggest a lesson</a>
+            </nav>
+            <nav aria-labelledby="foot-about">
+              <h2 id="foot-about">About</h2>
+              <a href="#privacy">Privacy</a>
+              <a href={`${SOURCE_URL}/blob/main/LICENSE`}>License (AGPL-3.0)</a>
+              <button ref={backupButton} type="button" onClick={() => setBackup(true)}>
+                Back up progress
+              </button>
+            </nav>
+          </div>
+          <div className="fine">
+            <span>© 2026 TermTrek · Free and open source</span>
+            <span>Made for people learning Git, at any level.</span>
+          </div>
         </div>
       </footer>
+      {backup && <BackupDialog returnFocusTo={backupButton} onClose={() => setBackup(false)} />}
     </>
   )
 }

@@ -35,6 +35,25 @@ const NEXT_BOX: Record<StageBox, StageBox> = {
 const MAX_SHOWN = 3
 const STAGED_ANY = 'staged-any'
 
+/** A chip as it was last drawn: which column, where inside it, and a copy of its markup to fade out. */
+type Seen = { key: string; box: string; html: string; left: number; top: number; width: number }
+
+/** Lay a copy of a chip that left over the spot it left, and fade the copy away. */
+function fadeOut(holder: HTMLElement, was: Seen): void {
+  const tpl = document.createElement('template')
+  tpl.innerHTML = was.html
+  const ghost = tpl.content.firstElementChild
+  if (!(ghost instanceof HTMLElement) || typeof ghost.animate !== 'function') return
+  ghost.removeAttribute('data-fly')
+  ghost.setAttribute('aria-hidden', 'true')
+  ghost.classList.add('sv-leaving')
+  Object.assign(ghost.style, { left: `${was.left}px`, top: `${was.top}px`, width: `${was.width}px` })
+  holder.appendChild(ghost)
+  const anim = ghost.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.97)' }], { duration: 260, easing: 'ease-in', fill: 'forwards' })
+  anim.onfinish = () => ghost.remove()
+  anim.oncancel = () => ghost.remove()
+}
+
 const reducedMotion = (): boolean =>
   typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -64,7 +83,7 @@ export function StageVisual({
   compact?: boolean
 }): React.JSX.Element {
   const rootRef = useRef<HTMLDivElement>(null)
-  const rects = useRef(new Map<string, DOMRect>())
+  const rects = useRef(new Map<string, Seen>())
   const seen = useRef<{
     key: string
     snap: StageSnap
@@ -174,34 +193,38 @@ export function StageVisual({
 
   if (refused) tagItems('folder', (p) => (p in snap.changed ? 'would be overwritten' : undefined))
 
-  // FLIP: remember where every chip was, and slide any that moved (or just arrived from a staged file).
+  // When a file changes column it fades out where it was and fades in where it went, instead of sliding
+  // across. Every chip is remembered with its column and place, so a chip that left can be faded out
+  // from a copy; a chip whose column merely grew or shifted, or a page that scrolled, changes nothing.
   useLayoutEffect(() => {
     const root = rootRef.current
     if (!root) return
     const still = reducedMotion()
-    const now = new Map<string, DOMRect>()
+    const now = new Map<string, Seen>()
+    const moved: HTMLElement[] = []
     root.querySelectorAll<HTMLElement>('[data-fly]').forEach((el) => {
-      const r = el.getBoundingClientRect()
       const key = el.dataset.fly!
-      now.set(key, r)
-      if (el.closest('.sv-staged') && !now.has(STAGED_ANY)) now.set(STAGED_ANY, r)
-      const from = rects.current.get(key) ?? (el.dataset.from ? rects.current.get(el.dataset.from) : undefined)
-      if (!from || still || typeof el.animate !== 'function') return
-      const dx = from.left - r.left
-      const dy = from.top - r.top
-      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return
-      el.animate(
-        [
-          { transform: `translate(${dx}px, ${dy}px)` },
-          {
-            transform: `translate(${dx / 2}px, ${dy / 2 - 24}px) scale(1.06)`,
-            offset: 0.5,
-          },
-          { transform: 'none' },
-        ],
-        { duration: 750, easing: 'cubic-bezier(.4,0,.2,1)' },
-      )
+      const box = el.dataset.box ?? ''
+      const holder = el.closest('.sv-in')
+      if (!holder) return
+      const h = holder.getBoundingClientRect()
+      const r = el.getBoundingClientRect()
+      now.set(`${key}@${box}`, { key, box, html: el.outerHTML, left: r.left - h.left, top: r.top - h.top, width: r.width })
+      const before = [...rects.current.values()]
+      const arrived = !rects.current.has(`${key}@${box}`) && before.some((b) => b.key === key || (el.dataset.from === STAGED_ANY && b.box === 'staged'))
+      if (arrived) moved.push(el)
     })
+    if (!still) {
+      for (const [id, was] of rects.current) {
+        if (now.has(id)) continue
+        const holder = root.querySelector<HTMLElement>(`.sv-${was.box} .sv-in`)
+        if (holder) fadeOut(holder, was)
+      }
+      for (const el of moved) {
+        if (typeof el.animate !== 'function') continue
+        el.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: 160, easing: 'ease-out', fill: 'backwards' })
+      }
+    }
     rects.current = now
   })
 
@@ -237,6 +260,7 @@ export function StageVisual({
                           key={it.key}
                           data-fly={it.key}
                           data-from={it.from}
+                          data-box={b.key}
                           className={b.key === 'saved' ? 'sv-snap' : it.ghost ? 'sv-file sv-ghost' : refused && b.key === 'folder' && it.tag ? 'sv-file sv-refused' : 'sv-file'}
                         >
                           {b.key !== 'saved' && <i aria-hidden="true" />}

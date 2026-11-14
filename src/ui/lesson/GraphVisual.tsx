@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
+import { restingPos } from './flip'
 import type { Repo, World } from '../../engine/types'
 import type { PageVisual } from '../../lessons/schema'
 import { headCommitId } from '../../engine/git/repoState'
@@ -102,7 +103,7 @@ function LogList({ repo, ids }: { repo: Repo; ids: string[] }): React.JSX.Elemen
 export function GraphVisual({ world, v, last }: { world: World; v: GraphSpec; last?: string }): React.JSX.Element | null {
   const seen = useRef<{ snap: Snap; caption: string | null } | null>(null)
   const root = useRef<HTMLElement>(null)
-  const rects = useRef(new Map<string, DOMRect>())
+  const rects = useRef(new Map<string, { left: number; top: number }>())
   const repo = world.repo
   // Slide the branch labels and the HEAD ring from where they were to where they are now.
   useLayoutEffect(() => {
@@ -112,10 +113,12 @@ export function GraphVisual({ world, v, last }: { world: World; v: GraphSpec; la
     const svg = el.querySelector('svg')
     const vb = svg?.viewBox.baseVal.width
     const scale = svg && vb ? svg.getBoundingClientRect().width / vb : 1
-    const now = new Map<string, DOMRect>()
+    // Positions are kept relative to the graph, so scrolling the page never reads as a move.
+    const base = el.getBoundingClientRect()
+    const now = new Map<string, { left: number; top: number }>()
     el.querySelectorAll<SVGElement>('[data-flip]').forEach((n) => {
       const key = n.dataset.flip!
-      const r = n.getBoundingClientRect()
+      const r = restingPos(n, base, scale)
       now.set(key, r)
       const from = rects.current.get(key)
       if (!from || still || typeof n.animate !== 'function' || !scale) return

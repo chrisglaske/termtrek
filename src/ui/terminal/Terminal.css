@@ -83,6 +83,34 @@
   caret-color: var(--t-cur);
   font: inherit;
 }
+/* The input and, over it, a coloured copy of what was typed (only when the step shows a command to type). */
+.term-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+.term-input-marked {
+  color: transparent;
+}
+.term-marks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+}
+.term-typed-ok {
+  color: var(--t-ok);
+}
+.term-typed-bad {
+  color: var(--t-err);
+  text-decoration: underline wavy;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 3px;
+}
 .term-suggest {
   display: flex;
   flex-wrap: wrap;

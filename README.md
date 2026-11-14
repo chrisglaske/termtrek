@@ -9,7 +9,7 @@
 
 [**Start learning at termtrek.work**](https://termtrek.work)
 
-![The TermTrek landing page, with a live repo map](docs/screenshots/landing.png)
+![The TermTrek landing page: the first lesson, ready for you to type a Git command](docs/screenshots/landing.png)
 
 </div>
 

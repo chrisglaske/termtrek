@@ -1,0 +1,373 @@
+/* "How it works": the four lesson parts beside a live preview drawn by the real lesson page parts.
+   The lesson page at a smaller scale (.lp-prev) is shared with the landing hero (HeroLesson). */
+.lp {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
+  gap: 48px;
+  align-items: start;
+}
+
+/* The four parts, each a button that jumps the preview there */
+.lp-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.lp-steps button {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  column-gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.25s, border-color 0.25s;
+}
+.lp-steps button:hover {
+  background: var(--raised);
+}
+.lp-steps button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.lp-steps button[aria-pressed='true'] {
+  background: var(--accent-t);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.lp-n {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--raised);
+  color: var(--mute);
+  border: 1px solid var(--line2);
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+}
+.lp-steps button[aria-pressed='true'] .lp-n {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.lp-st {
+  display: block;
+  min-width: 0;
+}
+.lp-h {
+  display: block;
+  margin: 3px 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+}
+.lp-d {
+  display: block;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.lp-bar {
+  grid-column: 2;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.lp-bar i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+  animation: lp-fill var(--dur) linear forwards;
+}
+.lp-paused .lp-bar i {
+  animation-play-state: paused;
+}
+@keyframes lp-fill {
+  to {
+    width: 100%;
+  }
+}
+
+/* The preview frame: a lesson page header, then the page itself */
+.lp-prev {
+  min-width: 0;
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.lp-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink2);
+}
+.lp-crs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--line2);
+  border-radius: 7px;
+  font-weight: 600;
+  color: var(--ink);
+}
+@media (max-width: 560px) {
+  .lp-crs-t {
+    display: none;
+  }
+}
+.lp-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  color: var(--mute);
+}
+.lp-prev .lp-top .pf-dots {
+  gap: 4px;
+}
+.lp-prev .lp-top .pf-dots i {
+  width: 6px;
+  height: 6px;
+}
+.lp-prev .lp-top .pf-dots i.c {
+  width: 18px;
+  border-radius: 3px;
+}
+.lp-pause {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 9px;
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: none;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.lp-pause:hover {
+  background: var(--raised);
+}
+.lp-pause:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The lesson page, at a smaller scale than in the app */
+.lp-body {
+  display: block;
+}
+.lp-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  min-height: 330px;
+  padding: 18px 18px 8px;
+  text-align: center;
+  user-select: none;
+}
+.lp-left,
+.lp-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+.lp-prev .pf-kick {
+  margin: 2px 0 6px;
+  font-size: 11px;
+}
+.lp-prev .pf-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.lp-prev .pf-lead {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.lp-prev .pf-lead strong {
+  white-space: normal;
+}
+.lp-prev .sv {
+  gap: 6px;
+  margin: 0;
+}
+/* The page keeps room for boxes it does not use yet; the smaller preview gives that room to the boxes it shows. */
+.lp-prev .sv-off {
+  display: none;
+}
+.lp-prev .sv-box {
+  max-width: 170px;
+  min-height: 96px;
+  padding: 9px 8px;
+}
+.lp-prev .sv-box small {
+  display: none;
+}
+.lp-prev .sv-file {
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  font-size: 12px;
+}
+.lp-prev .sv-tag {
+  margin-left: 0;
+  white-space: normal;
+}
+.lp-prev .sv-change {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+}
+.lp-prev .cc {
+  margin: 0 0 10px;
+  padding: 10px 12px 10px;
+  border-radius: 12px;
+}
+.lp-prev .cc-k {
+  margin-bottom: 6px;
+  font-size: 11.5px;
+}
+.lp-prev .cc-line {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+.lp-prev .cc-say {
+  font-size: 11px;
+}
+.lp-prev .pf-term .term {
+  border-radius: 10px;
+  font-size: 12px;
+}
+.lp-prev .pf-term .term-bar {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+.lp-prev .pf-term .term-log {
+  min-height: 70px;
+  padding: 8px 10px;
+  cursor: default;
+}
+.lp-prev .pf-term .fb {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+/* Live (the landing hero): the visitor types here, so the terminal acts like one and keeps its output in a short scroll. */
+.lp-live .lp-page {
+  user-select: auto;
+}
+.lp-live .pf-term .term-log {
+  max-height: 170px;
+  cursor: text;
+}
+/* A blinking cursor while the command is being typed */
+.lp-typing .term-entry:last-child .t-input::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  margin-left: 1px;
+  vertical-align: -2px;
+  background: var(--t-cur);
+  animation: lp-blink 1s steps(1) infinite;
+}
+@keyframes lp-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.lp-prev .pf-result {
+  width: 100%;
+}
+.lp-prev .pf-good {
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  text-align: left;
+}
+.lp-prev .pf-good-i {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
+.lp-foot {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+}
+.lp-foot .btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: default;
+}
+.lp-foot .btn-p {
+  opacity: 0.45;
+  transition: opacity 0.3s;
+}
+.lp-foot .btn-p.lp-go {
+  opacity: 1;
+}
+
+@media (max-width: 860px) {
+  .lp,
+  .lp-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lp {
+    gap: 28px;
+  }
+  .lp-page {
+    min-height: 0;
+  }
+}
+@media (max-width: 560px) {
+  .lp-top {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .lp .lp-top .pf-dots {
+    display: none;
+  }
+  .lp-pause {
+    margin-left: auto;
+  }
+  .lp-page {
+    padding: 14px 12px 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-steps button,
+  .lp-n,
+  .lp-foot .btn-p {
+    transition: none;
+  }
+  .lp-typing .term-entry:last-child .t-input::after {
+    animation: none;
+  }
+}

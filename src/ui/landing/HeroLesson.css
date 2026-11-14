@@ -1,0 +1,206 @@
+/* The landing hero: the first lesson's two do pages, ready to type. The page itself is drawn with the
+   shared small-scale lesson styles (.lp-prev in LessonPreview.css); this file adds only what the hero needs. */
+.hl {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.hl .lp-page {
+  /* One column at every width: the hero is too narrow for the lesson's two, so it is drawn as the lesson is on a smaller screen. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+  padding-bottom: 16px;
+}
+.hl .pf-lead {
+  max-width: 34em;
+  margin-bottom: 10px;
+}
+@media (max-width: 560px) {
+  .hl .sv-box {
+    padding: 9px 6px;
+  }
+  .hl .sv-file {
+    padding: 5px 6px;
+    font-size: 11.5px;
+  }
+}
+/* The invitation in the empty input */
+.hl .term-input::placeholder {
+  color: var(--t-mute);
+  opacity: 1;
+}
+.hl .term-input:focus::placeholder {
+  color: color-mix(in srgb, var(--t-mute) 70%, transparent);
+}
+
+/* One stable height in every state (start, typing, a slip, move 2, finished), so nothing below the hero moves:
+   every part that comes and goes has a reserved place, and the terminal has a fixed height and scrolls itself. */
+.hl .lp-left {
+  position: relative;
+  /* Room for the one-line caption under the boxes ("moved to Staged", "did not work"), shown or not. */
+  padding-bottom: 24px;
+}
+.hl .lp-left .sv-change {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The command card and the outcome that replaces it share one slot, sized for the card's two label rows. */
+.hl .sv {
+  /* Tall enough for move 2's boxes, where a file carries two tags. */
+  min-height: 104px;
+}
+.hl .cc,
+.hl .pf-out {
+  min-height: 138px;
+  margin: 0 0 8px;
+}
+.hl .pf-out:empty {
+  display: none;
+}
+.hl .cc {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.hl .pf-out {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.hl .pf-out .pf-good {
+  margin: 0;
+}
+.hl .lp-live .pf-term .term-log {
+  /* About four lines; the log scrolls and keeps the latest line in view. */
+  flex: none;
+  height: 84px;
+  min-height: 0;
+  max-height: none;
+}
+
+/* Finished: one short row in the outcome slot */
+.hl-out {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.hl-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+}
+.hl-end-t {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.hl-end .btn {
+  padding: 7px 16px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.hl-end .btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 560px) {
+  .hl .lp-left {
+    padding-bottom: 42px;
+  }
+  .hl .lp-left .sv-change {
+    white-space: normal;
+  }
+  .hl .sv {
+    min-height: 112px;
+  }
+  .hl .cc,
+  .hl .pf-out {
+    min-height: 140px;
+  }
+  .hl-end-t {
+    flex-basis: 100%;
+    text-align: center;
+  }
+  .hl-end .btn {
+    padding: 6px 14px;
+    font-size: 13.5px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hl-out {
+    animation: hl-in 0.3s ease-out both;
+  }
+}
+@keyframes hl-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The "Try it" cue: a pill right above the terminal and a glowing input, until the visitor types their first key. */
+.hl-wrap {
+  position: relative;
+  min-width: 0;
+}
+/* The cue's slot keeps its height after the cue goes, so the card never changes height. */
+.hl-cue-slot {
+  display: flex;
+  align-items: flex-end;
+  height: 26px;
+  margin-bottom: 6px;
+}
+.hl-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.hl-cue-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.hl .term-input {
+  caret-color: var(--accent);
+}
+.hl-wrap:not(.hl-used) .hl .pf-term .term {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hl-cue-dot {
+    animation: hl-blink 1.1s steps(1, end) infinite;
+  }
+  .hl-wrap:not(.hl-used) .hl .pf-term .term {
+    animation: hl-glow 2.4s ease-in-out infinite;
+  }
+}
+@keyframes hl-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes hl-glow {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+}

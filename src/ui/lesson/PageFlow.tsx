@@ -58,6 +58,37 @@ function refusedOverwrite(state: RunnerState, from: number): boolean {
   return !!last && !last.note && last.lines.some((l) => l.map((sp) => sp.text).join('').includes('would be overwritten'))
 }
 
+/**
+ * Where each runner step's terminal entries begin, so a page shows only its own commands.
+ * `clear` or a reset (the entries shrinking) starts the current step over at 0.
+ */
+export function usePageStarts(state: RunnerState): { from(step: number): number; reset(): void } {
+  const starts = useRef<Record<number, number>>({ 0: 0 })
+  const lastLen = useRef(state.entries.length)
+  if (state.entries.length < lastLen.current) starts.current[state.stepIndex] = 0
+  if (starts.current[state.stepIndex] === undefined) starts.current[state.stepIndex] = lastLen.current
+  lastLen.current = state.entries.length
+  return {
+    from: (step) => starts.current[step] ?? 0,
+    reset: () => {
+      starts.current = { 0: 0 }
+      lastLen.current = 0
+    },
+  }
+}
+
+/** Under the picture: says the last command on this page failed (or that Git refused to overwrite), so nothing changed. */
+export function FailedNote({ state, from }: { state: RunnerState; from: number }): React.JSX.Element | null {
+  if (!failedLast(state, from)) return null
+  return (
+    <p className="sv-change sv-change-err" role="status">
+      {refusedOverwrite(state, from)
+        ? 'Git refused: the changes in your Folder would be overwritten, so it stayed where it was.'
+        : 'That command did not work, so nothing changed. The terminal says why.'}
+    </p>
+  )
+}
+
 function Dots({ count, at }: { count: number; at: number }): React.JSX.Element {
   return (
     <div
@@ -76,7 +107,7 @@ function Dots({ count, at }: { count: number; at: number }): React.JSX.Element {
   )
 }
 
-function Head({ page, headRef }: { page: ReadPage | DoPage; headRef: React.Ref<HTMLHeadingElement> }): React.JSX.Element {
+export function Head({ page, headRef }: { page: ReadPage | DoPage; headRef?: React.Ref<HTMLHeadingElement> }): React.JSX.Element {
   return (
     <>
       <p className="pf-kick">{page.kicker}</p>
@@ -128,7 +159,8 @@ function Buttons({ nav }: { nav: Nav }): React.JSX.Element {
   )
 }
 
-function DoBody({
+/** The right side of a do page: the command card, the terminal, and the result. The landing hero draws it too. */
+export function DoBody({
   page,
   state,
   liveAtStart,
@@ -138,6 +170,11 @@ function DoBody({
   saveFile,
   closeFile,
   doneAt,
+  autoFocus = true,
+  helpers = true,
+  placeholder,
+  outcome,
+  beforeTerm,
 }: {
   page: DoPage
   state: RunnerState
@@ -148,6 +185,18 @@ function DoBody({
   saveFile(path: string, text: string): void
   closeFile(path: string): void
   doneAt: number
+  /** Focus the terminal on mount (the lesson does; the landing hero decides for itself). */
+  autoFocus?: boolean
+  /** The page's note and "Type it for me" (the landing hero leaves them out, so nothing needs a click). */
+  helpers?: boolean
+  placeholder?: string
+  /**
+   * Drawn in place of the command card once the step passes (the landing hero's compact result).
+   * When given, the page's own report and done lines are left to it. Lessons leave it out.
+   */
+  outcome?: React.ReactNode
+  /** Drawn just above the terminal, inside its box (the landing hero's "Try it" cue). Lessons leave it out. */
+  beforeTerm?: React.ReactNode
 }): React.JSX.Element {
   const ok = passed(state, page.step)
   // Only a file opened (with `code`) on this page shows its editor here.
@@ -162,7 +211,8 @@ function DoBody({
   const repo = activeRepo(world)
   const pending = world.pending
   const full = page.command.map((p) => p.text).join(' ')
-  const report = ok ? (page.report?.(world) ?? null) : null
+  const inPlace = outcome !== undefined
+  const report = ok && !inPlace ? (page.report?.(world) ?? null) : null
 
   const termRef = useRef<HTMLDivElement>(null)
   const smooth = () => (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth')
@@ -180,9 +230,15 @@ function DoBody({
 
   return (
     <>
-      <CommandCard parts={page.command} typed={ok ? '' : typed} />
+      {!(inPlace && ok) && <CommandCard parts={page.command} typed={ok ? '' : typed} />}
+      {inPlace && (
+        <div className="pf-result pf-out" aria-live="polite" ref={resultRef}>
+          {ok && outcome}
+        </div>
+      )}
       {liveAtStart && (
         <div className="pf-term" ref={termRef}>
+          {beforeTerm}
           <Terminal
             entries={pageEntries(state.entries, entryStart)}
             cwdLabel={displayPath(world, world.cwd)}
@@ -190,12 +246,14 @@ function DoBody({
             onRun={run}
             onComplete={(line) => completeLine(world, line)}
             waiting={pending ? 'Git is waiting for your message in the box below.' : undefined}
-            autoFocus
+            autoFocus={autoFocus}
             done={ok}
             prefill={fill}
             onInput={setTyped}
+            placeholder={placeholder}
+            expect={full}
           />
-          {page.note && noteOpen && !ok && (
+          {helpers && page.note && noteOpen && !ok && (
             <div className="pf-note">
               <div className="pf-note-text">
                 <RichText text={page.note} />
@@ -230,7 +288,7 @@ function DoBody({
           )}
         </div>
       )}
-      {liveAtStart && !ok && !pending && !file && (
+      {helpers && liveAtStart && !ok && !pending && !file && (
         <p className="pf-hint">
           Not sure?{' '}
           <button type="button" className="pf-link" onClick={() => setFill((f) => ({ text: full, seq: (f?.seq ?? 0) + 1 }))}>
@@ -238,18 +296,20 @@ function DoBody({
           </button>
         </p>
       )}
-      <div className="pf-result" aria-live="polite" ref={resultRef}>
-        {ok && (
-          <div className="pf-good">
-            <span className="pf-good-i" aria-hidden="true">
-              ✓
-            </span>
-            <span>
-              <RichText text={page.done} />
-            </span>
-          </div>
-        )}
-      </div>
+      {!inPlace && (
+        <div className="pf-result" aria-live="polite" ref={resultRef}>
+          {ok && (
+            <div className="pf-good">
+              <span className="pf-good-i" aria-hidden="true">
+                ✓
+              </span>
+              <span>
+                <RichText text={page.done} />
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </>
   )
 }
@@ -338,12 +398,7 @@ export function PageRun({
   const navigate = useNavigate()
   const skipTo = nextLesson(lesson.id)
 
-  // Where each runner step's terminal entries begin, so a page shows only its own commands.
-  const starts = useRef<Record<number, number>>({ 0: 0 })
-  const lastLen = useRef(state.entries.length)
-  if (state.entries.length < lastLen.current) starts.current[state.stepIndex] = 0 // `clear` or a reset
-  if (starts.current[state.stepIndex] === undefined) starts.current[state.stepIndex] = lastLen.current
-  lastLen.current = state.entries.length
+  const starts = usePageStarts(state)
 
   const ok = page.kind === 'do' ? passed(state, page.step) : true
   // Whether this visit started with the step still to do (the terminal shows), or came Back to it done.
@@ -429,8 +484,7 @@ export function PageRun({
         <OptionsMenu
           onReset={() => {
             reset()
-            starts.current = { 0: 0 }
-            lastLen.current = 0
+            starts.reset()
             setLive({ page: 0, live: false })
             setIndex(0)
           }}
@@ -448,14 +502,8 @@ export function PageRun({
             <div className="pf-body">
               <div className="pf-left">
                 <Head page={page} headRef={headRef} />
-                <Visual page={page} state={state} done={page.kind === 'do' && ok} refused={page.kind === 'do' && !ok && refusedOverwrite(state, starts.current[page.step] ?? 0)} />
-                {page.kind === 'do' && !ok && page.visual.kind !== 'none' && failedLast(state, starts.current[page.step] ?? 0) && (
-                  <p className="sv-change sv-change-err" role="status">
-                    {refusedOverwrite(state, starts.current[page.step] ?? 0)
-                      ? 'Git refused: the changes in your Folder would be overwritten, so it stayed where it was.'
-                      : 'That command did not work, so nothing changed. The terminal says why.'}
-                  </p>
-                )}
+                <Visual page={page} state={state} done={page.kind === 'do' && ok} refused={page.kind === 'do' && !ok && refusedOverwrite(state, starts.from(page.step))} />
+                {page.kind === 'do' && !ok && page.visual.kind !== 'none' && <FailedNote state={state} from={starts.from(page.step)} />}
               </div>
               {page.kind === 'do' && (
                 <div className="pf-right">
@@ -466,7 +514,7 @@ export function PageRun({
                       page={page}
                       state={state}
                       liveAtStart={liveAtStart}
-                      entryStart={starts.current[page.step] ?? 0}
+                      entryStart={starts.from(page.step)}
                       run={run}
                       editorDone={editorDone}
                       saveFile={saveFile}

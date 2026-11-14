@@ -39,4 +39,22 @@ describe('place', () => {
       }
     }
   })
+
+  it('keeps "save what is chosen" clear of the "-m" connector on the commit page', () => {
+    // git commit -m "Add meeting notes": the first label is wider than its token and reaches past "-m".
+    const origin = { left: 0, width: 300 } as DOMRect
+    const tokens = [rect(10, 78), rect(96, 16), rect(120, 148)]
+    const labels = [105, 78, 66]
+    const placed = place(tokens, labels, origin)
+    for (const [i, p] of placed.entries()) {
+      for (const [j, q] of placed.entries()) {
+        if (i === j) continue
+        const w = labels[j]!
+        if (q.row < p.row) expect(p.x > q.left - 4 && p.x < q.left + w + 4, `connector ${i} runs through label ${j}`).toBe(false)
+        if (q.row === p.row) expect(p.left < q.left + w && q.left < p.left + labels[i]!, `labels ${i} and ${j} overlap`).toBe(false)
+      }
+    }
+    // Every connector still starts at its own token.
+    expect(placed.map((p) => p.x)).toEqual([49, 104, 194])
+  })
 })

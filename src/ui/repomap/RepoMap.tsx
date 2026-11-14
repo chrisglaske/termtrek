@@ -164,8 +164,14 @@ export function graphBox(repos: Repo[], gap?: number): GraphBox {
  * `stub={false}` leaves out the dashed spot where the next commit would go.
  */
 export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: Repo; gap?: number; box?: GraphBox; label?: string; ids?: boolean; stub?: boolean }): React.JSX.Element {
-  const { g, padX, box: own } = measure(repo, gap)
+  const measured = measure(repo, gap)
+  const { g } = measured
   if (g.nodes.length === 0) return <p className="repomap-empty">No commits yet</p>
+  // Without the dashed next-commit spot there is nothing to keep room for on the right,
+  // so the drawing gets the same margin on both sides and sits centred in its box.
+  const even = !stub && !box
+  const padX = even ? Math.max(measured.padX, ids ? ID_HALF + 4 : 0) : measured.padX
+  const own = even ? { ...measured.box, width: Math.max(0, ...g.nodes.map((n) => n.x)) + 2 * padX } : measured.box
   const nodeById = new Map(g.nodes.map((n) => [n.id, n]))
   const head = g.nodes.find((n) => n.isHead)
   const stubX = head ? head.x + (gap ?? DEFAULT_GAP) : 0

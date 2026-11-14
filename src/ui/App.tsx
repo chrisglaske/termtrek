@@ -7,14 +7,15 @@ import { LessonScreen } from './lesson/LessonScreen'
 import { Playground } from './playground/Playground'
 import { GuidesIndex } from './guides/GuidesIndex'
 import { GuidePage } from './guides/GuidePage'
+import { PhoneGate } from './phone/PhoneGate'
 
 export function AppRoutes(): React.JSX.Element {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/learn" element={<Home />} />
-      <Route path="/learn/:lessonId" element={<LessonScreen />} />
-      <Route path="/playground" element={<Playground />} />
+      <Route path="/learn" element={<PhoneGate><Home /></PhoneGate>} />
+      <Route path="/learn/:lessonId" element={<PhoneGate><LessonScreen /></PhoneGate>} />
+      <Route path="/playground" element={<PhoneGate><Playground /></PhoneGate>} />
       <Route path="/guides" element={<GuidesIndex />} />
       <Route path="/guides/:guideId" element={<GuidePage />} />
       <Route path="*" element={<NotFound />} />
