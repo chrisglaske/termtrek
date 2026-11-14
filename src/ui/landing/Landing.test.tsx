@@ -214,9 +214,9 @@ describe('Landing', () => {
     const course_ = document.getElementById('course') as HTMLElement
     const stats = courseStats()
     const row = within(course_).getByRole('list', { name: 'Course size' })
-    expect(row).toHaveTextContent(`${stats.lessons}lessons`)
-    expect(row).toHaveTextContent(`${formatHoursShort(stats.minutes)}at your own pace`)
-    expect(row).toHaveTextContent(`${stats.live}sections live, ${stats.later} coming`)
+    expect(row).toHaveTextContent(`${stats.lessons} lessons`)
+    expect(row).toHaveTextContent(`${formatHoursShort(stats.minutes)} at your own pace`)
+    expect(row).toHaveTextContent(`${stats.live} sections live, ${stats.later} coming`)
     for (const s of course.filter((x) => x.status === 'launch')) {
       const t = sectionStats(s)
       expect(within(course_).getByText(`${t.lessons} lessons · ${formatHours(t.minutes)}`)).toBeInTheDocument()
@@ -286,7 +286,12 @@ describe('Landing', () => {
   it('has a fuller footer with grouped links and a backup button', async () => {
     const { user } = open()
     const foot = screen.getByRole('contentinfo')
-    expect(foot).toHaveTextContent('A free, hands-on Git course that runs in your browser. No account, nothing tracked.')
+    expect(foot).toHaveTextContent('A free, hands-on Git course that runs in your browser. No account, no tracking cookies.')
+    for (const n of ['Learn', 'Project', 'About']) {
+      const nav = within(foot).getByRole('navigation', { name: n })
+      expect(nav).toHaveAttribute('aria-labelledby')
+      expect(nav).not.toHaveAttribute('aria-label')
+    }
     expect(foot).toHaveTextContent('© 2026 TermTrek · Free and open source')
     expect(within(foot).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['Learn', 'Project', 'About'])
     const link = (name: string) => within(foot).getByRole('link', { name })

@@ -120,6 +120,31 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+@media (max-width: 899px) {
+  .nav-inner,
+  .nav-menu {
+    gap: 12px;
+  }
+  .nav-inner {
+    padding: 0 14px;
+  }
+  .nav-wordmark {
+    font-size: 17px;
+  }
+  .nav-link {
+    font-size: 14px;
+    padding: 6px 2px;
+    white-space: nowrap;
+  }
+  .nav-gh {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  .nav-gh-label {
+    display: none;
+  }
+}
 @media (max-width: 599px) {
   .nav-menu-button {
     display: inline-block;

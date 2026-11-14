@@ -723,14 +723,14 @@ html {
   display: none;
 }
 .landing .faq summary::after {
-  content: '+';
+  content: '+' / '';
   color: var(--mute);
   font-weight: 400;
   font-size: 22px;
   line-height: 1;
 }
 .landing .faq details[open] summary::after {
-  content: '\2212';
+  content: '\2212' / '';
 }
 .landing .faq summary:focus-visible {
   outline: 2px solid var(--accent);

@@ -28,7 +28,7 @@ export interface PreviewFrame {
 
 /** The real first-commit page the preview is drawn from: "Choose the file". */
 export const STAGE_PAGE = firstCommit.pages!.find((p): p is DoPage => p.kind === 'do' && p.id === 'stage')!
-export const STAGE_COMMAND = STAGE_PAGE.command.map((p) => p.text).join(' ')
+const STAGE_COMMAND = STAGE_PAGE.command.map((p) => p.text).join(' ')
 const SLIP = 'status'
 
 function ran(world: World, line: string): { world: World; entry: TermEntry } {

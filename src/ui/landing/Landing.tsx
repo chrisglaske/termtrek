@@ -104,15 +104,15 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <h2 id="course-title" className="h2">From your first commit to your first merged pull request.</h2>
             <p className="sub">Go in order or jump to what you need. Every lesson is open, and your progress is saved in your browser.</p>
-            <ul className="stats" aria-label="Course size">
+            <ul className="stats" role="list" aria-label="Course size">
               <li>
-                <b>{stats.lessons}</b>lessons
+                <b>{stats.lessons}</b>{' '}lessons
               </li>
               <li>
-                <b>{formatHoursShort(stats.minutes)}</b>at your own pace
+                <b>{formatHoursShort(stats.minutes)}</b>{' '}at your own pace
               </li>
               <li>
-                <b>{stats.live}</b>sections live, {stats.later} coming
+                <b>{stats.live}</b>{' '}sections live, {stats.later} coming
               </li>
             </ul>
             <CourseRail />
@@ -181,22 +181,22 @@ export function Landing(): React.JSX.Element {
                 <Logo size={24} />
                 TermTrek
               </span>
-              <p>A free, hands-on Git course that runs in your browser. No account, nothing tracked.</p>
+              <p>A free, hands-on Git course that runs in your browser. No account, no tracking cookies.</p>
             </div>
-            <nav aria-label="Learn">
-              <h2>Learn</h2>
+            <nav aria-labelledby="foot-learn">
+              <h2 id="foot-learn">Learn</h2>
               <a href="#course">Course</a>
               <Link to="/playground">Playground</Link>
               <Link to="/guides">Guides</Link>
             </nav>
-            <nav aria-label="Project">
-              <h2>Project</h2>
+            <nav aria-labelledby="foot-project">
+              <h2 id="foot-project">Project</h2>
               <a href={SOURCE_URL}>Source on GitHub</a>
               <a href={ISSUES_URL}>Report a problem</a>
               <a href={ISSUES_URL}>Suggest a lesson</a>
             </nav>
-            <nav aria-label="About">
-              <h2>About</h2>
+            <nav aria-labelledby="foot-about">
+              <h2 id="foot-about">About</h2>
               <a href="#privacy">Privacy</a>
               <a href={`${SOURCE_URL}/blob/main/LICENSE`}>License (AGPL-3.0)</a>
               <button ref={backupButton} type="button" onClick={() => setBackup(true)}>
