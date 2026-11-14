@@ -7,6 +7,7 @@ import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { HeroDemo } from './HeroDemo'
 import { CourseRail } from './CourseRail'
 import { HowItWorks } from './LessonPreview'
+import { courseStats, formatHoursShort } from '../../lessons/courseStats'
 import '../buttons.css'
 import './Landing.css'
 
@@ -23,6 +24,7 @@ function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
 export function Landing(): React.JSX.Element {
   useDocumentTitle('TermTrek: learn Git by using it')
   const { hash } = useLocation()
+  const stats = courseStats()
 
   // Links such as "Back to course" arrive as /#course: scroll there once the page is drawn.
   useEffect(() => {
@@ -98,6 +100,17 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <h2 id="course-title" className="h2">From your first commit to your first merged pull request.</h2>
             <p className="sub">Go in order or jump to what you need. Every lesson is open, and your progress is saved in your browser.</p>
+            <ul className="stats" aria-label="Course size">
+              <li>
+                <b>{stats.lessons}</b>lessons
+              </li>
+              <li>
+                <b>{formatHoursShort(stats.minutes)}</b>at your own pace
+              </li>
+              <li>
+                <b>{stats.live}</b>sections live, {stats.later} coming
+              </li>
+            </ul>
             <CourseRail />
             <div className="guides">
               <span className="gicon" aria-hidden="true">

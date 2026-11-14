@@ -7,6 +7,7 @@ import { TOUR_SETUP, demoSuggestions, tourFrames } from './HeroDemo'
 import { createWorld } from '../../engine/world'
 import { runLine } from '../../engine/interpreter'
 import { course } from '../../lessons/course'
+import { courseStats, formatHours, formatHoursShort, sectionStats } from '../../lessons/courseStats'
 
 function open(path = '/') {
   const user = userEvent.setup()
@@ -202,6 +203,20 @@ describe('Landing', () => {
     expect(within(rail as HTMLElement).getAllByText('Available now').length).toBe(course.filter((s) => s.status === 'launch').length)
     expect(within(rail as HTMLElement).getAllByText('Coming next').length).toBe(course.filter((s) => s.status === 'later').length)
     expect(within(rail as HTMLElement).getByText('git reflog')).toBeInTheDocument()
+  })
+
+  it('shows the real course size from the lesson data', () => {
+    open()
+    const course_ = document.getElementById('course') as HTMLElement
+    const stats = courseStats()
+    const row = within(course_).getByRole('list', { name: 'Course size' })
+    expect(row).toHaveTextContent(`${stats.lessons}lessons`)
+    expect(row).toHaveTextContent(`${formatHoursShort(stats.minutes)}at your own pace`)
+    expect(row).toHaveTextContent(`${stats.live}sections live, ${stats.later} coming`)
+    for (const s of course.filter((x) => x.status === 'launch')) {
+      const t = sectionStats(s)
+      expect(within(course_).getByText(`${t.lessons} lessons · ${formatHours(t.minutes)}`)).toBeInTheDocument()
+    }
   })
 
   it('scrolls to the course when opened at /#course', () => {

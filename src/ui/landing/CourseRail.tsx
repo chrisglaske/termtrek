@@ -1,4 +1,5 @@
 import { course } from '../../lessons/course'
+import { formatHours, sectionStats } from '../../lessons/courseStats'
 import { CommandPill } from '../CommandPill'
 
 /** The course outline: a numbered rail for sections at launch, then hollow stops for what's next. */
@@ -11,6 +12,7 @@ export function CourseRail(): React.JSX.Element {
         const prev = course[i - 1]
         const next = course[i + 1]
         if (!later) n += 1
+        const size = sectionStats(s)
         return (
           <li key={s.id} className={`sec${later ? ' later' : ''}`}>
             <span className="sec-rail" aria-hidden="true">
@@ -21,6 +23,11 @@ export function CourseRail(): React.JSX.Element {
             <div>
               <h3>{s.title}</h3>
               <p>{s.summary}</p>
+              {!later && (
+                <div className="meta">
+                  {size.lessons} lessons · {formatHours(size.minutes)}
+                </div>
+              )}
               {s.commands.length > 0 && (
                 <div className="cmds">
                   {s.commands.map((c) => (

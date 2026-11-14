@@ -664,6 +664,36 @@ html {
   color: var(--warn-ink);
 }
 
+/* course size */
+.landing .stats {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  margin: 32px 0 0;
+  padding: 0;
+}
+.landing .stats li {
+  font-size: 14.5px;
+  color: var(--ink2);
+}
+.landing .stats b {
+  display: block;
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.landing .sec .meta {
+  margin-top: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--mute);
+}
+.landing .stats + .track {
+  margin-top: 28px;
+}
+
 /* privacy band */
 .landing .priv {
   background: var(--band);
