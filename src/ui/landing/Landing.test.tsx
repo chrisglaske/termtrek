@@ -27,6 +27,44 @@ const input = () => screen.getByRole('textbox', { name: 'Terminal input' })
 describe('Landing', () => {
   beforeEach(() => localStorage.clear())
 
+  it('points below the hero to the rest of the page', () => {
+    open()
+    const more = screen.getByRole('link', { name: "Scroll for more" })
+    expect(more).toHaveAttribute('href', '#who')
+    expect(document.getElementById('who')).toBeInTheDocument()
+  })
+
+  it('on a phone, shows a page to read with a way to send it to a computer, and no live lesson', async () => {
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('max-width: 560px'),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia
+    try {
+      const { container } = open()
+      expect(screen.queryByRole('textbox', { name: 'Terminal input' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Scroll for more' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Start the course' })).not.toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Made for your computer' })).toBeInTheDocument()
+      expect(screen.getAllByRole('button', { name: 'Send to my computer' })).toHaveLength(2)
+      expect(screen.getByRole('heading', { name: "Ready when you're at your computer." })).toBeInTheDocument()
+      // The four lesson steps as a plain list, without the playing lesson.
+      expect(screen.getByText('Get unstuck fast')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Understand the idea/ })).not.toBeInTheDocument()
+      expect(await axe(container)).toHaveNoViolations()
+    } finally {
+      delete (window as { matchMedia?: unknown }).matchMedia
+    }
+  })
+
+  it('hides the "more below" pointer once the visitor types in the hero', () => {
+    open()
+    const more = screen.getByRole('link', { name: "Scroll for more" })
+    fireEvent.input(input(), { target: { value: 'g' } })
+    expect(more).toHaveClass('more-off')
+  })
+
   it('shows the hero heading, keeps the brand line in the lede, and keeps the promises', () => {
     const { container } = open()
     expect(screen.getByRole('heading', { level: 1, name: 'See what Git is doing.' })).toBeInTheDocument()

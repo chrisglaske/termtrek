@@ -32,7 +32,7 @@ const RIGHT: Item[] = [
   },
   {
     q: 'Can I use it on my phone?',
-    a: 'Yes, every lesson works on a phone. Typing commands is easier with a keyboard, so a laptop is nicer for longer sessions.',
+    a: 'You can read about it on your phone, but the course is made for a computer: you type real commands and watch a picture change beside them. Send yourself the link and start on your laptop or desktop.',
   },
 ]
 

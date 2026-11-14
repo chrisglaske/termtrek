@@ -147,3 +147,60 @@
     opacity: 0;
   }
 }
+
+/* The "Try it" cue: a pill right above the terminal and a glowing input, until the visitor types their first key. */
+.hl-wrap {
+  position: relative;
+  min-width: 0;
+}
+/* The cue's slot keeps its height after the cue goes, so the card never changes height. */
+.hl-cue-slot {
+  display: flex;
+  align-items: flex-end;
+  height: 26px;
+  margin-bottom: 6px;
+}
+.hl-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.hl-cue-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.hl .term-input {
+  caret-color: var(--accent);
+}
+.hl-wrap:not(.hl-used) .hl .pf-term .term {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hl-cue-dot {
+    animation: hl-blink 1.1s steps(1, end) infinite;
+  }
+  .hl-wrap:not(.hl-used) .hl .pf-term .term {
+    animation: hl-glow 2.4s ease-in-out infinite;
+  }
+}
+@keyframes hl-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes hl-glow {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+}

@@ -56,6 +56,13 @@ describe('HeroLesson', () => {
     expect(document.querySelector('section[aria-label="Folder"]')).toHaveTextContent('notes.txt')
   })
 
+  it('shows a "Try it" cue until the first key is typed', () => {
+    open()
+    expect(screen.getByText('Try it: type below')).toBeInTheDocument()
+    fireEvent.input(input(), { target: { value: 'g' } })
+    expect(screen.queryByText('Try it: type below')).not.toBeInTheDocument()
+  })
+
   it('focuses the terminal on a mouse or trackpad, without scrolling', () => {
     const spy = vi.spyOn(HTMLElement.prototype, 'focus')
     open()

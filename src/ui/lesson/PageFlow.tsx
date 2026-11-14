@@ -174,6 +174,7 @@ export function DoBody({
   helpers = true,
   placeholder,
   outcome,
+  beforeTerm,
 }: {
   page: DoPage
   state: RunnerState
@@ -194,6 +195,8 @@ export function DoBody({
    * When given, the page's own report and done lines are left to it. Lessons leave it out.
    */
   outcome?: React.ReactNode
+  /** Drawn just above the terminal, inside its box (the landing hero's "Try it" cue). Lessons leave it out. */
+  beforeTerm?: React.ReactNode
 }): React.JSX.Element {
   const ok = passed(state, page.step)
   // Only a file opened (with `code`) on this page shows its editor here.
@@ -235,6 +238,7 @@ export function DoBody({
       )}
       {liveAtStart && (
         <div className="pf-term" ref={termRef}>
+          {beforeTerm}
           <Terminal
             entries={pageEntries(state.entries, entryStart)}
             cwdLabel={displayPath(world, world.cwd)}

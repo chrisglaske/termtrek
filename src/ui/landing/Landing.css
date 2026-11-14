@@ -29,6 +29,50 @@ html {
 }
 
 /* hero */
+.landing .more {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.25s ease, visibility 0s linear 0s;
+}
+.landing .more-off {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.landing .more:hover {
+  color: var(--accent);
+}
+.landing .more:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landing .more-i {
+    animation: more-bob 1.6s ease-in-out infinite;
+  }
+}
+@keyframes more-bob {
+  50% {
+    transform: translateY(5px);
+    opacity: 0.55;
+  }
+}
 .landing .hero {
   padding: 76px 0 96px;
   background: var(--glow), var(--bg);
@@ -566,5 +610,91 @@ html {
   }
   .landing .sec > .when {
     justify-self: start;
+  }
+}
+
+/* Phones: the "Made for your computer" card in place of the course buttons, and the steps as a plain list. */
+.landing .pc {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--raised);
+}
+.landing .pc-h {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.landing .pc-i {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent-t);
+  color: var(--accent-ink);
+}
+.landing .pc-t {
+  margin: 0 0 3px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.landing .pc p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.landing .pc .pc-fine {
+  margin-top: -4px;
+  font-size: 12.5px;
+  color: var(--mute);
+  text-align: center;
+}
+.landing .end-send {
+  max-width: 360px;
+  margin: 0 auto;
+}
+.landing .how-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.landing .how-list li {
+  display: flex;
+  gap: 12px;
+}
+.landing .how-list .lp-n {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+.landing .how-list .lp-st {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 3px;
+}
+@media (max-width: 560px) {
+  .landing .hero h1 {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+  .landing .hero {
+    padding: 28px 0 40px;
+  }
+  .landing .lede {
+    font-size: 17px;
+    margin-bottom: 20px;
   }
 }

@@ -36,6 +36,8 @@ const focusIsFree = (root: HTMLElement | null): boolean => {
 export function HeroLesson(): React.JSX.Element {
   const [state, dispatch] = useReducer(runnerReducer, firstCommit, initRunner)
   const [round, setRound] = useState(0)
+  // The "Try it" cue shows until the visitor types their first key.
+  const [used, setUsed] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const startRef = useRef<HTMLAnchorElement>(null)
   const page = MOVES[Math.min(state.stepIndex, MOVES.length - 1)]!
@@ -88,67 +90,79 @@ export function HeroLesson(): React.JSX.Element {
   }
 
   return (
-    <div className="lp-prev hl" role="group" aria-label="Try the first lesson" ref={rootRef}>
-      <div className="lp-top">
-        <span className="lp-crs" aria-hidden="true">
-          <svg width="13" height="13" viewBox="0 0 24 24" focusable="false">
-            <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
-          <span className="lp-crs-t">Course</span>
-        </span>
-        <span className="lp-name">{firstCommit.title}</span>
-        <span className="pf-dots" aria-hidden="true">
-          {pages.map((p, i) => {
-            const at = pages.indexOf(page)
-            return <i key={p.id} className={i < at ? 'd' : i === at ? 'c' : undefined} />
-          })}
-        </span>
-      </div>
-      <div className="lp-body lp-live">
-        <div className="lp-page" key={`${page.id}-${round}`}>
-          <div className="lp-left">
-            <Head page={page} />
-            {v && <StageVisual world={state.world} show={v.show} hot={v.hot} advance={ok} compact last={state.ran.at(-1)} />}
-            {!ok && <FailedNote state={state} from={from} />}
-          </div>
-          <div className="lp-right">
-            <DoBody
-              page={page}
-              state={state}
-              liveAtStart
-              entryStart={from}
-              run={run}
-              editorDone={(text) => dispatch({ type: 'editor-done', text })}
-              saveFile={noop}
-              closeFile={noop}
-              doneAt={1}
-              autoFocus={false}
-              helpers={false}
-              placeholder="Type the command here"
-              outcome={
-                <div className="hl-out">
-                  <div className="pf-good">
-                    <span className="pf-good-i" aria-hidden="true">
-                      ✓
-                    </span>
-                    <span>
-                      <RichText text={said} />
-                    </span>
+    <div className={used ? 'hl-wrap hl-used' : 'hl-wrap'} onInput={used ? undefined : () => setUsed(true)}>
+      <div className="lp-prev hl" role="group" aria-label="Try the first lesson" ref={rootRef}>
+        <div className="lp-top">
+          <span className="lp-crs" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 24 24" focusable="false">
+              <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+            <span className="lp-crs-t">Course</span>
+          </span>
+          <span className="lp-name">{firstCommit.title}</span>
+          <span className="pf-dots" aria-hidden="true">
+            {pages.map((p, i) => {
+              const at = pages.indexOf(page)
+              return <i key={p.id} className={i < at ? 'd' : i === at ? 'c' : undefined} />
+            })}
+          </span>
+        </div>
+        <div className="lp-body lp-live">
+          <div className="lp-page" key={`${page.id}-${round}`}>
+            <div className="lp-left">
+              <Head page={page} />
+              {v && <StageVisual world={state.world} show={v.show} hot={v.hot} advance={ok} compact last={state.ran.at(-1)} />}
+              {!ok && <FailedNote state={state} from={from} />}
+            </div>
+            <div className="lp-right">
+              <DoBody
+                page={page}
+                state={state}
+                liveAtStart
+                entryStart={from}
+                run={run}
+                editorDone={(text) => dispatch({ type: 'editor-done', text })}
+                saveFile={noop}
+                closeFile={noop}
+                doneAt={1}
+                autoFocus={false}
+                helpers={false}
+                placeholder="Type the command here"
+                beforeTerm={
+                  <div className="hl-cue-slot" aria-hidden="true">
+                    {!used && (
+                      <span className="hl-cue">
+                        <i className="hl-cue-dot" />
+                        Try it: type below
+                      </span>
+                    )}
                   </div>
-                  {finished && (
-                    <div className="hl-end">
-                      <p className="hl-end-t">You just made your first commit.</p>
-                      <Link className="btn btn-p" to="/learn" ref={startRef}>
-                        Start the course
-                      </Link>
-                      <button type="button" className="btn btn-s" onClick={again}>
-                        Try again
-                      </button>
+                }
+                outcome={
+                  <div className="hl-out">
+                    <div className="pf-good">
+                      <span className="pf-good-i" aria-hidden="true">
+                        ✓
+                      </span>
+                      <span>
+                        <RichText text={said} />
+                      </span>
                     </div>
-                  )}
-                </div>
-              }
-            />
+                    {finished && (
+                      <div className="hl-end">
+                        <p className="hl-end-t">You just made your first commit.</p>
+                        <Link className="btn btn-p" to="/learn" ref={startRef}>
+                          Start the course
+                        </Link>
+                        <button type="button" className="btn btn-s" onClick={again}>
+                          Try again
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

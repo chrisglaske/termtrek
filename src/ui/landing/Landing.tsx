@@ -8,7 +8,9 @@ import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { HeroLesson } from './HeroLesson'
 import { CourseRail } from './CourseRail'
 import { Faq } from './Faq'
-import { HowItWorks } from './LessonPreview'
+import { HowItWorks, HowSteps } from './LessonPreview'
+import { SendToComputer } from '../phone/SendToComputer'
+import { usePhone } from '../phone/usePhone'
 import { courseStats, formatHoursShort } from '../../lessons/courseStats'
 import '../buttons.css'
 import './Landing.css'
@@ -27,8 +29,36 @@ export function Landing(): React.JSX.Element {
   useDocumentTitle('TermTrek: learn Git by using it')
   const { hash } = useLocation()
   const stats = courseStats()
+  // Phones get a shorter page to read: no live lesson, and a way to send the site to a computer.
+  const phone = usePhone()
+  const home = () => `${window.location.origin}/`
   const [backup, setBackup] = useState(false)
   const backupButton = useRef<HTMLButtonElement>(null)
+  // "Scroll for more" is pinned to the bottom-right corner while the page sits at the top and the
+  // next section is still out of sight, at every screen height. It fades out once the visitor scrolls,
+  // or starts typing in the hero, where on a short screen it would cover the terminal's output.
+  const [more, setMore] = useState(true)
+  useEffect(() => {
+    let typed = false
+    const check = () => {
+      const who = document.getElementById('who')
+      setMore(!typed && window.scrollY < 40 && (!who || who.getBoundingClientRect().top > window.innerHeight * 0.8))
+    }
+    const onInput = (e: Event) => {
+      if (!(e.target instanceof Element) || !e.target.closest('.hl-wrap')) return
+      typed = true
+      check()
+    }
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check)
+    document.addEventListener('input', onInput)
+    return () => {
+      window.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+      document.removeEventListener('input', onInput)
+    }
+  }, [])
 
   // Links such as "Back to course" arrive as /#course: scroll there once the page is drawn.
   useEffect(() => {
@@ -56,25 +86,64 @@ export function Landing(): React.JSX.Element {
               <p className="lede">
                 <strong>Learn Git by using it.</strong> Type real commands and see exactly what each one does to your files. A free, hands-on course in your browser, from your first commit to your first merged pull request.
               </p>
-              <div className="ctas">
-                <Link className="btn btn-p" to="/learn">
-                  Start the course
-                </Link>
-                <a className="btn btn-s" href="#course">
-                  See what you'll learn
-                </a>
-              </div>
+              {phone ? (
+                <div className="pc">
+                  <div className="pc-h">
+                    <span className="pc-i" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
+                        <rect x="3" y="4" width="18" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+                        <path d="M2 20h20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <div>
+                      <h2 className="pc-t">Made for your computer</h2>
+                      <p>You type real commands and watch a picture change, so you'll want a keyboard and a bigger screen. Send yourself the link and start there.</p>
+                    </div>
+                  </div>
+                  <SendToComputer url={home} />
+                  <p className="pc-fine">Opens your phone's share menu. Nothing is sent to us.</p>
+                </div>
+              ) : (
+                <div className="ctas">
+                  <Link className="btn btn-p" to="/learn">
+                    Start the course
+                  </Link>
+                  <a className="btn btn-s" href="#course">
+                    See what you'll learn
+                  </a>
+                </div>
+              )}
               <ul className="promise">
                 <li><Tick />No account, no install, free forever</li>
                 <li><Tick />Your progress never leaves your device</li>
                 <li><Tick />Open source</li>
               </ul>
             </div>
-            <HeroLesson />
+            {!phone && <HeroLesson />}
           </div>
+          {!phone && (
+            <a
+              className={more ? 'more' : 'more more-off'}
+              href="#who"
+              tabIndex={more ? undefined : -1}
+              onClick={(e) => {
+                // Scroll smoothly to the next section instead of jumping, and leave the address as it is.
+                const who = document.getElementById('who')
+                if (!who || typeof who.scrollIntoView !== 'function') return
+                e.preventDefault()
+                const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+                who.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' })
+              }}
+            >
+              Scroll for more
+              <svg className="more-i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          )}
         </section>
 
-        <section className="who" aria-labelledby="who-title">
+        <section className="who" id="who" aria-labelledby="who-title">
           <h2 id="who-title" className="sr-only">Who it's for</h2>
           <div className="wrap">
             <div>
@@ -96,7 +165,7 @@ export function Landing(): React.JSX.Element {
           <div className="wrap">
             <h2 id="how-title" className="h2">Short lessons that end with you doing the thing.</h2>
             <p className="sub">Each lesson takes a few minutes and works the same way, so you always know what to expect.</p>
-            <HowItWorks />
+            {phone ? <HowSteps /> : <HowItWorks />}
           </div>
         </section>
 
@@ -164,11 +233,19 @@ export function Landing(): React.JSX.Element {
 
         <section className="end" aria-labelledby="end-title">
           <div className="wrap">
-            <h2 id="end-title" className="h2">Your next commit could be your first.</h2>
+            <h2 id="end-title" className="h2">
+              {phone ? "Ready when you're at your computer." : 'Your next commit could be your first.'}
+            </h2>
             <p className="sub">The first lesson takes about five minutes.</p>
-            <Link className="btn btn-p" to="/learn">
-              Start the course
-            </Link>
+            {phone ? (
+              <div className="end-send">
+                <SendToComputer url={home} />
+              </div>
+            ) : (
+              <Link className="btn btn-p" to="/learn">
+                Start the course
+              </Link>
+            )}
           </div>
         </section>
       </main>

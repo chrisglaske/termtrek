@@ -114,6 +114,25 @@ const STEPS: { title: string; text: React.ReactNode }[] = [
   },
 ]
 
+/** The four steps as a plain list, for phones, where the playing lesson beside them does not fit. */
+export function HowSteps(): React.JSX.Element {
+  return (
+    <ol className="how-list">
+      {STEPS.map((s, i) => (
+        <li key={s.title}>
+          <span className="lp-n" aria-hidden="true">
+            {i + 1}
+          </span>
+          <span className="lp-st">
+            <span className="lp-h">{s.title}</span>
+            <span className="lp-d">{s.text}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 function useHidden(): boolean {
   const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.hidden)
   useEffect(() => {
