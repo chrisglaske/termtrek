@@ -6,6 +6,7 @@ import { SOURCE_URL } from '../layout/links'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { HeroDemo } from './HeroDemo'
 import { CourseRail } from './CourseRail'
+import { Faq } from './Faq'
 import { HowItWorks } from './LessonPreview'
 import { courseStats, formatHoursShort } from '../../lessons/courseStats'
 import '../buttons.css'
@@ -129,11 +130,13 @@ export function Landing(): React.JSX.Element {
           </div>
         </section>
 
+        <Faq />
+
         <section className="priv" id="privacy" aria-labelledby="privacy-title">
           <div className="wrap">
             <div>
-              <h2 id="privacy-title" className="h2">Learn in private. We couldn't watch if we wanted to.</h2>
-              <p className="sub">TermTrek has no server and no sign-in. Your lessons run entirely in your browser, and the code is public so anyone can check.</p>
+              <h2 id="privacy-title" className="h2">Learn in private.</h2>
+              <p className="sub">No sign-in and no account. Your lessons run entirely in your browser, and all we see is an anonymous count of page visits. The code is public, so anyone can check.</p>
             </div>
             <dl>
               <div>

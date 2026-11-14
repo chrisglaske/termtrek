@@ -694,6 +694,64 @@ html {
   margin-top: 28px;
 }
 
+/* faq */
+.landing .faq-sec {
+  padding-bottom: 90px;
+}
+.landing .faq {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 40px;
+  align-items: start;
+}
+.landing .faq details {
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+}
+.landing .faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 17px;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 6px;
+}
+.landing .faq summary::-webkit-details-marker {
+  display: none;
+}
+.landing .faq summary::after {
+  content: '+';
+  color: var(--mute);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1;
+}
+.landing .faq details[open] summary::after {
+  content: '\2212';
+}
+.landing .faq summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.landing .faq details p {
+  margin: 10px 0 0;
+  color: var(--ink2);
+  font-size: 15.5px;
+  max-width: 34em;
+}
+.landing .faq details p a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+}
+@media (max-width: 860px) {
+  .landing .faq {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* privacy band */
 .landing .priv {
   background: var(--band);

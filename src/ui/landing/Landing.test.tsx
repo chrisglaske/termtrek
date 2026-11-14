@@ -236,11 +236,40 @@ describe('Landing', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'See what Git is doing.' })).toBeInTheDocument()
   })
 
+  it('answers six questions in a short FAQ, the first of each column open', () => {
+    open()
+    expect(screen.getByRole('heading', { name: 'Questions people ask first.' })).toBeInTheDocument()
+    const faq = document.getElementById('faq') as HTMLElement
+    const details = Array.from(faq.querySelectorAll('details'))
+    expect(details.map((d) => d.querySelector('summary')?.textContent)).toEqual([
+      'Is it really free?',
+      'Do I need to install anything?',
+      "What's the difference between Git and GitHub?",
+      'Are these real Git commands?',
+      'I use an AI assistant to code. Is this for me?',
+      'Can I use it on my phone?',
+    ])
+    expect(details.map((d) => d.open)).toEqual([true, false, false, true, false, false])
+    expect(within(faq).getByRole('link', { name: 'the guides' })).toHaveAttribute('href', '/guides')
+    const course_ = document.getElementById('course') as HTMLElement
+    const privacy = document.getElementById('privacy') as HTMLElement
+    expect(course_.compareDocumentPosition(faq) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(faq.compareDocumentPosition(privacy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('says privacy honestly: no sign-in, anonymous visit counts', () => {
+    open()
+    const priv = document.getElementById('privacy') as HTMLElement
+    expect(within(priv).getByRole('heading', { name: 'Learn in private.' })).toBeInTheDocument()
+    expect(priv.textContent).toContain('No sign-in and no account. Your lessons run entirely in your browser, and all we see is an anonymous count of page visits. The code is public, so anyone can check.')
+    expect(priv.textContent).not.toContain("couldn't watch")
+    expect(priv.textContent).not.toContain('no server')
+  })
+
   it('uses the updated privacy copy', () => {
     open()
     expect(screen.getByText('No tracking cookies')).toBeInTheDocument()
     expect(screen.getByText(/anonymous page-visit counts/)).toBeInTheDocument()
-    expect(screen.getByText(/TermTrek has no server and no sign-in\. Your lessons run entirely in your browser/)).toBeInTheDocument()
   })
 
   it('shows how lessons work with a live preview of a real lesson page', () => {
