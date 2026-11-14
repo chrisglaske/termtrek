@@ -1,4 +1,5 @@
 import { Fragment, useLayoutEffect, useRef } from 'react'
+import { restingPos } from './flip'
 import { diffStage, snapStage } from './stageChange'
 import type { StageChange, StageSnap } from './stageChange'
 import type { World } from '../../engine/types'
@@ -64,7 +65,7 @@ export function StageVisual({
   compact?: boolean
 }): React.JSX.Element {
   const rootRef = useRef<HTMLDivElement>(null)
-  const rects = useRef(new Map<string, DOMRect>())
+  const rects = useRef(new Map<string, { left: number; top: number; box?: string }>())
   const seen = useRef<{
     key: string
     snap: StageSnap
@@ -174,19 +175,23 @@ export function StageVisual({
 
   if (refused) tagItems('folder', (p) => (p in snap.changed ? 'would be overwritten' : undefined))
 
-  // FLIP: remember where every chip was, and slide any that moved (or just arrived from a staged file).
+  // FLIP: remember where every chip was, and slide one only when it changed box (or a new snapshot arrived
+  // from a staged file). A chip whose box merely grew or shifted stays put, and positions are kept relative
+  // to the picture, so scrolling the page never reads as a move.
   useLayoutEffect(() => {
     const root = rootRef.current
     if (!root) return
     const still = reducedMotion()
-    const now = new Map<string, DOMRect>()
+    const base = root.getBoundingClientRect()
+    const now = new Map<string, { left: number; top: number; box?: string }>()
     root.querySelectorAll<HTMLElement>('[data-fly]').forEach((el) => {
-      const r = el.getBoundingClientRect()
+      const r = { ...restingPos(el, base), box: el.dataset.box }
       const key = el.dataset.fly!
       now.set(key, r)
       if (el.closest('.sv-staged') && !now.has(STAGED_ANY)) now.set(STAGED_ANY, r)
-      const from = rects.current.get(key) ?? (el.dataset.from ? rects.current.get(el.dataset.from) : undefined)
-      if (!from || still || typeof el.animate !== 'function') return
+      const same = rects.current.get(key)
+      const from = same ?? (el.dataset.from ? rects.current.get(el.dataset.from) : undefined)
+      if (!from || (same && same.box === r.box) || still || typeof el.animate !== 'function') return
       const dx = from.left - r.left
       const dy = from.top - r.top
       if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return
@@ -237,6 +242,7 @@ export function StageVisual({
                           key={it.key}
                           data-fly={it.key}
                           data-from={it.from}
+                          data-box={b.key}
                           className={b.key === 'saved' ? 'sv-snap' : it.ghost ? 'sv-file sv-ghost' : refused && b.key === 'folder' && it.tag ? 'sv-file sv-refused' : 'sv-file'}
                         >
                           {b.key !== 'saved' && <i aria-hidden="true" />}
