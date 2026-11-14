@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
+import { ProgressProvider } from '../../progress/ProgressContext'
+import { ISSUES_URL, SOURCE_URL } from '../layout/links'
 import { axe } from 'vitest-axe'
 import { Landing } from './Landing'
 import { TOUR_SETUP, demoSuggestions, tourFrames } from './HeroDemo'
@@ -13,7 +15,9 @@ function open(path = '/') {
   const user = userEvent.setup()
   const utils = render(
     <MemoryRouter initialEntries={[path]}>
-      <Landing />
+      <ProgressProvider>
+        <Landing />
+      </ProgressProvider>
     </MemoryRouter>,
   )
   return { user, ...utils }
@@ -95,7 +99,7 @@ describe('Landing', () => {
   it('links the guides band to /guides and the footer to /playground', () => {
     open()
     expect(screen.getByRole('link', { name: 'See the guides' })).toHaveAttribute('href', '/guides')
-    const footer = screen.getByRole('navigation', { name: 'Footer' })
+    const footer = screen.getByRole('contentinfo')
     expect(within(footer).getByRole('link', { name: 'Playground' })).toHaveAttribute('href', '/playground')
   })
 
@@ -190,7 +194,7 @@ describe('Landing', () => {
     expect(starts.length).toBeGreaterThan(0)
     for (const a of starts) expect(a).toHaveAttribute('href', '/learn')
     expect(screen.getByRole('link', { name: "See what you'll learn" })).toHaveAttribute('href', '#course')
-    expect(screen.getByRole('link', { name: 'Source code' })).toHaveAttribute('href', 'https://github.com/chrisglaske/devcore')
+    expect(screen.getAllByRole('link', { name: 'Source on GitHub' })[0]).toHaveAttribute('href', 'https://github.com/chrisglaske/devcore')
   })
 
   it('renders the course rail from the course data', () => {
@@ -277,6 +281,29 @@ describe('Landing', () => {
     const how = document.getElementById('how') as HTMLElement
     expect(within(how).getByRole('img', { name: /^A TermTrek lesson: you type git add notes\.txt/ })).toHaveTextContent('Choose the file')
     expect(within(how).getAllByRole('button', { pressed: true })).toHaveLength(1)
+  })
+
+  it('has a fuller footer with grouped links and a backup button', async () => {
+    const { user } = open()
+    const foot = screen.getByRole('contentinfo')
+    expect(foot).toHaveTextContent('A free, hands-on Git course that runs in your browser. No account, nothing tracked.')
+    expect(foot).toHaveTextContent('© 2026 TermTrek · Free and open source')
+    expect(within(foot).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['Learn', 'Project', 'About'])
+    const link = (name: string) => within(foot).getByRole('link', { name })
+    expect(link('Course')).toHaveAttribute('href', '#course')
+    expect(link('Playground')).toHaveAttribute('href', '/playground')
+    expect(link('Guides')).toHaveAttribute('href', '/guides')
+    expect(link('Source on GitHub')).toHaveAttribute('href', SOURCE_URL)
+    expect(link('Report a problem')).toHaveAttribute('href', ISSUES_URL)
+    expect(link('Suggest a lesson')).toHaveAttribute('href', ISSUES_URL)
+    expect(link('Privacy')).toHaveAttribute('href', '#privacy')
+    expect(link('License (AGPL-3.0)')).toHaveAttribute('href', `${SOURCE_URL}/blob/main/LICENSE`)
+    const backup = within(foot).getByRole('button', { name: 'Back up progress' })
+    await user.click(backup)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(backup).toHaveFocus()
   })
 
   it('has no axe violations', async () => {

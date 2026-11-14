@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Nav } from '../layout/Nav'
 import { Logo } from '../layout/Logo'
-import { SOURCE_URL } from '../layout/links'
+import { ISSUES_URL, SOURCE_URL } from '../layout/links'
+import { BackupDialog } from '../BackupDialog'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { HeroDemo } from './HeroDemo'
 import { CourseRail } from './CourseRail'
@@ -26,6 +27,8 @@ export function Landing(): React.JSX.Element {
   useDocumentTitle('TermTrek: learn Git by using it')
   const { hash } = useLocation()
   const stats = courseStats()
+  const [backup, setBackup] = useState(false)
+  const backupButton = useRef<HTMLButtonElement>(null)
 
   // Links such as "Back to course" arrive as /#course: scroll there once the page is drawn.
   useEffect(() => {
@@ -172,19 +175,42 @@ export function Landing(): React.JSX.Element {
 
       <footer className="landing-foot">
         <div className="wrap">
-          <span className="foot-logo">
-            <Logo size={24} />
-            TermTrek
-          </span>
-          <span>Free and open source under AGPL-3.0</span>
-          <nav aria-label="Footer">
-            <a href="#course">Course</a>
-            <Link to="/playground">Playground</Link>
-            <a href="#privacy">Privacy</a>
-            <a href={SOURCE_URL}>Source code</a>
-          </nav>
+          <div className="fg">
+            <div>
+              <span className="foot-logo">
+                <Logo size={24} />
+                TermTrek
+              </span>
+              <p>A free, hands-on Git course that runs in your browser. No account, nothing tracked.</p>
+            </div>
+            <nav aria-label="Learn">
+              <h2>Learn</h2>
+              <a href="#course">Course</a>
+              <Link to="/playground">Playground</Link>
+              <Link to="/guides">Guides</Link>
+            </nav>
+            <nav aria-label="Project">
+              <h2>Project</h2>
+              <a href={SOURCE_URL}>Source on GitHub</a>
+              <a href={ISSUES_URL}>Report a problem</a>
+              <a href={ISSUES_URL}>Suggest a lesson</a>
+            </nav>
+            <nav aria-label="About">
+              <h2>About</h2>
+              <a href="#privacy">Privacy</a>
+              <a href={`${SOURCE_URL}/blob/main/LICENSE`}>License (AGPL-3.0)</a>
+              <button ref={backupButton} type="button" onClick={() => setBackup(true)}>
+                Back up progress
+              </button>
+            </nav>
+          </div>
+          <div className="fine">
+            <span>© 2026 TermTrek · Free and open source</span>
+            <span>Made for people learning Git, at any level.</span>
+          </div>
         </div>
       </footer>
+      {backup && <BackupDialog returnFocusTo={backupButton} onClose={() => setBackup(false)} />}
     </>
   )
 }
