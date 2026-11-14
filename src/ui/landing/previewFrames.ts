@@ -14,6 +14,8 @@ export type PreviewStep = 0 | 1 | 2 | 3
 export interface PreviewFrame {
   /** The world the picture is drawn from. */
   world: World
+  /** The world the picture sees first, so a change made on this step gets its caption (and nothing else does). */
+  from: World
   /** Commands already run on this step, as the terminal shows them. */
   entries: TermEntry[]
   /** What gets typed into the terminal on this step ('' when nothing is). */
@@ -42,11 +44,12 @@ function ran(world: World, line: string): { world: World; entry: TermEntry } {
 export function previewFrames(): PreviewFrame[] {
   const start = createWorld(firstCommit.setup)
   const add = ran(start, STAGE_COMMAND)
-  const slip = ran(start, SLIP)
+  // The slip follows the staging, so the file stays in Staged while the card shows.
+  const slip = ran(add.world, SLIP)
   return [
-    { world: start, entries: [], typed: '', staged: false, hint: false },
-    { world: start, entries: [], typed: STAGE_COMMAND, staged: false, hint: false },
-    { world: add.world, entries: [add.entry], typed: '', staged: true, hint: false },
-    { world: slip.world, entries: [slip.entry], typed: SLIP, staged: false, hint: true },
+    { world: start, from: start, entries: [], typed: '', staged: false, hint: false },
+    { world: start, from: start, entries: [], typed: STAGE_COMMAND, staged: false, hint: false },
+    { world: add.world, from: start, entries: [add.entry], typed: '', staged: true, hint: false },
+    { world: slip.world, from: add.world, entries: [slip.entry], typed: SLIP, staged: false, hint: true },
   ]
 }

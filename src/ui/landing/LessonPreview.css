@@ -168,6 +168,17 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+/* Try it / Watch again: the one primary control in the header */
+.lp-top .lp-try {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+.lp-top .lp-try:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* The lesson page, at a smaller scale than in the app */
 .lp-body {
@@ -268,6 +279,22 @@
   margin: 8px 0 0;
   font-size: 12px;
 }
+/* Trying: the visitor types here, so the terminal acts like one and keeps its output in a short scroll. */
+.lp-live .lp-page {
+  user-select: auto;
+}
+.lp-live .pf-term .term-log {
+  max-height: 170px;
+  cursor: text;
+}
+.lp-live .lp-foot .btn-p.lp-go {
+  cursor: pointer;
+  text-decoration: none;
+}
+.lp-live .lp-foot .btn-p.lp-go:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 /* A blinking cursor while the command is being typed */
 .lp-typing .term-entry:last-child .t-input::after {
   content: '';
@@ -340,7 +367,8 @@
   .lp .lp-top .pf-dots {
     display: none;
   }
-  .lp-pause {
+  .lp-pause,
+  .lp-trying .lp-try {
     margin-left: auto;
   }
   .lp-page {

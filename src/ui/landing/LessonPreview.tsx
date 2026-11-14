@@ -1,9 +1,13 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { Link } from 'react-router'
 import type { World } from '../../engine/types'
 import { activeRepo } from '../../engine/git/repoState'
 import { branchOf } from '../../engine/git/refs'
 import { displayPath } from '../../engine/paths'
+import { complete as completeLine } from '../../engine/suggest'
 import { firstCommit } from '../../lessons/foundations/first-commit'
+import { initRunner, runnerReducer } from '../../lessons/runner'
+import type { RunnerState } from '../../lessons/runner'
 import type { StageBox } from '../../lessons/schema'
 import { RichText } from '../RichText'
 import { CommandPill } from '../CommandPill'
@@ -24,6 +28,7 @@ export type { PreviewStep } from './previewFrames'
 /** How long each step stays up while the preview plays. */
 const DURATION: Record<PreviewStep, number> = { 0: 3200, 1: 4200, 2: 3600, 3: 4200 }
 const LABEL = 'A TermTrek lesson: you type git add notes.txt and the file moves from Folder to Staged'
+const LESSON_HREF = `/learn/${firstCommit.id}`
 
 let cached: PreviewFrame[] | null = null
 const frames = (): PreviewFrame[] => (cached ??= previewFrames())
@@ -70,7 +75,7 @@ export function LessonPreview({ step, typedSoFar }: { step: PreviewStep; typedSo
           <div className="pf-lead">
             <RichText text={STAGE_PAGE.body} />
           </div>
-          <StageFrom key={step} start={all[0]!.world} world={frame.world} advance={ok} last={ran ? frame.entries.at(-1)?.input : undefined} />
+          <StageFrom key={step} start={frame.from} world={frame.world} advance={ok} last={ran ? frame.entries.at(-1)?.input : undefined} />
         </div>
         <div className="lp-right">
           <CommandCard parts={STAGE_PAGE.command} typed={ran ? '' : typed} />
@@ -94,6 +99,90 @@ export function LessonPreview({ step, typedSoFar }: { step: PreviewStep; typedSo
       <div className="lp-foot" aria-hidden="true">
         <span className="btn pf-back">Back</span>
         <span className={`btn btn-p${ok ? ' lp-go' : ''}`}>Continue</span>
+      </div>
+    </div>
+  )
+}
+
+/** True once the visitor's command passed the lesson's own check for this page. */
+const passed = (s: RunnerState): boolean => s.stepIndex === STAGE_PAGE.step && s.status !== 'working'
+
+/** Which of the four parts the visitor is on while trying: typing, seeing the change, or getting unstuck. */
+function tryStep(s: RunnerState): PreviewStep {
+  if (passed(s)) return 2
+  const said = s.entries.at(-1)?.explain
+  return said && said.kind !== 'ok' ? 3 : 1
+}
+
+/**
+ * The same lesson page, live: the visitor types into the terminal and the lesson's own step checks it,
+ * through the real runner. Nothing is saved; leaving the mode throws the practice world away.
+ */
+function TryPreview({ state, run }: { state: RunnerState; run: (line: string) => void }): React.JSX.Element {
+  const [typed, setTyped] = useState('')
+  const linkRef = useRef<HTMLAnchorElement>(null)
+  const ok = passed(state)
+  const { world } = state
+  const repo = activeRepo(world)
+  // The page says the success itself, as the real lesson does.
+  const entries = state.entries.map((e) => (e.explain?.kind === 'ok' ? { ...e, explain: undefined } : e))
+
+  useEffect(() => {
+    if (ok) linkRef.current?.focus({ preventScroll: true })
+  }, [ok])
+
+  return (
+    <div className="lp-body lp-live" role="group" aria-label="Try the first lesson step">
+      <div className="lp-page">
+        <div className="lp-left">
+          <p className="pf-kick">{STAGE_PAGE.kicker}</p>
+          <p className="pf-title">{STAGE_PAGE.title}</p>
+          <div className="pf-lead">
+            <RichText text={STAGE_PAGE.body} />
+          </div>
+          <StageVisual world={world} show={visual.show} hot={visual.hot} advance={ok} compact last={state.ran.at(-1)} />
+        </div>
+        <div className="lp-right">
+          <CommandCard parts={STAGE_PAGE.command} typed={ok ? '' : typed} />
+          <div className="pf-term">
+            <Terminal
+              entries={entries}
+              cwdLabel={displayPath(world, world.cwd)}
+              branch={repo ? branchOf(repo) : null}
+              onRun={run}
+              onComplete={(line) => completeLine(world, line)}
+              autoFocus
+              done={ok}
+              onInput={setTyped}
+            />
+          </div>
+          <div className="pf-result" aria-live="polite">
+            {ok && (
+              <div className="pf-good">
+                <span className="pf-good-i" aria-hidden="true">
+                  ✓
+                </span>
+                <span>
+                  <RichText text={STAGE_PAGE.done} />
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="lp-foot">
+        <span className="btn pf-back" aria-hidden="true">
+          Back
+        </span>
+        {ok ? (
+          <Link className="btn btn-p lp-go" to={LESSON_HREF} ref={linkRef}>
+            Continue in the real lesson
+          </Link>
+        ) : (
+          <span className="btn btn-p" aria-hidden="true">
+            Continue
+          </span>
+        )}
       </div>
     </div>
   )
@@ -127,47 +216,74 @@ function useHidden(): boolean {
 export function HowItWorks(): React.JSX.Element {
   // With reduced motion the preview holds on the moment the file moves, and only changes when asked.
   const [still] = useState(reducedMotion)
-  const [step, setStep] = useState<PreviewStep>(still ? 2 : 0)
+  const first: PreviewStep = still ? 2 : 0
+  const [mode, setMode] = useState<'watch' | 'try'>('watch')
+  const [step, setStep] = useState<PreviewStep>(first)
   const [seq, setSeq] = useState(0)
   const [chars, setChars] = useState(0)
   const typedRef = useRef(0)
+  // What is left of the current step's time; a new object per step, so a paused step resumes where its bar stopped.
+  const left = useRef({ ms: DURATION[first] })
   const [playing, setPlaying] = useState(!still)
+  const [practice, dispatch] = useReducer(runnerReducer, firstCommit, initRunner)
   const hidden = useHidden()
   const id = useId()
+  const trying = mode === 'try'
   const target = frames()[step]!.typed
   const typedSoFar = still ? target : target.slice(0, chars)
+  const paused = !playing || hidden
+  const shown = trying ? tryStep(practice) : step
 
   const go = (n: PreviewStep) => {
     setStep(n)
     setChars(0)
     typedRef.current = 0
+    left.current = { ms: DURATION[n] }
     setSeq((s) => s + 1)
+  }
+  const watch = (n: PreviewStep) => {
+    setMode('watch')
+    setPlaying(!still)
+    go(n)
+  }
+  const tryIt = () => {
+    dispatch({ type: 'reset' })
+    setMode('try')
   }
 
   // Type the step's command one letter at a time, as the hero map does.
   useEffect(() => {
-    if (still || hidden || typedRef.current >= target.length) return
+    if (still || trying || paused || typedRef.current >= target.length) return
     const t = window.setInterval(() => {
       typedRef.current += 1
       setChars(typedRef.current)
       if (typedRef.current >= target.length) window.clearInterval(t)
     }, TYPE_MS)
     return () => window.clearInterval(t)
-  }, [still, hidden, target, seq])
+  }, [still, trying, paused, target, seq])
 
   useEffect(() => {
-    if (!playing || hidden) return
-    const t = window.setTimeout(() => go(((step + 1) % 4) as PreviewStep), DURATION[step])
-    return () => window.clearTimeout(t)
-  }, [playing, hidden, step, seq])
+    if (trying || paused) return
+    const run = left.current
+    const began = Date.now()
+    const t = window.setTimeout(() => go(((step + 1) % 4) as PreviewStep), run.ms)
+    return () => {
+      window.clearTimeout(t)
+      run.ms = Math.max(0, run.ms - (Date.now() - began))
+    }
+  }, [trying, paused, step, seq])
 
-  const paused = !playing || hidden
+  // The preview has no commit message editor: a command that opens one is closed again without saving.
+  useEffect(() => {
+    if (trying && practice.world.pending && !passed(practice)) dispatch({ type: 'editor-done', text: null })
+  }, [trying, practice])
+
   return (
-    <div className={`how lp${paused ? ' lp-paused' : ''}`} style={{ '--dur': `${DURATION[step]}ms` } as React.CSSProperties}>
+    <div className={`how lp${paused ? ' lp-paused' : ''}${trying ? ' lp-trying' : ''}`} style={{ '--dur': `${DURATION[step]}ms` } as React.CSSProperties}>
       <ol className="lp-steps">
         {STEPS.map((s, i) => (
           <li key={s.title}>
-            <button type="button" aria-pressed={i === step} aria-labelledby={`${id}-t${i}`} aria-describedby={`${id}-d${i}`} onClick={() => go(i as PreviewStep)}>
+            <button type="button" aria-pressed={i === shown} aria-labelledby={`${id}-t${i}`} aria-describedby={`${id}-d${i}`} onClick={() => watch(i as PreviewStep)}>
               <span className="lp-n" aria-hidden="true">
                 {i + 1}
               </span>
@@ -179,7 +295,7 @@ export function HowItWorks(): React.JSX.Element {
                   {s.text}
                 </span>
               </span>
-              {i === step && !still && (
+              {i === step && !still && !trying && (
                 <span className="lp-bar" aria-hidden="true">
                   <i key={seq} />
                 </span>
@@ -202,14 +318,24 @@ export function HowItWorks(): React.JSX.Element {
               <i key={p.id} className={i < pageAt ? 'd' : i === pageAt ? 'c' : undefined} />
             ))}
           </span>
-          <button type="button" className="lp-pause" aria-label={playing ? 'Pause the lesson preview' : 'Play the lesson preview'} onClick={() => setPlaying((p) => !p)}>
-            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
-              {playing ? <path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor" /> : <path d="M2 1l7 4-7 4z" fill="currentColor" />}
-            </svg>
-            {playing ? 'Pause' : 'Play'}
+          {!trying && (
+            <button type="button" className="lp-pause" aria-label={playing ? 'Pause the lesson preview' : 'Play the lesson preview'} onClick={() => setPlaying((p) => !p)}>
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
+                {playing ? <path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor" /> : <path d="M2 1l7 4-7 4z" fill="currentColor" />}
+              </svg>
+              {playing ? 'Pause' : 'Play'}
+            </button>
+          )}
+          {/* One button for both, so focus stays on it when the mode flips. */}
+          <button type="button" className="btn btn-p lp-try" onClick={trying ? () => watch(first) : tryIt}>
+            {trying ? 'Watch again' : 'Try it'}
           </button>
         </div>
-        <LessonPreview step={step} typedSoFar={typedSoFar} />
+        {trying ? (
+          <TryPreview state={practice} run={(line) => dispatch({ type: 'run', line })} />
+        ) : (
+          <LessonPreview step={step} typedSoFar={typedSoFar} />
+        )}
       </div>
     </div>
   )
