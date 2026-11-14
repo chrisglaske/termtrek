@@ -2,14 +2,13 @@ import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Nav } from '../layout/Nav'
 import { Logo } from '../layout/Logo'
+import { SOURCE_URL } from '../layout/links'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { CommandPill } from '../CommandPill'
 import { HeroDemo } from './HeroDemo'
 import { CourseRail } from './CourseRail'
 import '../buttons.css'
 import './Landing.css'
-
-const SOURCE = 'https://github.com/chrisglaske/devcore'
 
 function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
   return (
@@ -247,7 +246,7 @@ export function Landing(): React.JSX.Element {
             <a href="#course">Course</a>
             <Link to="/playground">Playground</Link>
             <a href="#privacy">Privacy</a>
-            <a href={SOURCE}>Source code</a>
+            <a href={SOURCE_URL}>Source code</a>
           </nav>
         </div>
       </footer>
