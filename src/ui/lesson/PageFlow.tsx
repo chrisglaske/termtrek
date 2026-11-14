@@ -251,6 +251,7 @@ export function DoBody({
             prefill={fill}
             onInput={setTyped}
             placeholder={placeholder}
+            expect={full}
           />
           {helpers && page.note && noteOpen && !ok && (
             <div className="pf-note">

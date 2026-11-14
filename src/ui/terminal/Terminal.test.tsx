@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'vitest-axe'
-import { Terminal, type TermEntry } from './Terminal'
+import { Terminal, splitTyped, type TermEntry } from './Terminal'
 import { FeedbackCard } from './FeedbackCard'
 
 const noComplete = () => ({ line: '', options: [] as string[] })
@@ -16,6 +16,32 @@ function setup(over: Partial<React.ComponentProps<typeof Terminal>> = {}) {
 }
 
 describe('Terminal', () => {
+  it('colours what is typed against the shown command: green while right, red from the first wrong letter', async () => {
+    const { input, container } = setup({ expect: 'git add notes.txt' })
+    expect(container.querySelector('.term-marks')).toBeNull()
+    await userEvent.type(input, 'git ad')
+    expect(container.querySelector('.term-typed-ok')?.textContent).toBe('git ad')
+    expect(container.querySelector('.term-typed-bad')?.textContent).toBe('')
+    expect(input).toHaveClass('term-input-marked')
+    await userEvent.type(input, 'x notes')
+    expect(container.querySelector('.term-typed-ok')?.textContent).toBe('git ad')
+    expect(container.querySelector('.term-typed-bad')?.textContent).toBe('x notes')
+    expect(container.querySelector('.term-marks')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('leaves the input plain when no command is shown', async () => {
+    const { input, container } = setup()
+    await userEvent.type(input, 'git status')
+    expect(container.querySelector('.term-marks')).toBeNull()
+    expect(input).not.toHaveClass('term-input-marked')
+  })
+
+  it('splits typed text at the first wrong letter, ignoring spaces after a finished command', () => {
+    expect(splitTyped('git add notes.txt', 'git add notes.txt  ')).toEqual({ ok: 'git add notes.txt  ', bad: '' })
+    expect(splitTyped('git add notes.txt', 'git add notes.txtx')).toEqual({ ok: 'git add notes.txt', bad: 'x' })
+    expect(splitTyped('git add notes.txt', 'git ADD')).toEqual({ ok: 'git ', bad: 'ADD' })
+  })
+
   it('runs a command on Enter and clears the input', async () => {
     const { onRun, input } = setup()
     await userEvent.type(input, 'git status{Enter}')

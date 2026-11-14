@@ -34,6 +34,8 @@ export interface TerminalProps {
   onInput?: (text: string) => void
   /** Shown in the empty input line, inviting the first command. */
   placeholder?: string
+  /** The command this step shows: typed letters that match it turn green, and from the first wrong one on they turn red. */
+  expect?: string
 }
 
 function Prompt({
@@ -67,8 +69,12 @@ export function Terminal({
   prefill,
   onInput,
   placeholder,
+  expect,
 }: TerminalProps): React.JSX.Element {
   const [value, setValue] = useState('')
+  // How far the input has scrolled sideways, so the coloured copy of a long line stays under the caret.
+  const [shift, setShift] = useState(0)
+  const marks = expect && value ? splitTyped(expect, value) : null
   useEffect(() => {
     onInput?.(value)
   }, [value, onInput])
@@ -201,24 +207,36 @@ export function Terminal({
             ) : (
               <Prompt cwd={cwdLabel} branch={branch} />
             )}
-            <input
-              ref={inputRef}
-              className="term-input"
-              aria-label="Terminal input"
-              disabled={!!waiting}
-              placeholder={placeholder}
-              value={value}
-              spellCheck={false}
-              autoCapitalize="off"
-              autoComplete="off"
-              autoCorrect="off"
-              onChange={(e) => {
-                setValue(e.target.value)
-                setOptions([])
-                cursor.current = null
-              }}
-              onKeyDown={onKeyDown}
-            />
+            <span className="term-field">
+              <input
+                ref={inputRef}
+                className={marks ? 'term-input term-input-marked' : 'term-input'}
+                aria-label="Terminal input"
+                disabled={!!waiting}
+                placeholder={placeholder}
+                value={value}
+                spellCheck={false}
+                autoCapitalize="off"
+                autoComplete="off"
+                autoCorrect="off"
+                onChange={(e) => {
+                  setValue(e.target.value)
+                  setOptions([])
+                  cursor.current = null
+                }}
+                onKeyDown={onKeyDown}
+                onScroll={(e) => setShift(e.currentTarget.scrollLeft)}
+                onSelect={(e) => setShift(e.currentTarget.scrollLeft)}
+              />
+              {marks && (
+                <span className="term-marks" aria-hidden="true">
+                  <span style={shift ? { transform: `translateX(${-shift}px)` } : undefined}>
+                    <span className="term-typed-ok">{marks.ok}</span>
+                    <span className="term-typed-bad">{marks.bad}</span>
+                  </span>
+                </span>
+              )}
+            </span>
           </div>
         )}
         {options.length > 0 && (
@@ -238,4 +256,13 @@ export function Terminal({
       </div>
     </div>
   )
+}
+
+/** Splits what was typed into the part that matches the shown command and the part from the first wrong letter on.
+ *  Spaces typed after a finished command are not counted as wrong. */
+export function splitTyped(expect: string, typed: string): { ok: string; bad: string } {
+  let i = 0
+  while (i < typed.length && i < expect.length && typed[i] === expect[i]) i++
+  if (i === expect.length && typed.slice(i).trim() === '') i = typed.length
+  return { ok: typed.slice(0, i), bad: typed.slice(i) }
 }
