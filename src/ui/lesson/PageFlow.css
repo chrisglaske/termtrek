@@ -175,7 +175,15 @@
   transition: opacity 0.5s;
 }
 .sv-in {
+  position: relative;
   padding-top: 10px;
+}
+/* A copy of a chip that just changed column, fading out where it was. */
+.sv-in .sv-leaving {
+  position: absolute;
+  margin: 0;
+  pointer-events: none;
+  animation: none;
 }
 .sv-in ul {
   margin: 0;
