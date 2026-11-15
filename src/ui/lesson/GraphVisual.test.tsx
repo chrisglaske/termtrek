@@ -11,6 +11,8 @@ const snap = (over: Partial<S>): S => ({
   ids: ['aaaaaaa1'],
   messages: { aaaaaaa1: 'one' },
   reach: { main: ['aaaaaaa1'] },
+  firstParent: { main: ['aaaaaaa1'] },
+  merges: [],
   ...over,
 })
 
@@ -38,8 +40,22 @@ describe('describeChange', () => {
   })
   it('says a fast-forward moved the branch forward', () => {
     const a = snap({ tips: { main: 'aaaaaaa1' }, reach: { main: ['aaaaaaa1'] } })
-    const b = snap({ headId: 'ccccccc3', tips: { main: 'ccccccc3' }, ids: ['aaaaaaa1', 'ccccccc3'], reach: { main: ['ccccccc3', 'aaaaaaa1'] } })
+    const b = snap({ headId: 'ccccccc3', tips: { main: 'ccccccc3' }, ids: ['aaaaaaa1', 'ccccccc3'], reach: { main: ['ccccccc3', 'aaaaaaa1'] }, firstParent: { main: ['ccccccc3', 'aaaaaaa1'] } })
     expect(describeChange(a, b)).toContain('main moved forward 1 commit')
+  })
+  it('counts first-parent steps: a merge is one move, not the commits it brought in', () => {
+    const a = snap({ tips: { main: 'aaaaaaa1' }, reach: { main: ['aaaaaaa1'] } })
+    const b = snap({
+      headId: 'mmmmmmm4',
+      tips: { main: 'mmmmmmm4' },
+      ids: ['aaaaaaa1', 'bbbbbbb2', 'mmmmmmm4'],
+      reach: { main: ['mmmmmmm4', 'bbbbbbb2', 'aaaaaaa1'] },
+      firstParent: { main: ['mmmmmmm4', 'aaaaaaa1'] },
+      merges: ['mmmmmmm4'],
+    })
+    const text = describeChange(a, b)!
+    expect(text).toContain('main moved forward to mmmmmmm (a merge commit)')
+    expect(text).not.toContain('2 commits')
   })
   it('says a removed label keeps its commits', () => {
     const a = snap({ tips: { main: 'aaaaaaa1', old: 'aaaaaaa1' }, reach: { main: ['aaaaaaa1'], old: ['aaaaaaa1'] } })

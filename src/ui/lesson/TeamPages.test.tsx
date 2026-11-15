@@ -215,4 +215,18 @@ describe('Team lessons as calm pages', () => {
     await user.type(input(), typed('git push'))
     expect(screen.getByText("Your agenda and the server's match.")).toBeInTheDocument()
   })
+
+  it('keeps each server row on one flex line and lists a rebased commit once (V7, V8)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    open('update-your-branch')
+    await toPage(user, 'update-your-branch', 'Rebase rewrote your branch')
+    const you = side(/^Your computer/)
+    const msgs = within(you).getAllByRole('listitem').map((li) => li.querySelector('.sv-msg')?.textContent).filter(Boolean)
+    expect(new Set(msgs).size).toBe(msgs.length)
+    const li = within(you).getAllByRole('listitem')[0]!
+    const kids = [...li.children].map((c) => c.className.split(' ')[0])
+    expect(kids[0]).toBe('sv-dot')
+    expect(kids[1]).toBe('sv-msg')
+    expect(within(you).getByText(/server copy/)).toBeInTheDocument()
+  })
 })

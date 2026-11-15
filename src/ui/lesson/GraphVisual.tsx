@@ -24,6 +24,17 @@ function reach(repo: Repo, tip: string | null | undefined): string[] {
   return out.sort((a, b) => (repo.commits[b]!.time - repo.commits[a]!.time) || (a < b ? -1 : 1))
 }
 
+/** The tip, then each first parent, so a merge counts as one step. */
+function firstParentChain(repo: Repo, tip: string | null | undefined): string[] {
+  const out: string[] = []
+  let id = tip
+  while (id && repo.commits[id] && !out.includes(id)) {
+    out.push(id)
+    id = repo.commits[id]?.parents[0]
+  }
+  return out
+}
+
 interface Snap {
   sig: string
   head: string
@@ -33,6 +44,10 @@ interface Snap {
   messages: Record<string, string>
   /** Commits each branch tip can reach, to tell a forward move from a replaced commit. */
   reach: Record<string, string[]>
+  /** Each branch's own line of history: the tip, then first parents only. */
+  firstParent: Record<string, string[]>
+  /** Commits with two parents. */
+  merges: string[]
 }
 
 function snap(repo: Repo): Snap {
@@ -41,9 +56,11 @@ function snap(repo: Repo): Snap {
   const reaches: Record<string, string[]> = {}
   for (const [b, t] of Object.entries(tips)) reaches[b] = reach(repo, t)
   const ids = Object.keys(repo.commits)
+  const firstParent = Object.fromEntries(Object.entries(tips).map(([b, t]) => [b, firstParentChain(repo, t)]))
+  const merges = ids.filter((id) => repo.commits[id]!.parents.length > 1)
   const messages = Object.fromEntries(ids.map((id) => [id, repo.commits[id]!.message.split('\n')[0] ?? '']))
   const headId = headCommitId(repo)
-  return { sig: JSON.stringify([head, headId, tips, ids]), head, headId, tips, ids, messages, reach: reaches }
+  return { sig: JSON.stringify([head, headId, tips, ids]), head, headId, tips, ids, messages, reach: reaches, firstParent, merges }
 }
 
 /** One or two plain sentences saying what the last command did to the graph. Null when nothing changed. */
@@ -56,8 +73,14 @@ export function describeChange(a: Snap, b: Snap): string | null {
     const now = b.tips[n]
     if (!(n in a.tips) || before === now || !now || !before) continue
     if (b.reach[n]?.includes(before)) {
-      const k = (b.reach[n]?.length ?? 0) - (a.reach[n]?.length ?? 0)
-      out.push(`${n} moved forward${k > 0 ? ` ${k} commit${k === 1 ? '' : 's'}` : ''} to ${short(now)}.`)
+      // Count steps along the branch's own line: a merge is one step, however many commits it brought in.
+      const steps = b.firstParent[n]?.indexOf(before) ?? -1
+      const k = steps >= 0 ? steps : (b.reach[n]?.length ?? 0) - (a.reach[n]?.length ?? 0)
+      out.push(
+        b.merges.includes(now)
+          ? `${n} moved forward to ${short(now)} (a merge commit).`
+          : `${n} moved forward${k > 0 ? ` ${k} commit${k === 1 ? '' : 's'}` : ''} to ${short(now)}.`,
+      )
     } else if (a.reach[n]?.includes(now)) {
       out.push(`${n} moved back from ${short(before)} to ${short(now)}. The newer commits are still in the reflog.`)
     } else {
@@ -77,7 +100,7 @@ export function describeChange(a: Snap, b: Snap): string | null {
   }
   for (const n of created) out.push(`Branch ${n} was created. It points at ${short(b.tips[n])}, the same commit.`)
   for (const n of removed) out.push(`The ${n} label was removed. Its commits stay.`)
-  if (a.head !== b.head) out.push(`HEAD moved from ${a.head} to ${b.head}.`)
+  if (a.head !== b.head) out.push(a.head.startsWith('detached') && !b.head.startsWith('detached') ? `HEAD is back on ${b.head}.` : `HEAD moved from ${a.head} to ${b.head}.`)
   else if (a.headId !== b.headId && !out.length) out.push(`HEAD now points at ${short(b.headId)}.`)
   return out.length ? out.slice(0, 2).join(' ') : null
 }

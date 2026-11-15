@@ -47,7 +47,7 @@ const VERB = /^git\s+(push|fetch|pull|clone)\b/
 
 const n = (k: number, one: string, many = one + 's') => `${k} ${k === 1 ? one : many}`
 
-function Side({ kind, title, sub, rows, empty }: { kind: 'you' | 'server'; title: string; sub: string; rows: Row[]; empty: string }): React.JSX.Element {
+function Side({ kind, title, sub, rows, empty, note }: { kind: 'you' | 'server'; title: string; sub: string; rows: Row[]; empty: string; note?: React.ReactNode }): React.JSX.Element {
   const shown = rows.slice(0, MAX_SHOWN)
   const more = rows.length - shown.length
   return (
@@ -62,7 +62,9 @@ function Side({ kind, title, sub, rows, empty }: { kind: 'you' | 'server'; title
           {shown.map((r) => (
             <li key={r.c.id} className={[r.only ? 'sv-only' : '', r.fresh ? `sv-fresh sv-fresh-${kind}` : ''].filter(Boolean).join(' ') || undefined}>
               <span className="sv-dot" aria-hidden="true" />
-              <span className="sv-msg">{r.c.message.split('\n')[0]}</span>
+              <span className="sv-msg" title={r.c.message.split('\n')[0]}>
+                {r.c.message.split('\n')[0]}
+              </span>
               {r.chips.map((chip) => (
                 <span key={chip} className="sv-chip">
                   {chip}
@@ -75,6 +77,7 @@ function Side({ kind, title, sub, rows, empty }: { kind: 'you' | 'server'; title
           {more > 0 && <li className="sv-more">+{more} older</li>}
         </ul>
       )}
+      {note && <p className="sv-stale">{note}</p>}
     </section>
   )
 }
@@ -99,7 +102,15 @@ export function ServerVisual({ world, branch, last }: { world: World; branch?: s
   const trackTip = repo && Object.hasOwn(repo.remoteRefs, tracking) ? repo.remoteRefs[tracking] : null
   const serverTip = Object.hasOwn(remote.branches, name) ? remote.branches[name] : null
 
-  const mine = repo ? history(repo.commits, [localTip, trackTip]) : []
+  const everyMine = repo ? history(repo.commits, [localTip, trackTip]) : []
+  const onBranchList = repo ? history(repo.commits, [localTip]) : []
+  const onBranchIds = new Set(onBranchList.map((c) => c.id))
+  const serverCopyIds = new Set(history(remote.commits, [serverTip]).map((c) => c.id))
+  // After a rebase the old copy still sits behind origin/<branch>. It is the same change under an old id, so list your own line once and mention the old copy in words.
+  const localOnlyMessages = new Set(onBranchList.filter((c) => !serverCopyIds.has(c.id)).map((c) => c.message.split('\n')[0]))
+  const oldCopy = new Set(everyMine.filter((c) => !onBranchIds.has(c.id) && localOnlyMessages.has(c.message.split('\n')[0])).map((c) => c.id))
+  const mine = everyMine.filter((c) => !oldCopy.has(c.id))
+  const staleTrack = trackTip && oldCopy.has(trackTip) ? trackTip : null
   const theirs = history(remote.commits, [serverTip])
   const theirIds = new Set(theirs.map((c) => c.id))
   const onBranch = new Set(repo ? history(repo.commits, [localTip]).map((c) => c.id) : [])
@@ -197,7 +208,16 @@ export function ServerVisual({ world, branch, last }: { world: World; branch?: s
   return (
     <figure className="pf-server">
       <div className="sv-sides">
-        <Side kind="you" title="Your computer" sub={name} rows={youRows} empty={repo ? 'No commits yet' : 'No copy yet'} />
+        <Side kind="you" title="Your computer" sub={name} rows={youRows}
+          empty={repo ? 'No commits yet' : 'No copy yet'}
+          note={
+            staleTrack && (
+              <>
+                <code>{tracking}</code> is still at the old copy, <code>{staleTrack.slice(0, 7)}</code> (the server copy).
+              </>
+            )
+          }
+        />
         <span className={`sv-link${move && move.dir !== 'none' ? ` sv-link-go sv-link-${move.dir}` : ''}`} key={seen.current.snap.sig} aria-hidden="true">
           {move?.dir === 'toServer' ? '→' : move?.dir === 'toYou' ? '←' : '⇄'}
           {move && move.dir !== 'none' && move.verb && <small>git {move.verb}</small>}
