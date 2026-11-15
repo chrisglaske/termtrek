@@ -1,8 +1,8 @@
 // Checks that a deployed TermTrek serves exactly what this code builds, byte for byte, file by file.
 // Anyone can run it; it only reads public URLs.
 //   npm ci && npm run build && node scripts/verify-live.mjs [origin]
-// The one allowed difference: Cloudflare Pages adds its own anonymous page-count snippet to index.html when it serves it,
-// so that block is removed from the served page before the two are compared. `_headers` is read by Cloudflare and never served.
+// The one allowed difference: Cloudflare Pages adds its own anonymous page-count snippet to every HTML page it serves,
+// so that block is removed from each served page before the two are compared. `_headers` is read by Cloudflare and never served.
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -22,14 +22,16 @@ let failed = 0
 for (const path of files) {
   // A throwaway query string makes every request skip the edge cache. Without it, an asset requested before its deploy finished
   // can get the single-page fallback (the home page, with a 200) cached for that URL, and later tries keep seeing it.
-  const url = origin + (path === '/index.html' ? '/' : path) + `?verify=${Date.now()}`
+  // Pages serves `/learn/x.html` at `/learn/x` and redirects the `.html` address there, dropping the query string, so ask for the clean one.
+  const address = path === '/index.html' ? '/' : path.replace(/\.html$/, '')
+  const url = origin + address + `?verify=${Date.now()}`
   let verdict
   try {
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) verdict = `missing (${res.status})`
     else {
       let served = Buffer.from(await res.arrayBuffer())
-      if (path === '/index.html') served = Buffer.from(served.toString('utf8').replace(CF_BLOCK, ''), 'utf8')
+      if (path.endsWith('.html')) served = Buffer.from(served.toString('utf8').replace(CF_BLOCK, ''), 'utf8')
       verdict = sha(served) === sha(readFileSync(join(DIST, path))) ? 'same' : 'DIFFERENT'
     }
   } catch (error) {
