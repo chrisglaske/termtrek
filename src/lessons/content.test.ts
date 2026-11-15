@@ -264,7 +264,7 @@ describe('course content', () => {
     expect(new Set(ids).size).toBe(ids.length)
     for (const l of allLessons()) {
       expect(l.minutes).toBeGreaterThanOrEqual(2)
-      expect(l.minutes).toBeLessThanOrEqual(10)
+      expect(l.minutes).toBeLessThanOrEqual(12)
       expect(l.steps.length).toBeGreaterThanOrEqual(2)
       expect(l.steps.length).toBeLessThanOrEqual(l.pages ? 10 : 5)
       const stepIds = l.steps.map((s) => s.id)
@@ -567,7 +567,36 @@ describe('Section 4, pull requests and the team scenario', () => {
   })
 
   it('update-your-branch accepts a merge instead of rebase', () => {
-    expect(play(lessonById('update-your-branch'), ['git fetch', 'git merge --no-edit origin/main', 'git push']).status).toBe('lesson-done')
+    const s = play(lessonById('update-your-branch'), ['git fetch', 'git merge --no-edit origin/main', 'git push'])
+    expect(s.status).toBe('working')
+    expect(s.stepIndex).toBe(3)
+  })
+
+  it('update-your-branch: pull --rebase stops on Alex\'s edit of the same line', () => {
+    const lesson = lessonById('update-your-branch')
+    expect(lesson.steps.length).toBeLessThanOrEqual(10)
+    expect(lesson.minutes).toBe(12)
+    const upTo = ['git fetch', 'git rebase origin/main', 'git push --force-with-lease']
+    const paused = play(lesson, [...upTo, 'git pull --rebase'])
+    // The pull passes step 3 (play moves on to the next step), leaving the rebase paused.
+    expect(paused.stepIndex).toBe(4)
+    expect(paused.world.repo?.op?.kind).toBe('rebase')
+  })
+
+  it('update-your-branch nudges a plain pull toward --rebase', () => {
+    const s = play(lessonById('update-your-branch'), ['git fetch', 'git rebase origin/main', 'git push --force-with-lease', 'git pull'])
+    expect(s.stepIndex).toBe(3)
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('git pull --rebase')
+  })
+
+  it('update-your-branch shows git rebase --continue before the scenario', () => {
+    const shown = allLessons().flatMap((l) => l.steps.map((st) => ({ id: l.id, learn: st.learn })))
+    const at = shown.findIndex((x) => x.learn.includes('`git rebase --continue`'))
+    const scenario = shown.findIndex((x) => x.id === 'scenario-pushed-first')
+    expect(at).toBeGreaterThan(-1)
+    expect(at).toBeLessThan(scenario)
+    expect(shown[at]!.id).toBe('update-your-branch')
   })
 
   it('update-your-branch nudges a rejected push', () => {

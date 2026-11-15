@@ -7,6 +7,15 @@ const only = (a: string, b: string): string[] => {
   return a.split('\n').filter((l) => l.trim() !== '' && !other.has(l))
 }
 
+/** The first conflicted block in a file's text, from the opening marker to the closing one. */
+function conflictBlock(text: string | undefined): string | null {
+  if (text === undefined) return null
+  const lines = text.split('\n')
+  const start = lines.findIndex((l) => l.startsWith('<<<<<<<'))
+  const end = lines.findIndex((l, i) => i > start && l.startsWith('>>>>>>>'))
+  return start >= 0 && end > start ? lines.slice(start, end + 1).join('\n') : null
+}
+
 /**
  * The two versions of the lines that clash in `file`, side by side, from the live world:
  * the branch you are on (current) against `theirs` (incoming). The words match the editor's Keep buttons.
@@ -21,7 +30,9 @@ export function ConflictVisual({ world, file, theirs, markers }: { world: World;
   if (mine.length === 0 && their.length === 0) return null
   const here = repo.head.kind === 'branch' ? repo.head.name : 'HEAD'
   if (markers) {
-    const raw = ['<<<<<<< HEAD', ...mine, '=======', ...their, '>>>>>>> ' + theirs].join('\n')
+    // The block Git really wrote, so the labels match the editor (a rebase labels its side with the replayed commit).
+    const written = conflictBlock(workFile(world, file))
+    const raw = written ?? ['<<<<<<< HEAD', ...mine, '=======', ...their, '>>>>>>> ' + theirs].join('\n')
     return (
       <figure className="pf-conflict">
         <pre className="cv-raw" aria-label={`${file} with conflict markers`}>

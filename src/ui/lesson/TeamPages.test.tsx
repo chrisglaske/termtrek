@@ -5,6 +5,7 @@ import { axe } from 'vitest-axe'
 import App from '../App'
 import { STORAGE_KEY } from '../../progress/store'
 import { findLesson } from '../../lessons/course'
+import { ALEX_AGENDA_LINE, YOUR_AGENDA_LINE } from '../../lessons/team/setups'
 
 const CONVERTED = [
   'clone-a-repo',
@@ -38,6 +39,11 @@ async function solve(user: User, lessonId: string, step: number) {
   if (s.solve?.some((a) => a.type === 'pr-open')) return user.click(screen.getByRole('button', { name: 'Create pull request' }))
   if (s.solve?.some((a) => a.type === 'pr-merge')) return user.click(screen.getByRole('button', { name: 'Create a merge commit' }))
   await user.type(input(), typed(s.solution[0]!))
+  if (s.solve?.some((a) => a.type === 'save-file')) {
+    await user.click(screen.getByRole('button', { name: /Keep both/ }))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+  }
+  if (s.solve?.some((a) => a.type === 'editor-done')) await user.click(screen.getByRole('button', { name: 'Save and close' }))
 }
 
 /** Moves on from the page showing now to the page titled `title`, doing any step on the way that is still to do. */
@@ -186,6 +192,27 @@ describe('Team lessons as calm pages', () => {
     expect(screen.getByText(/Your agenda and the server's have split: 2 commits only you have, 1 commit only the server has\./)).toBeInTheDocument()
     await toPage(user, 'update-your-branch', 'Push the rewritten branch')
     await user.type(input(), typed('git push --force-with-lease'))
+    expect(screen.getByText("Your agenda and the server's match.")).toBeInTheDocument()
+  })
+
+  it('pulls with --rebase, shows the conflict, pauses, then finishes and pushes in sync', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    open('update-your-branch')
+    await toPage(user, 'update-your-branch', 'Pull and replay your commit')
+    expect(document.body.textContent).toContain('Alex Kim pushed a fix to agenda on the server, and you committed a change to the same line on your computer.')
+    await user.type(input(), typed('git pull --rebase'))
+    expect(continueBtn()).toBeEnabled()
+    await toPage(user, 'update-your-branch', 'Git paused the rebase')
+    expect(screen.getByText(/git rebase --abort/)).toBeInTheDocument()
+    const raw = screen.getByLabelText('agenda.txt with conflict markers').textContent ?? ''
+    expect(raw).toContain(`<<<<<<< HEAD\n${ALEX_AGENDA_LINE}\n=======\n${YOUR_AGENDA_LINE}\n>>>>>>> `)
+    // The same label the editor shows next: the replayed commit, as real Git writes it.
+    expect(raw).toMatch(/>>>>>>> [0-9a-f]{7} \(.+\)$/)
+    await toPage(user, 'update-your-branch', 'Keep both lines')
+    expect(screen.getByRole('region', { name: 'Incoming, agenda' })).toHaveTextContent(YOUR_AGENDA_LINE)
+    await toPage(user, 'update-your-branch', 'Push the finished rebase')
+    expect(screen.getByText(/Your agenda is 1 commit ahead/)).toBeInTheDocument()
+    await user.type(input(), typed('git push'))
     expect(screen.getByText("Your agenda and the server's match.")).toBeInTheDocument()
   })
 })
