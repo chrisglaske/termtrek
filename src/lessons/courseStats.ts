@@ -1,4 +1,4 @@
-import { course } from './course'
+import { outline } from './outline'
 import type { Section } from './schema'
 
 export function sectionStats(s: Section): { lessons: number; minutes: number } {
@@ -6,15 +6,14 @@ export function sectionStats(s: Section): { lessons: number; minutes: number } {
 }
 
 export function courseStats(): { lessons: number; minutes: number; live: number; later: number } {
-  const live = course.filter((s) => s.status === 'launch')
+  const live = outline.filter((s) => s.status === 'launch')
   let lessons = 0
   let minutes = 0
   for (const s of live) {
-    const t = sectionStats(s)
-    lessons += t.lessons
-    minutes += t.minutes
+    lessons += s.lessons
+    minutes += s.minutes
   }
-  return { lessons, minutes, live: live.length, later: course.length - live.length }
+  return { lessons, minutes, live: live.length, later: outline.length - live.length }
 }
 
 /** Nearest half hour, written without a trailing ".0". */

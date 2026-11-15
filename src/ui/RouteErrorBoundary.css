@@ -1,0 +1,35 @@
+.reb {
+  box-sizing: border-box;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 96px 16px 40px;
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+}
+.reb h1 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+.reb p {
+  margin: 0 0 20px;
+  color: var(--ink2);
+  line-height: 1.5;
+}
+.reb-btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+}
+.reb-btn:hover {
+  background: var(--accent-h);
+}
+.reb-btn:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}

@@ -5,6 +5,9 @@ import { MemoryRouter } from 'react-router'
 import App from './App'
 import { Nav } from './layout/Nav'
 
+// Real React.lazy and Suspense here, not the synchronous stand-in from setup.ts.
+vi.unmock('./lazyRoute')
+
 describe('App', () => {
   it('renders the TermTrek wordmark', () => {
     render(
