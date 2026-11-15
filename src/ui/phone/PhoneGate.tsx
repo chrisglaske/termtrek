@@ -1,23 +1,11 @@
-import { useState } from 'react'
 import { Nav } from '../layout/Nav'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { SendToComputer } from './SendToComputer'
 import { usePhone } from './usePhone'
 import './phone.css'
 
-/** Remembered until the tab closes: the visitor chose to stay on the phone. */
-export const PHONE_OK_KEY = 'termtrek_phone_ok'
-
-const readOk = (): boolean => {
-  try {
-    return sessionStorage.getItem(PHONE_OK_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function Notice({ onContinue }: { onContinue(): void }): React.JSX.Element {
-  useDocumentTitle('TermTrek is made for a computer')
+function Notice(): React.JSX.Element {
+  useDocumentTitle('TermTrek is made for an iPad or a computer')
   return (
     <>
       <Nav />
@@ -28,35 +16,32 @@ function Notice({ onContinue }: { onContinue(): void }): React.JSX.Element {
             <path d="M2 20h20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         </span>
-        <h1>TermTrek is made for a computer</h1>
-        <p className="gate-sub">Open this page on your laptop or desktop to start learning.</p>
+        <h1>TermTrek is made for an iPad or a computer</h1>
+        <p className="gate-sub">Open this page on a tablet, laptop or desktop to start learning.</p>
         <ul className="gate-why">
           <li>You type real commands, which is much easier with a keyboard.</li>
           <li>The picture and the terminal sit side by side, so you see each change as it happens.</li>
           <li>Your progress is saved on the device you use, so start where you'll keep going.</li>
         </ul>
         <SendToComputer url={() => window.location.href} />
-        <button type="button" className="gate-anyway" onClick={onContinue}>
-          Continue on this phone anyway
-        </button>
+        <p className="gate-fine">On a computer? Make the window bigger.</p>
       </main>
     </>
   )
 }
 
-/** On a phone, the app's pages first say they are made for a computer; "Continue anyway" opens them as usual. */
+/**
+ * Below an iPad mini, the app's pages only say they are made for an iPad or a computer.
+ * The page stays mounted (hidden and inert) behind the notice, so growing the window back loses nothing.
+ */
 export function PhoneGate({ children }: { children: React.ReactNode }): React.JSX.Element {
   const phone = usePhone()
-  const [ok, setOk] = useState(readOk)
-  if (!phone || ok) return <>{children}</>
-  const go = () => {
-    try {
-      sessionStorage.setItem(PHONE_OK_KEY, '1')
-    } catch {
-      // Private mode: it still opens, and asks again next time.
-    }
-    setOk(true)
-    window.scrollTo?.(0, 0)
-  }
-  return <Notice onContinue={go} />
+  return (
+    <>
+      {phone ? <Notice /> : null}
+      <div className="gate-app" hidden={phone} inert={phone}>
+        {children}
+      </div>
+    </>
+  )
 }

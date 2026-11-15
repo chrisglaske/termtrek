@@ -97,22 +97,21 @@
   border-radius: 50%;
   background: var(--accent);
 }
-.gate-anyway {
-  align-self: center;
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--accent-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
+.gate-fine {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--ink2);
 }
-.gate-anyway:focus-visible,
 .send-b:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* The page behind the notice: invisible wrapper while shown, gone while hidden. */
+.gate-app {
+  display: contents;
+}
+.gate-app[hidden] {
+  display: none;
 }

@@ -96,12 +96,13 @@ export function Landing(): React.JSX.Element {
                       </svg>
                     </span>
                     <div>
-                      <h2 className="pc-t">Made for your computer</h2>
-                      <p>You type real commands and watch a picture change, so you'll want a keyboard and a bigger screen. Send yourself the link and start there.</p>
+                      <h2 className="pc-t">Made for an iPad or a computer</h2>
+                      <p>You type real commands and watch a picture change, so you'll want a keyboard and a bigger screen. Send yourself the link and start on a tablet or computer.</p>
                     </div>
                   </div>
                   <SendToComputer url={home} />
                   <p className="pc-fine">Opens your phone's share menu. Nothing is sent to us.</p>
+                  <p className="pc-fine">On a computer? Make the window bigger.</p>
                 </div>
               ) : (
                 <div className="ctas">
