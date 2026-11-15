@@ -2,7 +2,7 @@ import type { Lesson } from '../schema'
 import { branchExists, historyLength, onBranch, ranGit, workFile } from '../checks'
 import { TWO_ON_MAIN } from './setups'
 
-const HOME_LINE = 'Home page work happens on the homepage branch.'
+const HOME_LINE = 'Home page work goes on this branch.'
 
 export const makeABranch: Lesson = {
   id: 'make-a-branch',
@@ -167,7 +167,7 @@ export const makeABranch: Lesson = {
       step: 3,
       command: [
         { text: 'echo', say: 'print this text' },
-        { text: '"Home page work happens on the homepage branch."', say: 'the text' },
+        { text: '"Home page work goes on this branch."', say: 'the text' },
         { text: '>>', say: 'add to a file' },
         { text: 'README.md', say: 'this one' },
       ],

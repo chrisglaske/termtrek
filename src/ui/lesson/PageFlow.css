@@ -329,7 +329,8 @@
 }
 .cc-box {
   position: relative;
-  display: inline-block;
+  /* As wide as the card, so labels can spread out under a short command. */
+  display: block;
   text-align: center;
   max-width: 100%;
   /* A long command (a server address) scrolls inside the card instead of widening the page. */
@@ -1387,7 +1388,7 @@
   color: var(--ok-ink);
 }
 .sv-link-go {
-  color: var(--ok);
+  color: var(--ok-ink);
   font-weight: 700;
   animation: pf-nudge-r 0.9s ease-in-out 2;
 }
@@ -1410,7 +1411,7 @@
 .sv-moved {
   display: block;
   font-weight: 600;
-  color: var(--ok);
+  color: var(--ok-ink);
 }
 .sv-state {
   display: block;

@@ -655,3 +655,17 @@ describe('Section 4, pull requests and the team scenario', () => {
     expect(lastExplain(s)?.text).not.toContain('paused the rebase')
   })
 })
+
+describe('command cards fit a desktop lesson card', () => {
+  // A 485px card at 1280px leaves about 459px for the text; 12px mono letters are 7.2px wide.
+  const MAX = 63
+  for (const lesson of allLessons()) {
+    for (const page of lesson.pages ?? []) {
+      if (page.kind !== 'do' || page.command.length === 0) continue
+      const full = page.command.map((p) => p.text).join(' ')
+      it(`${lesson.id}: ${full}`, () => {
+        expect(full.length).toBeLessThanOrEqual(MAX)
+      })
+    }
+  }
+})
