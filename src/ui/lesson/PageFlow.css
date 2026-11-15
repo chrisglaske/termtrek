@@ -142,6 +142,10 @@
   transition: opacity 0.5s, box-shadow 0.4s, transform 0.5s;
 }
 .sv-box h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
   margin: 0 0 2px;
   font-size: 14px;
   font-weight: 700;
@@ -151,6 +155,10 @@
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--mute);
+}
+.sv-n1 .sv-off,
+.sv-n1 .sv-arrow {
+  display: none;
 }
 .sv-off {
   opacity: 0;
@@ -1209,6 +1217,10 @@
     max-height: calc(100dvh - 200px);
     overflow-y: auto;
   }
+  /* The lesson already taught the merge styles on the page before; here they would only push the button out of view. */
+  .pf-server-site .rp-ways {
+    display: none;
+  }
   .pf-server-site .rp-prh {
     padding-top: 8px;
     padding-bottom: 6px;
@@ -1640,7 +1652,7 @@
   border-style: dashed;
 }
 .sv-cmp-tag {
-  margin-left: 6px;
+  margin-left: 0;
   padding: 0 7px;
   font-size: 10.5px;
   font-weight: 700;

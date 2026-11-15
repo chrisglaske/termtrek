@@ -196,7 +196,7 @@ export function GraphVisual({ world, v, last }: { world: World; v: GraphSpec; la
         {list}
         <figcaption>
           {changeLine}
-          <span>Oldest on the left, newest on the right</span>
+          <span>{list ? 'The list is newest first. The picture runs the other way: oldest on the left, newest on the right.' : 'Oldest on the left, newest on the right'}</span>
         </figcaption>
       </figure>
     )

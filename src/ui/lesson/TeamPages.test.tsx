@@ -5,6 +5,7 @@ import { axe } from 'vitest-axe'
 import App from '../App'
 import { STORAGE_KEY } from '../../progress/store'
 import { findLesson } from '../../lessons/course'
+import pageFlowCss from './PageFlow.css?raw'
 import { ALEX_AGENDA_LINE, YOUR_AGENDA_LINE } from '../../lessons/team/setups'
 
 const CONVERTED = [
@@ -17,6 +18,11 @@ const CONVERTED = [
   'merge-and-clean-up',
   'update-your-branch',
 ]
+
+// The merge-style explainer is cut from the compact server page: the lesson before it teaches the styles, and it would clip.
+it('hides the merge-style explainer inside the lesson page instead of letting it clip', () => {
+  expect(pageFlowCss).toMatch(/\.pf-server-site \.rp-ways\s*\{[^}]*display:\s*none/)
+})
 
 const input = () => screen.getByRole('textbox', { name: 'Terminal input' })
 /** user-event reads `{` as a key name; `{{` types a literal brace. */
@@ -155,9 +161,17 @@ describe('Team lessons as calm pages', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Open a pull request' })).toHaveFocus()
     expect(screen.getByRole('group', { name: "The server's website" })).toBeInTheDocument()
     expect(continueBtn()).toBeDisabled()
+    // "into" is its own box so it can line up with the two selects.
+    expect(document.querySelector('.rp-into')).toHaveTextContent('into')
     await user.click(screen.getByRole('button', { name: 'Create pull request' }))
     expect(continueBtn()).toBeEnabled()
     expect(screen.getByText(/Pull request #1 is open/)).toBeInTheDocument()
+    // The lead now reads the page's done copy, and the card stays in the right column in its new state.
+    expect(document.querySelector('.pf-lead')).toHaveTextContent('Pull request #1 is open')
+    expect(document.querySelector('.pf-lead')).not.toHaveTextContent('Click')
+    const doneCard = screen.getByRole('region', { name: 'Pull request #1: feat: add a home page' })
+    expect(doneCard.closest('.pf-right')).not.toBeNull()
+    expect(doneCard).toHaveTextContent('Open')
     // The site goes away once the step is done, so nothing can be merged early.
     expect(screen.queryByRole('group', { name: "The server's website" })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Create a merge commit' })).toBeNull()
@@ -178,6 +192,11 @@ describe('Team lessons as calm pages', () => {
     await toPage(user, 'merge-and-clean-up', 'Merge the pull request')
     await user.click(screen.getByRole('button', { name: 'Create a merge commit' }))
     expect(screen.getByText(/Merged on the server/)).toBeInTheDocument()
+    expect(document.querySelector('.pf-lead')).toHaveTextContent('Merged on the server')
+    expect(document.querySelector('.pf-lead')).not.toHaveTextContent('Click')
+    const merged = screen.getByRole('region', { name: 'Pull request #1: feat: add a home page' })
+    expect(merged.closest('.pf-right')).not.toBeNull()
+    expect(merged).toHaveTextContent('Merged')
     expect(screen.queryByRole('button', { name: 'Delete branch' })).toBeNull()
     await toPage(user, 'merge-and-clean-up', 'Delete the server copy')
     expect(screen.getByText('Your computer has no homepage branch.')).toBeInTheDocument()

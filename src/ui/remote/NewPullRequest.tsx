@@ -80,7 +80,9 @@ export function NewPullRequest({
             ))}
           </select>
         </label>
-        <span aria-hidden="true">into</span>
+        <span className="rp-into" aria-hidden="true">
+          into
+        </span>
         <label>
           <span className="rp-lbl">Base</span>
           <select className="rp-select" value={base} onChange={(e) => setBase(e.target.value)}>

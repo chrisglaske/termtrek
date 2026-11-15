@@ -107,15 +107,17 @@ function Dots({ count, at }: { count: number; at: number }): React.JSX.Element {
   )
 }
 
-export function Head({ page, headRef }: { page: ReadPage | DoPage; headRef?: React.Ref<HTMLHeadingElement> }): React.JSX.Element {
+export function Head({ page, headRef, done = false }: { page: ReadPage | DoPage; headRef?: React.Ref<HTMLHeadingElement>; done?: boolean }): React.JSX.Element {
+  // A page passed with clicks has no result line of its own: once it is done, the lead says what happened.
+  const result = done && page.kind === 'do' && page.on === 'server'
   return (
     <>
       <p className="pf-kick">{page.kicker}</p>
       <h2 className="pf-title" ref={headRef} tabIndex={-1}>
         {page.title}
       </h2>
-      <div className="pf-lead">
-        <RichText text={page.body} />
+      <div className="pf-lead" role={result ? 'status' : undefined}>
+        <RichText text={result && page.kind === 'do' ? page.done : page.body} />
       </div>
     </>
   )
@@ -130,7 +132,8 @@ function Visual({ page, state, done, refused = false }: { page: ReadPage | DoPag
   if (v.kind === 'rewind') return <RewindVisual world={state.world} />
   if (v.kind === 'conflict') return <ConflictVisual world={state.world} file={v.file} theirs={v.theirs} markers={v.markers} />
   if (v.kind === 'server') return <ServerVisual world={state.world} branch={v.branch} last={state.ran[state.ran.length - 1]} />
-  if (v.kind === 'pr') return <PrVisual world={state.world} />
+  // A page passed on the server shows its card in the right column once done, so the left one steps aside.
+  if (v.kind === 'pr') return page.kind === 'do' && page.on === 'server' && done ? null : <PrVisual world={state.world} />
   if (v.kind === 'graph') return <GraphVisual world={state.world} v={v} last={state.ran[state.ran.length - 1]} />
   if (v.kind === 'identity') return <IdentityVisual world={state.world} />
   return null
@@ -334,18 +337,7 @@ function ServerBody({
           <RemotePanel world={state.world} error={state.remoteError} start={start} {...remote} />
         </div>
       )}
-      <div className="pf-result" aria-live="polite">
-        {ok && (
-          <div className="pf-good">
-            <span className="pf-good-i" aria-hidden="true">
-              ✓
-            </span>
-            <span>
-              <RichText text={page.done} />
-            </span>
-          </div>
-        )}
-      </div>
+      {ok && <PrVisual world={state.world} fresh />}
     </>
   )
 }
@@ -501,7 +493,7 @@ export function PageRun({
             {/* On a wide, short screen the lesson text and picture sit beside the command and terminal, so a page fits without scrolling. */}
             <div className="pf-body">
               <div className="pf-left">
-                <Head page={page} headRef={headRef} />
+                <Head page={page} headRef={headRef} done={page.kind === 'do' && ok} />
                 <Visual page={page} state={state} done={page.kind === 'do' && ok} refused={page.kind === 'do' && !ok && refusedOverwrite(state, starts.from(page.step))} />
                 {page.kind === 'do' && !ok && page.visual.kind !== 'none' && <FailedNote state={state} from={starts.from(page.step)} />}
               </div>

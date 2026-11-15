@@ -15,6 +15,6 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['src/test/setup.ts'],
     // theme.test.ts reads tokens.css?raw to check token contrast.
-    css: { include: [/tokens\.css/] },
+    css: { include: [/tokens\.css/, /Home\.css/, /PageFlow\.css/] },
   },
 })

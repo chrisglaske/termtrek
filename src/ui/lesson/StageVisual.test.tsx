@@ -4,6 +4,7 @@ import { createWorld } from '../../engine/world'
 import { runLine } from '../../engine/interpreter'
 import { firstCommit } from '../../lessons/foundations/first-commit'
 import { StageVisual } from './StageVisual'
+import css from './PageFlow.css?raw'
 
 // Where things sit on screen: the page scroll moves everything; a chip in the Staged box sits 200px to the right.
 let scroll = 0
@@ -75,5 +76,22 @@ describe('StageVisual ignored files', () => {
     expect(row.querySelector('.sv-ign-name')).toHaveTextContent('debug.log')
     expect(row.querySelector('.sv-ign-name .sv-tag')).toBeNull()
     expect(row.querySelector('.sv-tag')).toHaveTextContent('ignored')
+  })
+})
+
+describe('StageVisual empty boxes', () => {
+  it('says "Nothing staged" for an empty Staged box, not "Nothing chosen yet"', () => {
+    const world = createWorld(firstCommit.setup)
+    const { container } = render(<StageVisual world={world} show={['folder', 'staged']} />)
+    expect(container.querySelector('.sv-staged')).toHaveTextContent('Nothing staged')
+    expect(container.textContent).not.toContain('Nothing chosen')
+  })
+
+  it('collapses the hidden boxes when only one is shown, so a lone box sits centred', () => {
+    expect(css).toMatch(/\.sv-n1 \.sv-off,\s*\.sv-n1 \.sv-arrow\s*\{[^}]*display:\s*none/)
+  })
+
+  it('lets the compared pill wrap inside its box instead of poking out', () => {
+    expect(/\.sv-box h3\s*\{([^}]*)\}/.exec(css)?.[1]).toMatch(/flex-wrap:\s*wrap/)
   })
 })
