@@ -1119,6 +1119,10 @@
   /* Don't stack a margin on top of the left part's own bottom margin. */
   margin-top: 0;
 }
+/* The folder tree, the identity card and the note under them end the left part like the other pictures do. */
+.pf-left > :is(.pf-tree, .pf-ident, .pf-tree-note):last-child {
+  margin-bottom: 22px;
+}
 
 @media (min-width: 900px) and (max-height: 900px) {
   .pf-top {
@@ -1190,6 +1194,7 @@
   .pf-do .pf-left .pf-lead {
     margin-bottom: 18px;
   }
+  .pf-do .pf-left > :is(.pf-tree, .pf-ident, .pf-tree-note):last-child,
   .pf-do .pf-left .sv,
   .pf-do .pf-left .pf-graph,
   .pf-do .pf-left .pf-pr,
