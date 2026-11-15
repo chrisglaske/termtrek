@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { axe } from 'vitest-axe'
@@ -65,6 +65,25 @@ describe('LessonScreen', () => {
     expect(within(course).getByRole('link', { name: /Unstage a file/ })).toHaveAttribute('aria-current', 'page')
     expect(within(course).getAllByText('Coming next').length).toBe(2)
     expect(screen.getByRole('tab', { name: 'Your repo' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('moves focus into the course drawer and back to Course on Escape', async () => {
+    const { user } = open()
+    const btn = screen.getByRole('button', { name: 'Course' })
+    await user.click(btn)
+    const course = screen.getByRole('navigation', { name: 'Course' })
+    expect(document.activeElement).toBe(within(course).getByRole('link', { name: /Unstage a file/ }))
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('navigation', { name: 'Course' })).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(btn)
+  })
+
+  it('closes Lesson options when focus leaves it', async () => {
+    const { user } = open()
+    await user.click(screen.getByRole('button', { name: 'Lesson options' }))
+    expect(screen.getByRole('button', { name: 'Reset this lesson' })).toBeVisible()
+    act(() => input().focus())
+    expect(screen.queryByRole('button', { name: 'Reset this lesson' })).toBeNull()
   })
 
   it('shows assumes', () => {

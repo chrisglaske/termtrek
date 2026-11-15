@@ -23,11 +23,17 @@ export function OptionsMenu({ onReset }: { onReset: () => void }): React.JSX.Ele
         btnRef.current?.focus()
       }
     }
+    // Tabbing out of the menu closes it, so it never covers what has focus.
+    const onFocus = (e: FocusEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false)
+    }
     document.addEventListener('pointerdown', onDown)
     document.addEventListener('keydown', onKey)
+    document.addEventListener('focusin', onFocus)
     return () => {
       document.removeEventListener('pointerdown', onDown)
       document.removeEventListener('keydown', onKey)
+      document.removeEventListener('focusin', onFocus)
     }
   }, [open])
 

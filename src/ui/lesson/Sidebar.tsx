@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
 import { course } from '../../lessons/course'
 import { useProgress } from '../../progress/ProgressContext'
+import { useFocusTrap } from '../useFocusTrap'
 import './Sidebar.css'
 
 function Check(): React.JSX.Element {
@@ -17,6 +18,12 @@ export const COURSE_DRAWER_ID = 'course-drawer'
 /** The course list, as a drawer that the lesson header's Course button opens. */
 export function Sidebar({ currentId, open, onClose }: { currentId: string; open: boolean; onClose: () => void }): React.JSX.Element {
   const { progress } = useProgress()
+  const navRef = useRef<HTMLElement>(null)
+  // The drawer covers the page: keep Tab inside it and start at this lesson.
+  useFocusTrap(navRef, open)
+  useEffect(() => {
+    if (open) navRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.focus()
+  }, [open])
   const setOpen = (o: boolean) => {
     if (!o) onClose()
   }
@@ -33,7 +40,7 @@ export function Sidebar({ currentId, open, onClose }: { currentId: string; open:
   return (
     <>
       {open && <div className="side-backdrop" onClick={onClose} aria-hidden="true" />}
-      <nav id={COURSE_DRAWER_ID} className="side" aria-label="Course" hidden={!open}>
+      <nav ref={navRef} id={COURSE_DRAWER_ID} className="side" aria-label="Course" hidden={!open}>
       <div className="side-body">
         {course.map((section) => {
           const later = section.status === 'later'

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router'
 import { Nav } from './layout/Nav'
 import { useDocumentTitle } from './layout/useDocumentTitle'
@@ -6,6 +7,7 @@ import './Page.css'
 
 export function NotFound(): React.JSX.Element {
   useDocumentTitle('Page not found · TermTrek')
+  useNoIndex()
   return (
     <>
       <Nav />
@@ -20,4 +22,24 @@ export function NotFound(): React.JSX.Element {
       </div>
     </>
   )
+}
+
+/**
+ * The host answers unknown URLs with the app (HTTP 200), so tell search
+ * engines not to index this one, and point the canonical at the home page.
+ */
+function useNoIndex(): void {
+  useEffect(() => {
+    const meta = document.createElement('meta')
+    meta.name = 'robots'
+    meta.content = 'noindex'
+    document.head.append(meta)
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    const before = canonical?.getAttribute('href')
+    canonical?.setAttribute('href', 'https://termtrek.work/')
+    return () => {
+      meta.remove()
+      if (before != null) canonical?.setAttribute('href', before)
+    }
+  }, [])
 }

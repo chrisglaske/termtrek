@@ -8,6 +8,7 @@ import { Playground } from './playground/Playground'
 import { GuidesIndex } from './guides/GuidesIndex'
 import { GuidePage } from './guides/GuidePage'
 import { PhoneGate } from './phone/PhoneGate'
+import { RouteChange } from './layout/RouteChange'
 
 export function AppRoutes(): React.JSX.Element {
   return (
@@ -26,6 +27,7 @@ export function AppRoutes(): React.JSX.Element {
 export default function App(): React.JSX.Element {
   return (
     <ProgressProvider>
+      <RouteChange />
       <AppRoutes />
     </ProgressProvider>
   )

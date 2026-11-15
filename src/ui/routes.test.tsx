@@ -21,6 +21,7 @@ describe('routes', () => {
     expect(screen.getByRole('heading', { name: "We couldn't find that page." })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Go to the course' })).toHaveAttribute('href', '/learn')
     expect(document.title).toBe('Page not found · TermTrek')
+    expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex')
   })
 
   it('opens the playground', () => {
