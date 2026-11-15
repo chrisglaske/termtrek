@@ -21,8 +21,12 @@ export function Sidebar({ currentId, open, onClose }: { currentId: string; open:
   const navRef = useRef<HTMLElement>(null)
   // The drawer covers the page: keep Tab inside it and start at this lesson.
   useFocusTrap(navRef, open)
+  // On closing, go back to the Course button, even when the click that opened the drawer did not focus it (Safari).
+  const wasOpen = useRef(false)
   useEffect(() => {
     if (open) navRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.focus()
+    else if (wasOpen.current) document.querySelector<HTMLElement>(`[aria-controls="${COURSE_DRAWER_ID}"]`)?.focus()
+    wasOpen.current = open
   }, [open])
   const setOpen = (o: boolean) => {
     if (!o) onClose()
@@ -41,6 +45,14 @@ export function Sidebar({ currentId, open, onClose }: { currentId: string; open:
     <>
       {open && <div className="side-backdrop" onClick={onClose} aria-hidden="true" />}
       <nav ref={navRef} id={COURSE_DRAWER_ID} className="side" aria-label="Course" hidden={!open}>
+      <div className="side-top">
+        <button type="button" className="side-close" aria-label="Close the course list" onClick={onClose}>
+          <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          </svg>
+          Close
+        </button>
+      </div>
       <div className="side-body">
         {course.map((section) => {
           const later = section.status === 'later'

@@ -31,6 +31,31 @@
     opacity: 0;
   }
 }
+/* A visible way out besides Escape and the backdrop */
+.side-top {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 6px;
+}
+.side-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.side-close:hover {
+  background: var(--raised);
+  color: var(--ink);
+}
 .side-sec + .side-sec {
   margin-top: 14px;
 }

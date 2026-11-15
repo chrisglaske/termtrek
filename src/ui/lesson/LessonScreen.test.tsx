@@ -78,6 +78,28 @@ describe('LessonScreen', () => {
     expect(document.activeElement).toBe(btn)
   })
 
+  it('closes the course drawer with its Close button', async () => {
+    const { user } = open()
+    const btn = screen.getByRole('button', { name: 'Course' })
+    await user.click(btn)
+    const course = screen.getByRole('navigation', { name: 'Course' })
+    const close = within(course).getByRole('button', { name: 'Close the course list' })
+    // First stop in the drawer, so Shift+Tab from the lesson list reaches it.
+    expect(course.querySelector('a[href], button')).toBe(close)
+    await user.click(close)
+    expect(screen.queryByRole('navigation', { name: 'Course' })).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(btn)
+  })
+
+  it('returns focus to Course after closing even when the click did not focus it (Safari)', async () => {
+    const { user } = open()
+    const btn = screen.getByRole('button', { name: 'Course' })
+    act(() => btn.click())
+    const course = screen.getByRole('navigation', { name: 'Course' })
+    await user.click(within(course).getByRole('button', { name: 'Close the course list' }))
+    expect(document.activeElement).toBe(btn)
+  })
+
   it('closes Lesson options when focus leaves it', async () => {
     const { user } = open()
     await user.click(screen.getByRole('button', { name: 'Lesson options' }))
