@@ -38,6 +38,11 @@ const NAME_STEPS: GuideStep[] = [
     body: 'New repositories will start on a branch called **main**, which is what GitHub expects.',
     command: 'git config --global init.defaultBranch main',
   },
+  {
+    title: 'Choose what a divergent pull does',
+    body: 'When your branch and the server have both moved on, `git pull` has to combine them. Setting `pull.rebase` to `false` makes it merge, so a divergent pull merges instead of stopping to ask. Setting it to `true` replays your commits on top instead.',
+    command: 'git config --global pull.rebase false',
+  },
 ]
 
 const SSH_STEPS: GuideStep[] = [
@@ -61,13 +66,35 @@ const SSH_STEPS: GuideStep[] = [
     body: 'The first time, type `yes` to trust github.com. Success looks like "Hi your-username! You\'ve successfully authenticated, but GitHub does not provide shell access."',
     command: 'ssh -T git@github.com',
   },
+  {
+    title: 'Use the SSH address',
+    body: 'Clone with the SSH address, which looks like `git@github.com:your-name/your-repo.git` (the **Code** button on GitHub shows it under **SSH**). To switch a clone you already made from https to SSH, run the command below with your own name and repository.',
+    command: 'git remote set-url origin git@github.com:your-name/your-repo.git',
+  },
 ]
+
+const sshAgentSteps = (os: Os): GuideStep[] =>
+  os === 'macos'
+    ? [
+        {
+          title: 'Let your Mac remember the key',
+          body: 'If you set a passphrase, this saves it in your Keychain so you are not asked every time. Then add these four lines to the file `~/.ssh/config` (create it if it is missing): `Host github.com`, `AddKeysToAgent yes`, `UseKeychain yes` and `IdentityFile ~/.ssh/id_ed25519`, each on its own line, with the last three indented.',
+          command: 'ssh-add --apple-use-keychain ~/.ssh/id_ed25519',
+        },
+      ]
+    : [
+        {
+          title: 'Start the ssh-agent',
+          body: 'In Git Bash, start the agent, then add your key. If you set a passphrase, you type it once per session. If you use the Windows OpenSSH service instead, start the **OpenSSH Authentication Agent** service first.',
+          command: 'eval "$(ssh-agent -s)" && ssh-add',
+        },
+      ]
 
 const httpsSteps = (store: string): GuideStep[] => [
   {
     title: 'Create a token',
     group: 'Option A: HTTPS with a token (do this or Option B, not both)',
-    body: 'On github.com open your profile menu, then **Settings**, then **Developer settings**, then **Personal access tokens**, then **Fine-grained tokens**. Choose **Generate new token**, pick only the repositories you need, and give it the minimum permission: **Contents** set to read and write. Set an expiry date.',
+    body: 'On github.com open your profile menu, then **Settings**, then **Developer settings**, then **Personal access tokens**, then **Fine-grained tokens**. Choose **Generate new token**, pick only the repositories you need, and give it the minimum permission: **Contents** set to read and write. Set an expiry date. If you will push files under `.github/workflows/`, also allow **Workflows**. If the repository belongs to an organization, an owner may need to approve the token.',
   },
   {
     title: 'Sign in when Git asks',
@@ -93,8 +120,13 @@ export const guides: Guide[] = [
         },
         {
           title: 'Install the Command Line Tools',
-          body: 'This is the simplest route. A window asks to install the developer tools, which include Git. Click Install and wait for it to finish. If you already use Homebrew, you can instead run `brew install git`.',
+          body: 'This is the simplest route. A window asks to install the developer tools, which include Git. (Some Macs show this window the first time you type `git`, which is fine too.) Click Install and wait for it to finish. If you already use Homebrew, you can instead run `brew install git`.',
           command: 'xcode-select --install',
+        },
+        {
+          title: 'Choose the editor Git opens',
+          body: 'Git sometimes opens a text editor, for example to write a commit message. Make it VS Code. In VS Code, open the Command Palette and run **Shell Command: Install \'code\' command in PATH**. Then run the command below. If you use Cursor, use `cursor --wait` in place of `code --wait`.',
+          command: 'git config --global core.editor "code --wait"',
         },
       ],
       windows: [
@@ -104,11 +136,16 @@ export const guides: Guide[] = [
         },
         {
           title: 'Run the installer',
-          body: 'Accept the defaults on every screen. They are sensible, and the installer also sets up Git Credential Manager, which remembers your GitHub sign-in.',
+          body: 'On the editor screen choose **Visual Studio Code** (or Notepad). On the screen about the name of the first branch, choose **Override the default branch name** and type **main**. The rest is defaults: they are sensible, and the installer also sets up Git Credential Manager, which remembers your GitHub sign-in.',
         },
         {
           title: 'Open Git Bash',
           body: 'Open the Start menu, type **Git Bash** and press Enter. A terminal window opens. The commands in these guides work there.',
+        },
+        {
+          title: 'Choose the editor Git opens',
+          body: 'If you did not pick an editor in the installer, or want VS Code now, run the command below. If you use Cursor, use `cursor --wait` in place of `code --wait`.',
+          command: 'git config --global core.editor "code --wait"',
         },
       ],
     },
@@ -145,13 +182,15 @@ export const guides: Guide[] = [
       macos: [
         ...httpsSteps('macOS saves it in your Keychain, so you only do this once.'),
         ...SSH_STEPS,
+        ...sshAgentSteps('macos'),
       ],
       windows: [
-        ...httpsSteps('On Windows, Git Credential Manager may open a browser window to sign in instead, which is fine. It saves the result, so you only do this once.'),
+        ...httpsSteps('On Windows, you can skip the token: push once, and Git Credential Manager opens a browser to sign in. No token needed. Use a token only as the fallback. Git Credential Manager saves the result, so you only do this once.'),
         ...SSH_STEPS,
+        ...sshAgentSteps('windows'),
       ],
     },
-    check: 'For SSH, run `ssh -T git@github.com`. You should see "Hi your-username! You\'ve successfully authenticated, but GitHub does not provide shell access." For HTTPS, run `git ls-remote https://github.com/your-name/your-private-repo.git`, using one of your own private repositories. It prints a list of commits instead of an error. The first time, Git may ask you to sign in.',
+    check: 'For SSH, run `ssh -T git@github.com`. You should see "Hi your-username! You\'ve successfully authenticated, but GitHub does not provide shell access." For HTTPS, run `git ls-remote https://github.com/your-name/your-private-repo.git`, using one of your own private repositories. It prints the branches and their commit IDs instead of an error. Any repository you can push to works. The first time, Git may ask you to sign in.',
   },
 ]
 

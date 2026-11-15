@@ -122,7 +122,7 @@ export const amend: Lesson = {
       id: 'real-editor',
       kicker: 'On your own computer',
       title: 'The editor may look different',
-      body: 'Here, Git opens a simple editor. On your computer, Git opens whichever editor it is set to, and out of the box that is often **Vim**. If you see a strange screen with `~` down the side, type `:wq` and press Enter to save and leave. To skip the editor, give the message on the line: `git commit --amend -m "new message"`. The [setup guide](/guides/set-your-name) shows how to make Git open VS Code instead.',
+      body: 'Here, Git opens a simple editor. On your computer, Git opens whichever editor it is set to, and out of the box that is often **Vim**. If you see a strange screen with `~` down the side, type `:wq` and press Enter to save and leave. To skip the editor, give the message on the line: `git commit --amend -m "new message"`. The [setup guide](/guides/install-git) shows how to make Git open VS Code instead.',
       visual: { kind: 'none' },
     },
     {
