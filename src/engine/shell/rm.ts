@@ -1,7 +1,7 @@
 import type { CommandFn } from '../registry';
 import type { OutLine } from '../types';
 import { resolvePath } from '../paths';
-import { err, insideHome, isDir, isFile } from './fs';
+import { err, hasVirtualGit, insideHome, isDir, isFile } from './fs';
 
 export const rm: CommandFn = (world, args) => {
   let recursive = false;
@@ -31,6 +31,12 @@ export const rm: CommandFn = (world, args) => {
     } else if (recursive && (abs === '/' || world.home === abs || world.home.startsWith(abs + '/'))) {
       lines.push(err(`rm: it is dangerous to operate recursively on '${abs === world.home ? '~' : abs}'`));
       exitCode = 1;
+    } else if (repo && abs === repo.root + '/.git') {
+      if (hasVirtualGit({ ...world, repo }, repo.root) && recursive) repo = null;
+      else {
+        lines.push(err(`rm: cannot remove '${p}': Is a directory`));
+        exitCode = 1;
+      }
     } else if (!isFile({ ...world, files }, abs) && !isDir({ ...world, dirs }, abs)) {
       if (!force) {
         lines.push(err(`rm: cannot remove '${p}': No such file or directory`));

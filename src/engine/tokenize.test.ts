@@ -50,3 +50,16 @@ describe('tokenize escapes', () => {
     expect(words('echo \\"x')[1]).toEqual({ kind: 'word', value: '"x' });
   });
 });
+
+describe('tokenize glob flag', () => {
+  const flag = (line: string) => words(line).map((t) => (t.kind === 'word' ? !!t.glob : null));
+  it('is true for unquoted * ? [', () => {
+    expect(flag('ls *.txt a?.md [ab].c')).toEqual([false, true, true, true]);
+  });
+  it('is false when quoted or escaped', () => {
+    expect(flag('echo "*" \'*.txt\' \\* "a?"')).toEqual([false, false, false, false, false]);
+  });
+  it('is true for the unquoted part of a mixed word', () => {
+    expect(flag('ls "a b"*')).toEqual([false, true]);
+  });
+});

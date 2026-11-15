@@ -2,6 +2,7 @@ import type { Explain, OutLine, RunResult, World } from './types';
 import { registry } from './registry';
 import { resolvePath } from './paths';
 import { tokenize } from './tokenize';
+import { expandGlob } from './glob';
 import type { Token } from './tokenize';
 import { didYouMean } from './suggest';
 import { err, insideHome, isDir, parentOf } from './shell/fs';
@@ -11,6 +12,8 @@ interface Segment {
   /** How this segment was joined to the previous one: `&&` runs only after success, `;` always runs. */
   after: '&&' | ';' | null;
   words: string[];
+  /** Indexes into `words` that held an unquoted wildcard; expanded when the segment runs. */
+  globs: Set<number>;
   redirect?: { op: '>' | '>>'; target: string };
 }
 
@@ -20,11 +23,12 @@ const PIPES = "termtrek: pipes (|) aren't supported here";
 
 function parse(tokens: Token[]): { ok: true; segments: Segment[] } | { ok: false; message: string; code: number } {
   const segments: Segment[] = [];
-  let cur: Segment = { after: null, words: [] };
+  let cur: Segment = { after: null, words: [], globs: new Set() };
   let started = false; // current segment has any word or redirect
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i]!;
     if (t.kind === 'word') {
+      if (t.glob) cur.globs.add(cur.words.length);
       cur.words.push(t.value);
       started = true;
     } else if (t.value === '|') {
@@ -32,7 +36,7 @@ function parse(tokens: Token[]): { ok: true; segments: Segment[] } | { ok: false
     } else if (t.value === '&&' || t.value === ';') {
       if (!started) return { ok: false, message: syntax(t.value), code: 2 };
       segments.push(cur);
-      cur = { after: t.value, words: [] };
+      cur = { after: t.value, words: [], globs: new Set() };
       started = false;
     } else {
       const next = tokens[i + 1];
@@ -87,7 +91,13 @@ function runUnsafe(start: World, line: string): RunResult {
 
   for (const seg of parsed.segments) {
     if (seg.after === '&&' && exitCode !== 0) continue;
-    const [name, ...args] = seg.words;
+    // Like bash, expand wildcards when this command runs, against the world as the earlier commands left it.
+    const words = seg.words.flatMap((w, i) => {
+      if (!seg.globs.has(i)) return [w];
+      const hits = expandGlob(world, w);
+      return hits.length > 0 ? hits : [w];
+    });
+    const [name, ...args] = words;
     let segLines: OutLine[] = [];
     let segCode = 0;
     if (name !== undefined) {
@@ -95,7 +105,7 @@ function runUnsafe(start: World, line: string): RunResult {
       if (!fn) {
         segLines = [err(`bash: ${name}: command not found`)];
         segCode = 127;
-        explain = suggestion(seg.words, parsed.segments.length === 1 ? line : undefined) ?? explain;
+        explain = suggestion(words, parsed.segments.length === 1 ? line : undefined) ?? explain;
       } else {
         const r = fn(world, args, {});
         if (r.world) world = r.world;
@@ -103,7 +113,7 @@ function runUnsafe(start: World, line: string): RunResult {
         segCode = r.exitCode;
         if (r.explain) explain = r.explain;
         else if (name === 'git' && r.exitCode === 1 && /is not a git command/.test(r.lines[0]?.[0]?.text ?? '')) {
-          explain = suggestion(seg.words, parsed.segments.length === 1 ? line : undefined) ?? explain;
+          explain = suggestion(words, parsed.segments.length === 1 ? line : undefined) ?? explain;
         }
         if (r.clear) clear = true;
         if (r.open) open = r.open;

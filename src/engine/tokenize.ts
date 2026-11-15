@@ -1,13 +1,15 @@
-export type Token = { kind: 'word'; value: string } | { kind: 'op'; value: '&&' | ';' | '|' | '>' | '>>' };
+export type Token = { kind: 'word'; value: string; glob?: boolean } | { kind: 'op'; value: '&&' | ';' | '|' | '>' | '>>' };
 
 export function tokenize(line: string): { ok: true; tokens: Token[] } | { ok: false; error: string } {
   const tokens: Token[] = [];
   let cur = '';
   let inWord = false;
+  let glob = false;
   const flush = () => {
-    if (inWord) tokens.push({ kind: 'word', value: cur });
+    if (inWord) tokens.push(glob ? { kind: 'word', value: cur, glob: true } : { kind: 'word', value: cur });
     cur = '';
     inWord = false;
+    glob = false;
   };
   for (let i = 0; i < line.length; i++) {
     const ch = line[i]!;
@@ -53,6 +55,7 @@ export function tokenize(line: string): { ok: true; tokens: Token[] } | { ok: fa
         i++;
       } else tokens.push({ kind: 'op', value: '>' });
     } else {
+      if (ch === '*' || ch === '?' || ch === '[') glob = true;
       cur += ch;
       inWord = true;
     }

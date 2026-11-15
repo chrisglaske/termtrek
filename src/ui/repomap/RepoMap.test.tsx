@@ -255,3 +255,12 @@ describe('RepoGraph without the next-commit spot', () => {
     expect(width).toBe(shift * 2)
   })
 })
+
+describe('RepoMap after rm -rf .git', () => {
+  it('renders the not-a-repository message', () => {
+    const w = runLine(built([]), 'rm -rf .git').world
+    expect(w.repo).toBeNull()
+    render(<RepoMap world={w} />)
+    expect(screen.getByText(/Not a Git repository yet/)).toBeTruthy()
+  })
+})
