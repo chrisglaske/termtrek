@@ -50,6 +50,11 @@ describe('HowItWorks', () => {
     delete (window as { matchMedia?: unknown }).matchMedia
   })
 
+  it('shows the lesson header as it looks in the course: a Lessons button', () => {
+    const { container } = render(<HowItWorks />)
+    expect(container.querySelector('.lp-crs-t')).toHaveTextContent('Lessons')
+  })
+
   it('steps through the four parts on a timer, jumps on click, and pauses', () => {
     const { unmount } = render(<HowItWorks />)
     expect(pressed()).toEqual(['Understand the idea'])

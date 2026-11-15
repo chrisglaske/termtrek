@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router'
 import { Nav } from './layout/Nav'
 import { useDocumentTitle } from './layout/useDocumentTitle'
@@ -6,6 +7,7 @@ import './Page.css'
 
 export function NotFound(): React.JSX.Element {
   useDocumentTitle('Page not found · TermTrek')
+  useNoIndex()
   return (
     <>
       <Nav />
@@ -20,4 +22,31 @@ export function NotFound(): React.JSX.Element {
       </div>
     </>
   )
+}
+
+/**
+ * The host answers unknown URLs with the app (HTTP 200), so tell search
+ * engines not to index this one, and point the canonical and og:url at the home page.
+ */
+function useNoIndex(): void {
+  useEffect(() => {
+    const meta = document.createElement('meta')
+    meta.name = 'robots'
+    meta.content = 'noindex'
+    document.head.append(meta)
+    // Leaving restores both; the next page sets its own address anyway.
+    const links: Array<[Element | null, string]> = [
+      [document.querySelector('link[rel="canonical"]'), 'href'],
+      [document.querySelector('meta[property="og:url"]'), 'content'],
+    ]
+    const before = links.map(([el, attr]) => el?.getAttribute(attr))
+    for (const [el, attr] of links) el?.setAttribute(attr, 'https://termtrek.work/')
+    return () => {
+      meta.remove()
+      links.forEach(([el, attr], i) => {
+        const was = before[i]
+        if (was != null) el?.setAttribute(attr, was)
+      })
+    }
+  }, [])
 }

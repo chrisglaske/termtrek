@@ -16,19 +16,52 @@ const LINE = 12
 
 /**
  * Places each label under its token, pushing a label to a lower row when it would touch another label
- * or when a connector line would have to run through a label. Labels are placed left to right; when that
- * leaves a connector running through a label (a wide first label reaching past a short token), they are
- * placed right to left instead, which puts the wide label below the short one's connector.
+ * or when a connector line would have to run through a label. Labels are centred and placed left to
+ * right; when that leaves a connector running through a label (a wide first label reaching past a short
+ * token), they are placed right to left instead, which puts the wide label below the short one's connector.
+ * When neither is clean (several wide labels), each label starts at its own connector instead, in a
+ * staircase: a connector can then only pass labels that sit to its other side, so none runs through one.
  */
 export function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Placed[] {
   const order = tokens.map((_, i) => i)
-  const ltr = placeInOrder(tokens, labels, origin, order)
-  if (ltr.clean) return ltr.placed
-  const rtl = placeInOrder(tokens, labels, origin, [...order].reverse())
-  return rtl.clean ? rtl.placed : ltr.placed
+  const reverse = [...order].reverse()
+  const tries = [
+    () => placeInOrder(tokens, labels, origin, order, 'centre'),
+    () => placeInOrder(tokens, labels, origin, reverse, 'centre'),
+    () => placeInOrder(tokens, labels, origin, reverse, 'start'),
+    () => placeInOrder(tokens, labels, origin, order, 'end'),
+  ]
+  // When no layout is clean (a narrow card), keep the one with the fewest clashes.
+  let best: { placed: Placed[]; n: number } | null = null
+  for (const t of tries) {
+    const r = t()
+    if (r.clean) return r.placed
+    const n = clashes(r.placed, labels)
+    if (!best || n < best.n) best = { placed: r.placed, n }
+  }
+  return best!.placed
 }
 
-function placeInOrder(tokens: DOMRect[], labels: number[], origin: DOMRect, order: number[]): { placed: Placed[]; clean: boolean } {
+/** How many times a connector runs through a label or two labels in a row overlap. */
+function clashes(placed: Placed[], labels: number[]): number {
+  let n = 0
+  for (const [i, p] of placed.entries()) {
+    for (const [j, q] of placed.entries()) {
+      if (i === j) continue
+      const w = labels[j] ?? 0
+      if (q.row < p.row && p.x > q.left - 4 && p.x < q.left + w + 4) n++
+      if (q.row === p.row && p.left < q.left + w && q.left < p.left + (labels[i] ?? 0)) n++
+    }
+  }
+  return n
+}
+
+/** Where a label sits on its connector: centred under it, starting at it, or ending at it. */
+type Anchor = 'centre' | 'start' | 'end'
+/** How far a staircase label reaches past its own connector. */
+const LIP = 6
+
+function placeInOrder(tokens: DOMRect[], labels: number[], origin: DOMRect, order: number[], anchor: Anchor): { placed: Placed[]; clean: boolean } {
   const done: Array<Placed & { w: number }> = []
   const placed: Placed[] = []
   let clean = true
@@ -36,7 +69,8 @@ function placeInOrder(tokens: DOMRect[], labels: number[], origin: DOMRect, orde
     const t = tokens[i]!
     const w = labels[i] ?? 0
     const x = t.left - origin.left + t.width / 2
-    const left = Math.max(0, Math.min(x - w / 2, origin.width - w))
+    const want = anchor === 'centre' ? x - w / 2 : anchor === 'start' ? x - LIP : x + LIP - w
+    const left = Math.max(0, Math.min(want, origin.width - w))
     let row = 0
     let free = -1
     // Rows past the number of labels placed so far cannot help.
@@ -59,6 +93,15 @@ function placeInOrder(tokens: DOMRect[], labels: number[], origin: DOMRect, orde
     placed[i] = { x, left, row }
   }
   return { placed, clean }
+}
+
+/** The smallest size a long command may shrink to before the card scrolls instead. */
+const MIN_PX = 12
+
+/** The font size (px) that fits `text` px of command (measured at `base` px) into `room` px, never above `base`. */
+export function fitSize(base: number, text: number, room: number): number {
+  if (text <= room) return base
+  return Math.max(MIN_PX, Math.floor(((base * room) / text) * 2) / 2)
 }
 
 /** The command exactly as it is typed, on one line, with what each part means written under it. */
@@ -92,20 +135,33 @@ export function CommandCard({ parts, typed = '' }: { parts: CommandPart[]; typed
     if (!box) return
     const measure = () => {
       const origin = box.getBoundingClientRect()
-      const toks = Array.from(box.querySelectorAll<HTMLElement>('.cc-tok')).map((el) => el.getBoundingClientRect())
-      const widths = Array.from(box.querySelectorAll<HTMLElement>('.cc-say')).map((el) => el.offsetWidth)
       if (origin.width === 0) return
+      const line = box.querySelector<HTMLElement>('.cc-line')
+      if (line) {
+        // A long command shrinks to fit on one line before the card has to scroll.
+        line.style.fontSize = ''
+        const css = getComputedStyle(line)
+        const pad = parseFloat(css.paddingLeft) + parseFloat(css.paddingRight) + parseFloat(css.borderLeftWidth) + parseFloat(css.borderRightWidth) || 0
+        const base = parseFloat(css.fontSize)
+        const size = base ? fitSize(base, line.scrollWidth - pad, box.clientWidth - pad - 2) : base
+        if (size < base) line.style.fontSize = `${size}px`
+      }
+      const toks = Array.from(box.querySelectorAll<HTMLElement>('.cc-tok')).map((el) => el.getBoundingClientRect())
+      // Exact widths: a rounded-down width lets a label poke past the card.
+      const widths = Array.from(box.querySelectorAll<HTMLElement>('.cc-say')).map((el) => Math.ceil(el.getBoundingClientRect().width))
       // A label wider than the command itself widens the box so it is never clipped.
       setMinW(Math.max(0, ...widths))
       setPlaced(place(toks, widths, origin))
-      setScrolls(box.scrollWidth > box.clientWidth + 1)
+      // Only the command itself counts: labels may reach past it without hiding any of it.
+      setScrolls(!!line && line.scrollWidth > box.clientWidth + 1)
     }
     measure()
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
     ro?.observe(box)
     void document.fonts?.ready.then(measure)
     return () => ro?.disconnect()
-  }, [full])
+    // Extra letters typed past the end make the line longer: fit it again.
+  }, [full, extra.length > 0])
 
   const rows = placed ? Math.max(...placed.map((p) => p.row)) + 1 : 1
   return (

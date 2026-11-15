@@ -173,8 +173,13 @@
   border-radius: 16px;
   overflow: hidden;
 }
+/* Not built yet: quieter frame and title, text still readable (no opacity) */
 .home-sec.later {
-  opacity: 0.65;
+  background: transparent;
+  border-style: dashed;
+}
+.home-sec.later h3 {
+  color: var(--ink2);
 }
 .home-sh-h {
   margin: 0;

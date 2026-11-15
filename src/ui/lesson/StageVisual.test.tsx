@@ -61,3 +61,19 @@ describe('StageVisual file changes', () => {
     expect(animate.mock.calls.every(([f]) => !(f as Keyframe[]).some((k) => String(k.transform ?? '').includes('translate(-')))).toBe(true)
   })
 })
+
+describe('StageVisual ignored files', () => {
+  it('strikes the file name but not its "ignored" tag', () => {
+    let world = createWorld(firstCommit.setup)
+    world = runLine(world, 'touch debug.log').world
+    world = runLine(world, 'echo "debug.log" > .gitignore').world
+    const { container } = render(<StageVisual world={world} show={['folder', 'staged']} />)
+    const row = container.querySelector('.sv-ignored')!
+    expect(row).not.toBeNull()
+    // Struck through for the eye only: no <s>, which some screen readers read out as deleted text.
+    expect(row.querySelector('s')).toBeNull()
+    expect(row.querySelector('.sv-ign-name')).toHaveTextContent('debug.log')
+    expect(row.querySelector('.sv-ign-name .sv-tag')).toBeNull()
+    expect(row.querySelector('.sv-tag')).toHaveTextContent('ignored')
+  })
+})

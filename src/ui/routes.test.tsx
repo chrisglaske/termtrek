@@ -17,10 +17,17 @@ describe('routes', () => {
   beforeEach(() => localStorage.clear())
 
   it('shows not found for an unknown lesson id', () => {
+    // index.html carries these; the not-found page points them at the home page.
+    document.head.insertAdjacentHTML('beforeend', '<link rel="canonical" href="https://termtrek.work/"><meta property="og:url" content="https://termtrek.work/">')
+    window.history.pushState({}, '', '/learn/does-not-exist')
     at('/learn/does-not-exist')
+    window.history.pushState({}, '', '/')
     expect(screen.getByRole('heading', { name: "We couldn't find that page." })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Go to the course' })).toHaveAttribute('href', '/learn')
     expect(document.title).toBe('Page not found · TermTrek')
+    expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex')
+    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://termtrek.work/')
+    expect(document.querySelector('meta[property="og:url"]')).toHaveAttribute('content', 'https://termtrek.work/')
   })
 
   it('opens the playground', () => {
@@ -33,7 +40,8 @@ describe('routes', () => {
   it('lists the guides', () => {
     at('/guides')
     expect(screen.getAllByRole('link', { name: /minutes/ })).toHaveLength(3)
-    expect(document.title).toBe('Guides · TermTrek')
+    expect(screen.getByRole('heading', { level: 1, name: 'Setup guides' })).toBeInTheDocument()
+    expect(document.title).toBe('Setup guides · TermTrek')
   })
 
   it('opens a guide and shows not found for an unknown one', () => {
@@ -41,6 +49,7 @@ describe('routes', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Install Git' })).toBeInTheDocument()
     expect(document.title).toBe('Install Git · TermTrek')
     expect(screen.getByText('xcode-select --install')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'All setup guides' })).toHaveAttribute('href', '/guides')
   })
 
   it('shows not found for an unknown guide', () => {

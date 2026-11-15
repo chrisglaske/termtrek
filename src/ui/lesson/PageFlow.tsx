@@ -477,7 +477,7 @@ export function PageRun({
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
           </svg>
-          Course
+          Lessons
         </button>
         <h1 className="pf-lesson">{lesson.title}</h1>
         <Dots count={pages.length} at={index} />

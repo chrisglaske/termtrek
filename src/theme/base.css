@@ -17,3 +17,4 @@ code,pre,kbd,samp{font-family:var(--mono)}
   white-space: nowrap;
   border: 0;
 }
+main[tabindex="-1"]:focus{outline:none}

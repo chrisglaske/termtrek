@@ -49,6 +49,8 @@ if (existsSync(DIST)) {
     for (const needle of FORBIDDEN) {
       if (text.includes(needle)) problems.push(`${file} references ${needle}`)
     }
+    // The CSP (font-src 'self') blocks fonts inlined as data: URIs.
+    if (file.endsWith('.css') && text.includes('url(data:font')) problems.push(`${file} inlines a font as a data: URI`)
   }
   if (total > MAX_BYTES) {
     problems.push(`dist is ${(total / 1024 / 1024).toFixed(2)} MB, over the 3 MB limit`)

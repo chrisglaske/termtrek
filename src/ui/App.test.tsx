@@ -39,9 +39,11 @@ describe('Nav', () => {
 
   it('nav links point at the right routes', () => {
     renderNav()
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/learn')
+    // "Course", not "Home": people read Home as the landing page.
+    expect(screen.getByRole('link', { name: 'Course' })).toHaveAttribute('href', '/learn')
     expect(screen.getByRole('link', { name: 'Playground' })).toHaveAttribute('href', '/playground')
-    expect(screen.getByRole('link', { name: 'Guides' })).toHaveAttribute('href', '/guides')
+    // "Setup guides", so nobody looks for the lessons there.
+    expect(screen.getByRole('link', { name: 'Setup guides' })).toHaveAttribute('href', '/guides')
   })
 
   it('menu button toggles the links', async () => {
@@ -50,7 +52,7 @@ describe('Nav', () => {
     const button = screen.getByRole('button', { name: 'Menu' })
     expect(button).toHaveAttribute('aria-expanded', 'false')
     const menuId = button.getAttribute('aria-controls') ?? ''
-    expect(document.getElementById(menuId)).toContainElement(screen.getByRole('link', { name: 'Guides' }))
+    expect(document.getElementById(menuId)).toContainElement(screen.getByRole('link', { name: 'Setup guides' }))
     await user.click(button)
     expect(button).toHaveAttribute('aria-expanded', 'true')
     await user.keyboard('{Escape}')

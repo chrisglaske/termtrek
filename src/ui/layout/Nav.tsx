@@ -11,6 +11,7 @@ export function Nav(): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   const menuButton = useRef<HTMLButtonElement>(null)
+  const navRef = useRef<HTMLElement>(null)
   useEffect(() => {
     setOpen(false)
   }, [pathname])
@@ -22,8 +23,18 @@ export function Nav(): React.JSX.Element {
         menuButton.current?.focus()
       }
     }
+    // A click or Tab outside the menu closes it, so it never covers the page.
+    const onOutside = (e: Event): void => {
+      if (!navRef.current?.contains(e.target as Node)) setOpen(false)
+    }
     document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onOutside)
+    document.addEventListener('focusin', onOutside)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onOutside)
+      document.removeEventListener('focusin', onOutside)
+    }
   }, [open])
   return (
     <>
@@ -31,7 +42,7 @@ export function Nav(): React.JSX.Element {
         Skip to main content
       </a>
       <header className="nav">
-        <nav className="nav-inner" aria-label="Main">
+        <nav ref={navRef} className="nav-inner" aria-label="Main">
           <Link className="nav-logo" to="/">
             <Logo size={30} />
             <span className="nav-wordmark">TermTrek</span>{' '}
@@ -49,13 +60,13 @@ export function Nav(): React.JSX.Element {
           </button>
           <div id="nav-menu" className={open ? 'nav-menu is-open' : 'nav-menu'}>
             <Link className="nav-link" to="/learn" onClick={() => setOpen(false)}>
-              Home
+              Course
             </Link>
             <Link className="nav-link" to="/playground" onClick={() => setOpen(false)}>
               Playground
             </Link>
             <Link className="nav-link" to="/guides" onClick={() => setOpen(false)}>
-              Guides
+              Setup guides
             </Link>
             <button
               type="button"

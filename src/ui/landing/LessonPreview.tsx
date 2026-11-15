@@ -227,7 +227,7 @@ export function HowItWorks(): React.JSX.Element {
             <svg width="13" height="13" viewBox="0 0 24 24" focusable="false">
               <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
             </svg>
-            <span className="lp-crs-t">Course</span>
+            <span className="lp-crs-t">Lessons</span>
           </span>
           <span className="lp-name">{firstCommit.title}</span>
           <span className="pf-dots" aria-hidden="true">

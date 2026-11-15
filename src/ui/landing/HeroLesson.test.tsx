@@ -47,6 +47,11 @@ describe('HeroLesson', () => {
     vi.restoreAllMocks()
   })
 
+  it('shows the lesson header as it looks in the course: a Lessons button', () => {
+    const { container } = open()
+    expect(container.querySelector('.lp-crs-t')).toHaveTextContent('Lessons')
+  })
+
   it('opens on the "Choose the file" page, ready to type, with no button to press first', () => {
     open()
     expect(screen.getByText('Move 1 of 2')).toBeInTheDocument()

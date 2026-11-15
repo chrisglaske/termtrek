@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { axe } from 'vitest-axe'
@@ -54,17 +54,58 @@ describe('LessonScreen', () => {
 
   it('shows the lesson header, step and sidebar', async () => {
     open()
-    expect(screen.queryByRole('navigation', { name: 'Course' })).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Course' }))
+    expect(screen.queryByRole('navigation', { name: 'Lessons' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Lessons' }))
     expect(screen.getByText('Beginner, 4 min')).toBeInTheDocument()
     expect(screen.getByText('Step 1 of 2')).toBeInTheDocument()
     const bar = screen.getByRole('progressbar', { name: 'Lesson progress' })
     expect(bar).toHaveAttribute('aria-valuemax', '2')
     expect(screen.getByRole('heading', { level: 2, name: step(0).title })).toBeInTheDocument()
-    const course = screen.getByRole('navigation', { name: 'Course' })
+    const course = screen.getByRole('navigation', { name: 'Lessons' })
     expect(within(course).getByRole('link', { name: /Unstage a file/ })).toHaveAttribute('aria-current', 'page')
     expect(within(course).getAllByText('Coming next').length).toBe(2)
     expect(screen.getByRole('tab', { name: 'Your repo' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('moves focus into the course drawer and back to Lessons on Escape', async () => {
+    const { user } = open()
+    const btn = screen.getByRole('button', { name: 'Lessons' })
+    await user.click(btn)
+    const course = screen.getByRole('navigation', { name: 'Lessons' })
+    expect(document.activeElement).toBe(within(course).getByRole('link', { name: /Unstage a file/ }))
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('navigation', { name: 'Lessons' })).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(btn)
+  })
+
+  it('closes the course drawer with its Close button', async () => {
+    const { user } = open()
+    const btn = screen.getByRole('button', { name: 'Lessons' })
+    await user.click(btn)
+    const course = screen.getByRole('navigation', { name: 'Lessons' })
+    const close = within(course).getByRole('button', { name: 'Close the lesson list' })
+    // First stop in the drawer, so Shift+Tab from the lesson list reaches it.
+    expect(course.querySelector('a[href], button')).toBe(close)
+    await user.click(close)
+    expect(screen.queryByRole('navigation', { name: 'Lessons' })).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(btn)
+  })
+
+  it('returns focus to Lessons after closing even when the click did not focus it (Safari)', async () => {
+    const { user } = open()
+    const btn = screen.getByRole('button', { name: 'Lessons' })
+    act(() => btn.click())
+    const course = screen.getByRole('navigation', { name: 'Lessons' })
+    await user.click(within(course).getByRole('button', { name: 'Close the lesson list' }))
+    expect(document.activeElement).toBe(btn)
+  })
+
+  it('closes Lesson options when focus leaves it', async () => {
+    const { user } = open()
+    await user.click(screen.getByRole('button', { name: 'Lesson options' }))
+    expect(screen.getByRole('button', { name: 'Reset this lesson' })).toBeVisible()
+    act(() => input().focus())
+    expect(screen.queryByRole('button', { name: 'Reset this lesson' })).toBeNull()
   })
 
   it('shows assumes', () => {
@@ -165,8 +206,8 @@ describe('LessonScreen', () => {
     expect(screen.getByRole('link', { name: 'Back to course' })).toHaveAttribute('href', '/#course')
     const saved = localStorage.getItem(STORAGE_KEY) ?? ''
     expect(saved).toContain(ID)
-    await user.click(screen.getByRole('button', { name: 'Course' }))
-    const course = screen.getByRole('navigation', { name: 'Course' })
+    await user.click(screen.getByRole('button', { name: 'Lessons' }))
+    const course = screen.getByRole('navigation', { name: 'Lessons' })
     expect(within(course).getByText('(completed)')).toBeInTheDocument()
   })
 
