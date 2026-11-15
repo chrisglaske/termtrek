@@ -85,6 +85,8 @@ describe('Foundations lessons as calm pages', () => {
     await user.type(input(), 'git log{Enter}')
     vi.setSystemTime(Date.now() + 1000)
     await user.click(continueBtn())
+    expect(screen.getByRole('heading', { name: 'Long output' })).toBeInTheDocument()
+    await user.click(continueBtn())
     expect(screen.getByRole('img', { name: /4 commits in a row/ })).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
   })

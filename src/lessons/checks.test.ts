@@ -292,3 +292,15 @@ describe('remote checks', () => {
     expect(mergedPrTip(merged, 1)).toBe('abc')
   })
 })
+
+describe('helpers tolerate a missing repo (after rm -rf .git)', () => {
+  it('none of them throw', async () => {
+    const all = await import('./checks')
+    const w = runLine(buildWorld({ repo: { at: '' }, run: [] }), 'rm -rf .git').world
+    expect(w.repo).toBeNull()
+    for (const [name, fn] of Object.entries(all)) {
+      if (typeof fn !== 'function' || /^(messageQuality|conventionalMessage)$/.test(name)) continue // these take a message string, not a world
+      expect(() => (fn as (...a: unknown[]) => unknown)(Object.assign({ ran: [], start: w, world: w }, w), 'main', 'x'), name).not.toThrow()
+    }
+  })
+})

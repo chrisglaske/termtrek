@@ -95,6 +95,14 @@ export const createARepo: Lesson = {
     },
     {
       kind: 'read',
+      id: 'real-branch',
+      kicker: 'On your own computer',
+      title: 'The first branch name',
+      body: 'On your own computer, the first branch may be called **master** until you set the default. The [setup guide](/guides/set-your-name) shows how. Most terminals don\'t show the branch in the prompt; `git status` always tells you.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
       id: 'hidden',
       kicker: 'What just happened',
       title: 'Git added a hidden folder',

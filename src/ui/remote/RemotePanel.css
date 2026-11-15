@@ -346,6 +346,11 @@
   flex-wrap: wrap;
   color: var(--ink2);
 }
+.rp-into {
+  /* as tall as the selects beside it, so the word centres on them */
+  padding: 7px 0;
+  line-height: 16px;
+}
 .rp-pick label {
   display: flex;
   flex-direction: column;

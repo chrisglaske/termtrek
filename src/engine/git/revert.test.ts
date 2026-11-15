@@ -169,9 +169,16 @@ describe('git revert', () => {
     expect(text(r)).toEqual([USAGE]);
     const bad = go(world(), 'git revert nope');
     expect(bad.exitCode).toBe(128);
-    expect(text(bad)[0]).toBe("fatal: ambiguous argument 'nope': unknown revision or path not in the working tree.");
+    expect(text(bad)[0]).toBe("fatal: bad revision 'nope'");
     const dirty = go(world(), 'echo z > z.txt', 'git add z.txt', 'git revert --no-edit HEAD~1');
     expect(dirty.exitCode).toBe(128);
     expect(text(dirty)).toEqual(['error: your local changes would be overwritten by revert.', 'hint: commit your changes or stash them to proceed.', 'fatal: revert failed']);
+  });
+});
+
+describe('git revert unborn (B21)', () => {
+  it('says bad revision', () => {
+    const r = runLine(buildWorld({ cwd: 'p', config, repo: { at: 'p' } }), 'git revert HEAD');
+    expect([text(r), r.exitCode]).toEqual([["fatal: bad revision 'HEAD'"], 128]);
   });
 });

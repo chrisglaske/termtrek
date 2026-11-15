@@ -79,7 +79,7 @@ export const checkTheStatus: Lesson = {
       kind: 'read',
       id: 'untracked',
       kicker: 'New word',
-      title: 'Untracked means not saved yet',
+      title: 'Untracked means Git is not watching it yet',
       body: 'Git can see the file, but it is not keeping the file\'s history yet.',
       visual: { kind: 'stage', show: ['folder'] },
     },
@@ -100,7 +100,7 @@ export const checkTheStatus: Lesson = {
       visual: { kind: 'stage', show: ['folder', 'staged'], hot: 'folder' },
       step: 1,
       command: [
-        { text: 'git add', say: 'put it on the list' },
+        { text: 'git add', say: 'stage it' },
         { text: 'notes.txt', say: 'this file' },
       ],
       done: '**Staged.** notes.txt is on the list for your next save.',

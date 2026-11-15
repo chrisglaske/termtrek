@@ -36,7 +36,7 @@ describe('Landing', () => {
 
   it('on a phone, shows a page to read with a way to send it to a computer, and no live lesson', async () => {
     window.matchMedia = ((query: string) => ({
-      matches: query.includes('max-width: 560px'),
+      matches: query === '(max-width: 743px), (max-height: 499px)',
       media: query,
       addEventListener: () => {},
       removeEventListener: () => {},
@@ -46,8 +46,9 @@ describe('Landing', () => {
       expect(screen.queryByRole('textbox', { name: 'Terminal input' })).not.toBeInTheDocument()
       expect(screen.queryByRole('link', { name: 'Scroll for more' })).not.toBeInTheDocument()
       expect(screen.queryByRole('link', { name: 'Start the course' })).not.toBeInTheDocument()
-      expect(screen.getByRole('heading', { name: 'Made for your computer' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Made for an iPad or a computer' })).toBeInTheDocument()
       expect(screen.getAllByRole('button', { name: 'Send to my computer' })).toHaveLength(2)
+      expect(screen.getByText('On a computer? Make the window bigger.')).toBeInTheDocument()
       expect(screen.getByRole('heading', { name: "Ready when you're at your computer." })).toBeInTheDocument()
       // The four lesson steps as a plain list, without the playing lesson.
       expect(screen.getByText('Get unstuck fast')).toBeInTheDocument()

@@ -121,7 +121,7 @@ export const fetchAndPull: Lesson = {
       id: 'pull-idea',
       kicker: 'The idea',
       title: 'Pull brings it into your branch',
-      body: '`git pull` is a fetch followed by a merge. You have no new commits of your own, so your **main** simply moves forward.',
+      body: '`git pull` is a fetch followed by a merge (when both sides have new commits, Git asks how to combine them; the next lessons show how). You have no new commits of your own, so your **main** simply moves forward.',
       visual: { kind: 'server' },
     },
     {

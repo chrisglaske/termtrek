@@ -79,7 +79,7 @@ describe('git fetch', () => {
   });
   it('fetch errors', () => {
     const noRemotes = runLine(run(fresh(), 'git init'), 'git fetch');
-    expect([text(noRemotes), noRemotes.exitCode]).toEqual([['fatal: No remote repository specified.  Please, specify either a URL or a remote name from which new revisions should be fetched.'], 128]);
+    expect([text(noRemotes), noRemotes.exitCode]).toEqual([[], 0]);
     const unknown = runLine(cloned(), 'git fetch upstream');
     expect([text(unknown), unknown.exitCode]).toEqual([
       [
@@ -280,5 +280,20 @@ describe('status tracking lines', () => {
   });
   it('hex ids are 7 chars', () => {
     expect(runLine(commit(cloned(), 'a.txt', 'One'), 'git push').lines.map((l) => l.map((s) => s.text).join('')).join('\n')).toMatch(new RegExp(`${hex}\\.\\.${hex}`));
+  });
+});
+
+describe('remote wording (B16-B18)', () => {
+  it('push -u origin HEAD names HEAD on the left', () => {
+    const r = runLine(run(cloned(), 'git switch -c topic'), 'git push -u origin HEAD');
+    expect(text(r).slice(-3)).toEqual(['To ' + URL, ' * [new branch]      HEAD -> topic', "branch 'topic' set up to track 'origin/topic'."]);
+  });
+  it('push -u when up to date prints Everything up-to-date first', () => {
+    const w = run(cloned(), 'git switch -c topic', 'git push -u origin topic');
+    expect(text(runLine(w, 'git push -u'))).toEqual(['Everything up-to-date', "branch 'topic' set up to track 'origin/topic'."]);
+  });
+  it('fetch with no remote is silent', () => {
+    const r = runLine(run(fresh(), 'git init'), 'git fetch');
+    expect([text(r), r.exitCode]).toEqual([[], 0]);
   });
 });

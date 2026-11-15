@@ -74,7 +74,8 @@ export const gitAdd: CommandFn = (world, args) => {
   }
 
   // Staging a conflicted path marks it resolved.
-  const op = repo.op && repo.op.conflicts.length ? { ...repo.op, conflicts: repo.op.conflicts.filter((p) => !touched.has(p)) } : repo.op;
+  const left = repo.op && repo.op.conflicts.length ? { ...repo.op, conflicts: repo.op.conflicts.filter((p) => !touched.has(p)) } : repo.op;
+  const op = left?.kind === 'stash' && left.conflicts.length === 0 ? null : left; // a stash conflict is over once every path is staged
   const world2 = { ...world, repo: { ...repo, index, op } };
   if (ignoredHit.length) {
     return {

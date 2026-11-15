@@ -1,10 +1,11 @@
 import { useRef } from 'react'
 import type { World } from '../../engine/types'
+import { getConfig } from '../../engine/git/config'
 
 /** Who Git will sign your commits as: the name and email Git has stored, filling in as the learner sets them. */
 export function IdentityVisual({ world }: { world: World }): React.JSX.Element {
-  const name = world.config['user.name']
-  const email = world.config['user.email']
+  const name = getConfig(world, 'user.name')
+  const email = getConfig(world, 'user.email')
   const seen = useRef({ name, email, note: null as string | null })
   if (seen.current.name !== name || seen.current.email !== email) {
     seen.current = {

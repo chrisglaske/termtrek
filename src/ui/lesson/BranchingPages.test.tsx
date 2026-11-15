@@ -132,6 +132,34 @@ describe('Branching lessons as calm pages', () => {
     expect(continueBtn()).toBeEnabled()
     expect(screen.queryByRole('textbox', { name: 'Edit notes.txt' })).toBeNull()
     expect(screen.getByText(/Conflict fixed in the file/)).toBeInTheDocument()
+    // The cards show which side the saved file kept.
+    const incoming = screen.getByRole('region', { name: 'Incoming, launch-date' })
+    const current = screen.getByRole('region', { name: 'Current, main' })
+    expect(incoming).toHaveTextContent('Kept')
+    expect(current).not.toHaveTextContent('Kept')
+    expect(current).toHaveClass('cv-dim')
+  })
+
+  it('marks both cards kept after Keep both', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    open('merge-conflicts')
+    await toPage(user, 'merge-conflicts', 'Run into a conflict')
+    await user.type(input(), typed('git merge launch-date'))
+    await toPage(user, 'merge-conflicts', 'Choose what to keep')
+    await user.type(input(), typed('code notes.txt'))
+    await user.click(screen.getByRole('button', { name: /Keep both/ }))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+    expect(screen.getByRole('region', { name: 'Incoming, launch-date' })).toHaveTextContent('Kept')
+    expect(screen.getByRole('region', { name: 'Current, main' })).toHaveTextContent('Kept')
+  })
+
+  it('names the detached HEAD note once checkout lands on a commit', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    open('checkout-explained')
+    await toPage(user, 'checkout-explained', 'Visit an older commit')
+    await user.type(input(), typed('git checkout HEAD~1'))
+    expect(screen.getAllByText(/HEAD is now at/).length).toBeGreaterThan(0)
+    expect(document.querySelector('.pf-report')?.textContent).toMatch(/detached HEAD/)
   })
 
   it('shows the stash on the shelf while you visit main', async () => {

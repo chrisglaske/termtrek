@@ -142,6 +142,10 @@
   transition: opacity 0.5s, box-shadow 0.4s, transform 0.5s;
 }
 .sv-box h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
   margin: 0 0 2px;
   font-size: 14px;
   font-weight: 700;
@@ -151,6 +155,10 @@
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--mute);
+}
+.sv-n1 .sv-off,
+.sv-n1 .sv-arrow {
+  display: none;
 }
 .sv-off {
   opacity: 0;
@@ -398,8 +406,10 @@
   font-size: 14.5px;
 }
 .pf-term .term-log {
+  /* A whole number of lines (--term-line), so the top line is never cut. */
   max-height: 300px;
-  padding: 12px 16px;
+  max-height: round(down, 300px, var(--term-line, 1.6em));
+  padding: 0 16px 12px;
 }
 .pf-term .term-entry:last-child {
   margin-bottom: 0;
@@ -879,6 +889,21 @@
   text-transform: uppercase;
   color: var(--ink2);
 }
+.cv-dim {
+  opacity: 0.45;
+}
+.cv-kept {
+  border-color: var(--ok-ink);
+}
+.cv-tag {
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ok-ink);
+  border: 1px solid var(--ok-ink);
+  border-radius: 999px;
+}
 .cv-side h3 code {
   font-size: 12px;
   text-transform: none;
@@ -964,15 +989,16 @@
 .sv-side li {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  padding: 4px 0;
+  align-items: baseline;
+  gap: 1px 6px;
+  padding: 3px 0;
   font-size: 14px;
   line-height: 1.4;
   color: var(--t-ink);
 }
 .sv-dot {
   flex: none;
+  align-self: center;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -983,11 +1009,16 @@
   box-shadow: inset 0 0 0 2px var(--accent-ink);
 }
 .sv-msg {
-  min-width: 0;
-  overflow-wrap: anywhere;
+  /* The dot, the message and the tags stay on one line; a long message is cut with an ellipsis (the full text is in its title). */
+  flex: 1 1 0;
+  min-width: 7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sv-chip,
 .sv-tag {
+  flex: none;
   font-family: var(--mono);
   font-size: 11.5px;
   font-weight: 600;
@@ -1002,6 +1033,22 @@
 .sv-tag {
   color: var(--accent-ink);
   background: var(--accent-t);
+}
+.sv-stale {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+.sv-side .sv-chip,
+.sv-side .sv-tag {
+  font-size: 10.5px;
+  padding: 0 5px;
+  line-height: 1.5;
+}
+/* Tags that wrap under the message line up with it, not with the dot. */
+.sv-side .sv-chip:first-of-type,
+.sv-side .sv-msg + .sv-chip {
+  margin-left: 15px;
 }
 .sv-more,
 .sv-empty {
@@ -1150,10 +1197,29 @@
   .pf-do .sv-compact .sv-arrow {
     font-size: 13px;
   }
+  /* Saved commits and the change caption take less room, so a page with five files still fits one screen. */
+  .pf-do .sv-compact .sv-in {
+    padding-top: 4px;
+  }
+  .pf-do .sv-compact .sv-in ul {
+    gap: 4px;
+  }
+  .pf-do .sv-compact .sv-snap {
+    gap: 0 6px;
+    font-size: 12.5px;
+    line-height: 1.3;
+  }
+  .pf-do .sv-change {
+    margin: 8px 0 10px;
+  }
   /* The server's site is as tall as the room allows and scrolls inside itself; its own spacing is trimmed so the merge button is in view. */
   .pf-do .pf-server-site {
     max-height: calc(100dvh - 200px);
     overflow-y: auto;
+  }
+  /* The lesson already taught the merge styles on the page before; here they would only push the button out of view. */
+  .pf-server-site .rp-ways {
+    display: none;
   }
   .pf-server-site .rp-prh {
     padding-top: 8px;
@@ -1257,7 +1323,8 @@
   }
   .pf-term .term-log {
     max-height: clamp(96px, calc(100dvh - 520px), 240px);
-    padding: 8px 14px;
+    max-height: round(down, clamp(96px, calc(100dvh - 520px), 240px), var(--term-line, 1.6em));
+    padding: 0 14px 8px;
   }
   .pf-hint {
     margin-top: 8px;
@@ -1288,8 +1355,19 @@
   .pf-editor {
     height: 170px;
   }
+  /* A file open in the editor gets the room: the terminal shrinks to its last lines and the whole file, markers included, fits. */
+  .pf-right:has(.pf-editor-file) .pf-term .term-log {
+    max-height: calc(var(--term-line, 1.6em) * 2);
+  }
+  /* The cards are not whole lines and would show as a clipped sliver; the editor says the file is open. */
+  .pf-right:has(.pf-editor-file) .pf-term .fb {
+    display: none;
+  }
   .pf-editor-file {
-    height: 200px;
+    height: clamp(230px, calc(100dvh - 355px), 360px);
+  }
+  .pf-editor-file .ed-lbl {
+    display: none;
   }
   .pf-big {
     width: 56px;
@@ -1574,7 +1652,7 @@
   border-style: dashed;
 }
 .sv-cmp-tag {
-  margin-left: 6px;
+  margin-left: 0;
   padding: 0 7px;
   font-size: 10.5px;
   font-weight: 700;

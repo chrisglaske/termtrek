@@ -26,8 +26,6 @@ function commitNudge(c: StepContext): Explain | null {
   if (w[0] !== 'git' || w[1] !== 'commit') return null
   if (w[w.length - 1] === '-m')
     return { kind: 'tip', text: 'Almost. Add your message after `-m`, inside quotes: `git commit -m "Add meeting notes"`.' }
-  if (printed(c).includes('unknown option'))
-    return { kind: 'tip', text: 'Put the whole message inside quotes, so Git reads all the words as one message: `git commit -m "Add meeting notes"`.' }
   return null
 }
 
@@ -76,7 +74,7 @@ export const firstCommit: Lesson = {
       check: (c) => commitCount(c.world) === 1 && isTracked(c.world, 'notes.txt'),
       nudge: commitNudge,
       success:
-        "**Snapshot saved.** Git gave your commit an ID, the short code inside the brackets in the output, and **main** now points at it. In **Your repo**, it's the first dot in your history. From now on, you can always get this version back.",
+        "**Snapshot saved.** Git gave your commit an ID, the short code inside the brackets in the output, and **main** now points at it. In **Your repo**, it's the first dot in your history. From now on, you can always get this version back. *Fixing mistakes* shows how.",
     },
   ],  pages: [
     {
@@ -104,7 +102,7 @@ export const firstCommit: Lesson = {
       visual: { kind: 'stage', show: ['folder', 'staged'], hot: 'folder' },
       step: 0,
       command: [
-        { text: 'git add', say: 'put it in the box' },
+        { text: 'git add', say: 'stage it' },
         { text: 'notes.txt', say: 'this file' },
       ],
       done: '**Staged.** notes.txt is chosen, but not saved yet.',
@@ -147,7 +145,7 @@ export const firstCommit: Lesson = {
       id: 'safe',
       kicker: 'Why it matters',
       title: 'Your work is now safe',
-      body: 'This snapshot stays exactly as it is. If you change **notes.txt** later, you can always get this version back.',
+      body: 'This snapshot stays exactly as it is. If you change **notes.txt** later, you can always get this version back. *Fixing mistakes* shows how.',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'saved' },
     },
     {

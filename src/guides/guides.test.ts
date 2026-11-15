@@ -28,3 +28,22 @@ describe('guides data', () => {
     }
   })
 })
+
+describe('guides content (QA fixes)', () => {
+  const text = JSON.stringify(guides)
+  it.each([
+    'core.editor',
+    "Install 'code' command in PATH",
+    'Git Credential Manager',
+    'git remote set-url origin git@github.com:',
+    '--apple-use-keychain',
+    'pull.rebase',
+    'Workflows',
+    'init.defaultBranch main',
+  ])('mentions %s', (s) => {
+    expect(text).toContain(s)
+  })
+  it('does not say ls-remote prints commits', () => {
+    expect(text).not.toContain('prints a list of commits')
+  })
+})

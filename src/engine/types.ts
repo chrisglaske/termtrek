@@ -7,8 +7,8 @@ export type Head = { kind: 'branch'; name: string } | { kind: 'detached'; id: st
 export interface ReflogEntry { id: string; message: string } // e.g. "commit (initial): Add notes"
 export interface StashEntry { id: string; base: string; branch: string | null; message: string; index: Record<string, string>; work: Record<string, string> }
 export interface RebaseState { branch: string; onto: string; ontoLabel: string; orig: string; todo: string[]; current: string | null; stoppedAt: string | null }
-export interface RepoOp { kind: 'merge' | 'revert' | 'rebase'; theirs: string; theirsLabel: string; message: string; conflicts: string[]; rebase?: RebaseState }
-export interface CommitEdit { amend: boolean; all: boolean }
+export interface RepoOp { kind: 'merge' | 'revert' | 'rebase' | 'stash'; theirs: string; theirsLabel: string; message: string; conflicts: string[]; rebase?: RebaseState }
+export interface CommitEdit { amend: boolean; all: boolean; paths?: string[] } // paths: `git commit <paths>` (--only), repo-relative
 export interface EditorSession { file: string; text: string; action: CommitEdit; merge?: boolean; rebase?: boolean } // file e.g. '.git/COMMIT_EDITMSG'
 export interface Upstream { remote: string; branch: string }
 export interface PrComment { author: string; body: string; kind: 'comment' | 'approve' | 'changes'; at: number }
@@ -16,7 +16,7 @@ export interface PullRequest { number: number; title: string; body: string; head
 export interface Activity { seq: number; who: 'you' | 'teammate'; text: string } // text: **bold** and `cmd` allowed
 export interface Remote { url: string; slug: string; commits: Record<string, Commit>; branches: Record<string, string>; defaultBranch: string; prs: PullRequest[]; activity: Activity[] }
 export interface RemoteSetup { slug: string; commits?: { message: string; files: Record<string, string> }[]; author?: { name: string; email: string } }
-export interface Repo { root: string; commits: Record<string, Commit>; branches: Record<string, string | null>; head: Head; index: Record<string, string>; reflog: ReflogEntry[]; stash: StashEntry[]; op: RepoOp | null; remotes: Record<string, string>; remoteRefs: Record<string, string>; upstream: Record<string, Upstream>; originHead: string | null }
+export interface Repo { root: string; commits: Record<string, Commit>; branches: Record<string, string | null>; head: Head; index: Record<string, string>; reflog: ReflogEntry[]; stash: StashEntry[]; op: RepoOp | null; remotes: Record<string, string>; remoteRefs: Record<string, string>; upstream: Record<string, Upstream>; originHead: string | null; config: Record<string, string> }
 export interface World { home: string; cwd: string; files: Record<string, string>; dirs: string[]; repo: Repo | null; config: Record<string, string>; seq: number; pending?: EditorSession; remote?: Remote }
 export interface RunResult { world: World; lines: OutLine[]; explain?: Explain; clear?: boolean; open?: string; exitCode: number }
 export interface WorldSetup {

@@ -1,6 +1,7 @@
 import type { Commit, PullRequest, Remote, World } from '../../engine/types'
 import { CommandPill } from '../CommandPill'
 import { RichText } from '../RichText'
+import { getConfig } from '../../engine/git/config'
 
 const MAX_COMMITS = 5
 const MAX_ACTIVITY = 5
@@ -58,7 +59,7 @@ export function RemoteOverview({
   const def = remote.defaultBranch
   const names = Object.keys(remote.branches).sort((a, b) => (a === def ? -1 : b === def ? 1 : a < b ? -1 : 1))
   const empty = names.length === 0
-  const me = world.config['user.name']
+  const me = getConfig(world, 'user.name')
   const byWho = (c: Commit) => (me && c.author.name === me ? 'you' : c.author.name)
   const defTip = remote.branches[def]
   const onDefault = defTip ? reachable(remote.commits, defTip) : new Set<string>()

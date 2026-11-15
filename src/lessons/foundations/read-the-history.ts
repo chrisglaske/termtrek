@@ -87,6 +87,14 @@ export const readTheHistory: Lesson = {
     },
     {
       kind: 'read',
+      id: 'pager',
+      kicker: 'On your own computer',
+      title: 'Long output',
+      body: 'On your computer, a long `git log` or `git diff` fills the screen and waits. Use the arrow keys to scroll, and press `q` to get back to the prompt.',
+      visual: { kind: 'none' },
+    },
+    {
+      kind: 'read',
       id: 'graph',
       kicker: 'The same story',
       title: 'Each commit is a dot',

@@ -59,6 +59,30 @@ describe('git restore', () => {
     expect(r.exitCode).toBe(1);
     expect(text(r)).toEqual(["error: pathspec 'nope.txt' did not match any file(s) known to git"]);
   });
+  it('restore --source writes the older content into the folder only', () => {
+    const { r, w } = go(base(), 'git restore --source HEAD~1 notes.txt');
+    expect(r.exitCode).toBe(0);
+    expect(w.files[P + 'notes.txt']).toBe('2\n');
+    expect(w.repo!.index['notes.txt']).toBe('3\n');
+    expect(getStatus(w)!.unstaged.map((c) => c.path)).toEqual(['notes.txt']);
+  });
+  it('restore -s with --staged --worktree updates both', () => {
+    const { w } = go(base(), 'git restore -s HEAD~2 --staged --worktree notes.txt');
+    expect(w.files[P + 'notes.txt']).toBe('1\n');
+    expect(w.repo!.index['notes.txt']).toBe('1\n');
+  });
+  it('restore --source=<rev> and --source <rev> both parse', () => {
+    expect(go(base(), 'git restore --source=HEAD~1 notes.txt').w.files[P + 'notes.txt']).toBe('2\n');
+    expect(go(base(), 'git restore --source HEAD~2 notes.txt').w.files[P + 'notes.txt']).toBe('1\n');
+  });
+  it('restore --source with an unknown rev or a path missing from that tree', () => {
+    const a = go(base(), 'git restore --source=nope notes.txt');
+    expect(a.r.exitCode).toBe(128);
+    expect(text(a.r)).toEqual(["fatal: could not resolve 'nope'"]);
+    const b = go(base(), 'git restore --source HEAD~2 other.txt');
+    expect(b.r.exitCode).toBe(1);
+    expect(text(b.r)).toEqual(["error: pathspec 'other.txt' did not match any file(s) known to git"]);
+  });
   it('restore with no path', () => {
     const { r } = go(base(), 'git restore');
     expect(r.exitCode).toBe(128);

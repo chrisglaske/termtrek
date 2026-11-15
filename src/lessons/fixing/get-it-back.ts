@@ -40,7 +40,7 @@ export const getItBack: Lesson = {
       id: 'restore',
       title: 'Jump back to it',
       learn:
-        "To get everything back, reset to where HEAD was one move ago: `git reset --hard HEAD@{1}`.\n\nYou can also use the commit ID from the reflog line instead of `HEAD@{1}`. Either way, your branch points at \"docs: tidy the agenda\" again, and `agenda.txt` comes back.\n\nThe reflog is your safety net for commits, not for edits you never committed. Git cleans it up after about 90 days, and it only exists on your computer.",
+        "To get everything back, reset to where HEAD was one move ago: `git reset --hard HEAD@{1}`.\n\nYou can also use the commit ID from the reflog line instead of `HEAD@{1}`. Either way, your branch points at \"docs: tidy the agenda\" again, and `agenda.txt` comes back.\n\nThe reflog is your safety net for commits, not for edits you never committed. Git cleans it up after about a month for commits no branch points at, and it only exists on your computer.",
       task: 'Bring back the two lost commits.',
       hints: [
         'Use `git reset --hard` with the reflog name for one move ago.',
@@ -133,7 +133,7 @@ export const getItBack: Lesson = {
       id: 'limits',
       kicker: 'The fine print',
       title: 'The safety net has limits',
-      body: 'The reflog covers commits, not edits you never committed. Git cleans it up after about 90 days, and it only exists on your computer.',
+      body: 'The reflog covers commits, not edits you never committed. Git cleans it up after about a month for commits no branch points at, and it only exists on your computer.',
       visual: { kind: 'none' },
     },
     {

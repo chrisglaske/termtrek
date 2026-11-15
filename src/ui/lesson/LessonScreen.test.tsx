@@ -410,3 +410,13 @@ describe('LessonScreen structure', () => {
     expect(screen.getByRole('tablist', { name: 'Repository views' })).toHaveAttribute('aria-orientation', 'horizontal')
   })
 })
+
+describe('after rm -rf .git', () => {
+  it('the Repo panel with a server still renders', async () => {
+    const { runLine } = await import('../../engine/interpreter')
+    const w0 = buildWorld({ config: {}, remote: { slug: 'team/notes', commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }] }, repo: { at: '' }, run: [] })
+    const w = runLine(w0, 'rm -rf .git').world
+    expect(w.repo).toBeNull()
+    expect(() => render(<RepoPanel world={w} />)).not.toThrow()
+  })
+})

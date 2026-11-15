@@ -44,7 +44,7 @@ export const goodMessages: Lesson = {
       id: 'message',
       title: 'Write a message your team can read',
       learn:
-        "Months from now, someone will scroll through the history to find out when and why something changed. That someone is often you. A message like \"Fix stuff\" tells them nothing. This matters even more when an AI tool writes code for you: the messages are how you keep track of what changed.\n\nA good message:\n- says what the commit does, in a few words\n- is written as a command, like \"Add\", \"Fix\" or \"Remove\", not \"Added\" or \"Fixing\"\n- keeps the first line short, about 50 characters\n\nA handy test: \"If applied, this commit will…\" should lead into your message.\n\nMany teams also follow a shared format called **Conventional Commits**: start with a **type** and a colon, then the summary in lowercase, like `docs: explain meeting file names`. An optional **scope** in brackets names the part you changed: `feat(ui): add search`. The common types:\n- `feat` adds something new, `fix` fixes a bug, `docs` changes only text for people\n- `chore` is upkeep like settings, `refactor` reshapes code without changing what it does, `test` adds tests, `style` is formatting only\n\nTeams use it because the history is quick to scan, and tools can read the types to write a changelog for each release. Commit with `git commit -m \"docs: explain meeting file names\"`.",
+        "Months from now, someone will scroll through the history to find out when and why something changed. That someone is often you. A message like \"Fix stuff\" tells them nothing. This matters even more when an AI tool writes code for you: the messages are how you keep track of what changed.\n\nA good message:\n- says what the commit does, in a few words\n- is written as a command, like \"Add\", \"Fix\" or \"Remove\", not \"Added\" or \"Fixing\"\n- keeps the first line short, about 50 characters\n\nA handy test: \"If applied, this commit will…\" should lead into your message.\n\nMany teams also follow a shared format called **Conventional Commits**: start with a **type** and a colon, then the summary in lowercase, like `docs: explain meeting file names`. An optional **scope** in parentheses names the part you changed: `feat(ui): add search`. The common types:\n- `feat` adds something new, `fix` fixes a bug, `docs` changes only text for people\n- `chore` is upkeep like settings, `refactor` reshapes code without changing what it does, `test` adds tests, `style` is formatting only\n\nTeams use it because the history is quick to scan, and tools can read the types to write a changelog for each release. Commit with `git commit -m \"docs: explain meeting file names\"`.",
       task: 'Commit the `README.md` change with a clear message in the `type: summary` format.',
       hints: [
         'This change only touches text for people, so the type is `docs`. Then say what it does, starting with a verb like "explain".',
@@ -84,7 +84,7 @@ export const goodMessages: Lesson = {
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
       step: 0,
       command: [
-        { text: 'git add', say: 'put it in the box' },
+        { text: 'git add', say: 'stage it' },
         { text: 'README.md', say: 'this file' },
       ],
       done: '**Staged.** Before you commit, think about the message.',
@@ -118,7 +118,7 @@ export const goodMessages: Lesson = {
       id: 'verb',
       kicker: 'Rule 2 of 3',
       title: 'Start with a verb',
-      body: 'Write it as a command: **Add**, **Fix** or **Remove**, not "Added" or "Fixing". A test: "If applied, this commit will..." should lead into your message.',
+      body: 'Write it as a command: **Add**, **Fix** or **Remove**, not "Added" or "Fixing". A test: "If applied, this commit will..." should lead into your message. The capital-letter rule is for plain messages; Conventional Commits start lowercase.',
       visual: { kind: 'none' },
     },
     {
@@ -126,7 +126,7 @@ export const goodMessages: Lesson = {
       id: 'short',
       kicker: 'Rule 3 of 3',
       title: 'Keep it short',
-      body: 'Aim for about 50 characters on the first line, so it fits on one line in the history. Git tools also wrap longer detail lines at around 72.',
+      body: 'Aim for about 50 characters on the first line, so it fits on one line in the history. Longer detail goes in later lines, wrapped at about 72 characters.',
       visual: { kind: 'none' },
     },
     {
@@ -142,7 +142,7 @@ export const goodMessages: Lesson = {
       id: 'scope',
       kicker: 'Optional',
       title: 'Add a scope if it helps',
-      body: 'A **scope** in brackets names the part of the project you changed. Leave it out when it adds nothing.\n\n`type(scope): summary`\n`feat(ui): add search`',
+      body: 'A **scope** in parentheses names the part of the project you changed. Leave it out when it adds nothing.\n\n`type(scope): summary`\n`feat(ui): add search`',
       visual: { kind: 'none' },
     },
     {

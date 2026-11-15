@@ -58,7 +58,7 @@ export const fastForward: Lesson = {
       id: 'straight',
       kicker: 'Look closely',
       title: 'main has not moved',
-      body: 'Since homepage started, main got no new commits. Its history is one straight line, so Git can take a shortcut.',
+      body: 'Since homepage started, main got no new commits. **homepage** starts right where **main** is, so **main** can just slide forward.',
       visual: { kind: 'graph', branches: true },
     },
     {

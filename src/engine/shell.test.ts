@@ -191,3 +191,64 @@ describe('code and editor aliases', () => {
     expect(text(run(['code /etc/hosts'], world))).toEqual(['code: /etc/hosts: Permission denied']);
   });
 });
+
+describe('rm -rf .git and wildcards', () => {
+  const repoWorld = () => createWorld({ repo: { at: '' }, config: { 'user.name': 'A', 'user.email': 'a@x.com' }, files: { 'a.txt': '1', 'sub/s.txt': '' } });
+  it('rm -rf .git removes the repo; git init starts a new one', () => {
+    const w = run(['rm -rf .git'], repoWorld()).world;
+    expect(w.repo).toBeNull();
+    const st = runLine(w, 'git status');
+    expect(text(st)).toEqual(['fatal: not a git repository (or any of the parent directories): .git']);
+    expect(st.exitCode).toBe(128);
+    expect(text(runLine(w, 'git init'))[0]).toMatch(/^Initialized empty Git repository/);
+  });
+  it('removes it from a subfolder with ../.git and keeps the remote', () => {
+    const base = repoWorld();
+    const w0 = { ...base, remote: { name: 'x' } as unknown as World['remote'], cwd: base.home + '/sub' };
+    const r = runLine(w0, 'rm -rf ../.git');
+    expect(r.world.repo).toBeNull();
+    expect(r.world.remote).toBe(w0.remote);
+  });
+  it('rm .git without -r says Is a directory', () => {
+    const r = run(['rm .git'], repoWorld());
+    expect(text(r)).toEqual(["rm: cannot remove '.git': Is a directory"]);
+    expect(r.world.repo).not.toBeNull();
+  });
+  const g = () => createWorld({ files: { 'a.txt': 'a', 'b.txt': 'b', 'c.md': 'c', '.gitignore': 'x' } });
+  it('ls and cat expand wildcards', () => {
+    expect(text(runLine(g(), 'ls *.txt'))).toEqual(['a.txt', 'b.txt']);
+    expect(text(runLine(g(), 'cat *.md'))).toEqual(['c']);
+    expect(text(runLine(g(), 'echo *'))).toEqual(['a.txt b.txt c.md']);
+  });
+  it('keeps quoted wildcards literal', () => {
+    expect(text(runLine(g(), 'echo "*"'))).toEqual(['*']);
+    expect(text(runLine(g(), "echo '*.txt'"))).toEqual(['*.txt']);
+    expect(text(runLine(g(), 'echo \\*'))).toEqual(['*']);
+  });
+  it('keeps a pattern with no match as typed', () => {
+    expect(text(runLine(g(), 'ls *.py'))).toEqual(["ls: cannot access '*.py': No such file or directory"]);
+  });
+  it('git add *.txt stages a and b; commit -m "fix *" stays literal', () => {
+    const cfg = { 'user.name': 'A', 'user.email': 'a@x.com' };
+    let w = createWorld({ config: cfg, repo: { at: '' }, files: { 'a.txt': 'a', 'b.txt': 'b', 'c.md': 'c' } });
+    w = runLine(w, 'git add *.txt').world;
+    expect(text(runLine(w, 'git status --short'))).toEqual(['A  a.txt', 'A  b.txt', '?? c.md']);
+    const r = runLine(w, 'git commit -m "fix *"');
+    expect(text(r)[0]).toMatch(/fix \*/);
+  });
+});
+
+describe('wildcards expand when each command runs', () => {
+  it('sees folders and files made earlier in the same line', () => {
+    expect(text(run(['mkdir d && cd d && touch q.txt && ls *.txt']))).toEqual(['q.txt']);
+  });
+  it('git add *.txt after touch in the same line', () => {
+    const w = createWorld({ repo: { at: '' }, config: { 'user.name': 'A', 'user.email': 'a@x.com' } });
+    const r = runLine(w, 'touch a.txt && git add *.txt');
+    expect(text(runLine(r.world, 'git status --short'))).toEqual(['A  a.txt']);
+  });
+  it('rm -rf .git && ls * sees the new state', () => {
+    const w = createWorld({ repo: { at: '' }, files: { 'a.txt': '' } });
+    expect(text(runLine(w, 'rm -rf .git && ls *'))).toEqual(['a.txt']);
+  });
+});

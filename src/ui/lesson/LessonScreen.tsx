@@ -9,6 +9,7 @@ import { RepoMap } from '../repomap/RepoMap'
 import { RemotePanel } from '../remote/RemotePanel'
 import type { RemotePanelProps } from '../remote/RemotePanel'
 import { Nav } from '../layout/Nav'
+import { lessonDescription, lessonMeta } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { NotFound } from '../NotFound'
 import { Sidebar } from './Sidebar'
@@ -162,17 +163,12 @@ function LessonRun({ lesson, courseOpen, onToggleCourse }: { lesson: Lesson; cou
   )
 }
 
-export function lessonDescription(lesson: Lesson): string {
-  const first = lesson.steps[0]?.title
-  const text = first
-    ? `${first}: step 1 of ${lesson.title}, a hands-on Git lesson you do in your browser.`
-    : `${lesson.title}, a hands-on Git lesson you do in your browser.`
-  return text.length <= 160 ? text : `${text.slice(0, 157).trimEnd()}...`
-}
+export { lessonDescription }
 
 function LessonPage({ lesson }: { lesson: Lesson }): React.JSX.Element {
   const { setLast } = useProgress()
-  useDocumentTitle(`${lesson.title} · TermTrek`, lessonDescription(lesson))
+  const meta = lessonMeta(lesson)
+  useDocumentTitle(meta.title, meta.description)
   const setLastRef = useRef(setLast)
   setLastRef.current = setLast
   useEffect(() => {

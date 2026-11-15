@@ -11,7 +11,7 @@ import { branchOf, isAncestor, logRef, mergeBase } from './refs';
 import { activeRepo, headCommitId, headTree, workingFiles } from './repoState';
 import { hasBranch } from './branch';
 import { resolveRev } from './rev';
-import { moveTree } from './worktree';
+import { moveTree, writeWork } from './worktree';
 import { rebaseBusy } from './rebase';
 
 type Result = ReturnType<CommandFn>;
@@ -47,9 +47,14 @@ export function abortOp(world: World, repo: Repo, text: string): Result {
   const work = workingFiles(world, repo);
   const from = { ...repo.index };
   for (const p of repo.op?.conflicts ?? []) if (p in work) from[p] = work[p]!;
-  const res = moveTree(world, repo, from, headTree(repo), { force: true });
+  const head = headTree(repo);
+  // Like `git reset --merge`, edits to files the operation never staged (index matches HEAD) stay as they are.
+  const conflicts = repo.op?.conflicts ?? [];
+  const kept = Object.keys(head).filter((p) => !conflicts.includes(p) && repo.index[p] === head[p] && p in work && work[p] !== head[p]);
+  const res = moveTree(world, repo, from, head, { force: true });
   if (!res.ok) return { lines: res.lines, exitCode: 1 };
-  return { world: { ...res.world, repo: { ...repo, index: res.index, op: null } }, lines: [], explain: { kind: 'ok', text }, exitCode: 0 };
+  const restored = kept.reduce((w, p) => writeWork(w, repo, p, work[p]), res.world);
+  return { world: { ...restored, repo: { ...repo, index: res.index, op: null } }, lines: [], explain: { kind: 'ok', text }, exitCode: 0 };
 }
 
 function abort(world: World, repo: Repo): Result {
@@ -160,7 +165,8 @@ export function startMerge(world: World, theirs: string, theirsLabel: string, me
 
   if (!noFf && isAncestor(repo, headId, theirs)) {
     const res = moveTree(world, repo, ours, target, { force: false, verb: 'merge' });
-    if (!res.ok) return refuse(res.lines);
+    // Git names the range first, then explains the refusal; a fast-forward has no strategy to fail.
+    if (!res.ok) return { world, lines: [[{ text: 'Updating ' }, { text: headId, tone: 'id' }, { text: '..' }, { text: theirs, tone: 'id' }], ...res.lines], exitCode: 1 };
     const next = logRef(setHead({ ...repo, index: res.index }, theirs), theirs, `merge ${name}: Fast-forward`);
     return {
       world: { ...res.world, repo: next },

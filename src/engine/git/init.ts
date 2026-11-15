@@ -1,7 +1,7 @@
 import type { CommandFn } from '../registry';
 import { resolvePath } from '../paths';
 import { err, insideHome, isFile, withDirs } from '../shell/fs';
-import { activeRepo } from './repoState';
+import { ONE_REPO } from './clone';
 
 export const gitInit: CommandFn = (world, args) => {
   let branch = 'main';
@@ -21,13 +21,13 @@ export const gitInit: CommandFn = (world, args) => {
     return { lines: [err(`fatal: invalid initial branch name: '${branch}'`)], exitCode: 128 };
   }
   const dir = target === undefined ? world.cwd : resolvePath(world, target);
-  if (world.repo && (dir === world.repo.root || (target === undefined && activeRepo(world)))) {
+  if (world.repo && dir === world.repo.root) {
     return { lines: [[{ text: `Reinitialized existing Git repository in ${world.repo.root}/.git/` }]], exitCode: 0 };
   }
   if (!insideHome(world, dir)) return { lines: [err(`fatal: cannot mkdir ${dir}: Permission denied`)], exitCode: 128 };
   if (isFile(world, dir)) return { lines: [err(`fatal: cannot mkdir ${target ?? dir}: File exists`)], exitCode: 128 };
   if (world.repo) {
-    return { lines: [err('fatal: TermTrek supports one Git repository at a time')], exitCode: 128 };
+    return { lines: [err(ONE_REPO)], exitCode: 128 };
   }
   const next = {
     ...world,
@@ -45,6 +45,7 @@ export const gitInit: CommandFn = (world, args) => {
       remoteRefs: {},
       upstream: {},
       originHead: null,
+      config: {},
     },
   };
   return {

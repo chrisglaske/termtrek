@@ -137,7 +137,7 @@ function Connector({ label }: { label: string }): React.JSX.Element {
 
 
 const opLabel = (op: RepoOp): string =>
-  op.kind === 'merge' ? `Merging ${op.theirsLabel}` : op.kind === 'rebase' ? `Rebasing ${op.rebase?.branch ?? ''}`.trim() : 'Reverting'
+  op.kind === 'merge' ? `Merging ${op.theirsLabel}` : op.kind === 'rebase' ? `Rebasing ${op.rebase?.branch ?? ''}`.trim() : op.kind === 'stash' ? 'Stash conflict' : 'Reverting'
 /** The drawing's size and where its trunk (lane 0) sits, so a caller can hold several states in one fixed frame. */
 export interface GraphBox { width: number; height: number; trunkY: number }
 
@@ -175,8 +175,20 @@ export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: R
   const nodeById = new Map(g.nodes.map((n) => [n.id, n]))
   const head = g.nodes.find((n) => n.isHead)
   const stubX = head ? head.x + (gap ?? DEFAULT_GAP) : 0
-  const frame = box ?? own
   const staggered = tightIds(g.nodes)
+  // A branch label below a commit sits where its id would print.
+  const coveredByLabel = (n: { id: string; x: number; y: number }) =>
+    g.labels.some((l) => {
+      const at = nodeById.get(l.commitId)
+      return l.slot === 0 && !!at && at.y === n.y && Math.abs(at.x - n.x) < labelWidth(labelText(l)) / 2 + ID_HALF
+    })
+  // On a single line of commits those ids go under the labels, so every dot still shows its id.
+  const oneRow = new Set(g.nodes.filter((n) => n.id !== '…' && !n.lost).map((n) => n.y)).size === 1
+  const lowerList = ids && oneRow ? g.nodes.filter((n) => n.id !== '…' && !n.lost && coveredByLabel(n)) : []
+  const lowStagger = tightIds(lowerList)
+  const lowY = (n: { id: string; y: number }) => n.y + labelOffset(0) + LABEL_H + 13 + (lowStagger.has(n.id) ? ID_STAGGER : 0)
+  const lowBottom = Math.max(0, ...lowerList.map((n) => lowY(n) + 6))
+  const frame = box ?? (lowBottom > own.height ? { ...own, height: lowBottom } : own)
   const dy = box ? box.trunkY - own.trunkY : 0
   return (
     <div className="repomap-graph">
@@ -229,16 +241,17 @@ export function RepoGraph({ repo, gap, box, label, ids, stub = true }: { repo: R
           )}
           {ids &&
             g.nodes
-              .filter((n) => n.id !== '…' && !n.lost && !curveCrossesId(n, g.edges, nodeById) && !g.labels.some((l) => {
-                // a label below a commit on the same row would cover the id
-                const at = nodeById.get(l.commitId)
-                return l.slot === 0 && !!at && at.y === n.y && Math.abs(at.x - n.x) < labelWidth(labelText(l)) / 2 + ID_HALF
-              }))
+              .filter((n) => n.id !== '…' && !n.lost && !curveCrossesId(n, g.edges, nodeById) && !coveredByLabel(n))
               .map((n) => (
                 <text key={`id-${n.id}`} className="g-id" x={n.x} y={n.y + ID_BASE + (staggered.has(n.id) ? ID_STAGGER : 0)} textAnchor="middle" fontFamily="var(--mono)" fontSize="11" fill="var(--mute)">
                   {n.id.slice(0, 7)}
                 </text>
               ))}
+          {lowerList.map((n) => (
+            <text key={`id-${n.id}`} className="g-id" x={n.x} y={lowY(n)} textAnchor="middle" fontFamily="var(--mono)" fontSize="11" fill="var(--mute)">
+              {n.id.slice(0, 7)}
+            </text>
+          ))}
           {g.labels.map((l) => {
             const n = nodeById.get(l.commitId)
             if (!n) return null

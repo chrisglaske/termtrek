@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
 import { guides } from '../../guides/guides'
 import { Nav } from '../layout/Nav'
+import { GUIDES_META } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import './Guides.css'
 
 export function GuidesIndex(): React.JSX.Element {
-  useDocumentTitle('Setup guides · TermTrek', 'Step-by-step guides for your own computer: install Git, set your name and sign in to GitHub on macOS or Windows.')
+  useDocumentTitle(GUIDES_META.title, GUIDES_META.description)
   return (
     <>
       <Nav />

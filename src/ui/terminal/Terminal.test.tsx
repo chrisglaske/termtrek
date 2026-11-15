@@ -233,4 +233,12 @@ describe('FeedbackCard', () => {
     rerender(<FeedbackCard explain={{ kind: 'tip', text: 'x' }} />)
     expect(screen.getByText('Tip')).toBeInTheDocument()
   })
+
+  it('sets one shared line height that the log heights are built from, with no top padding on the log', () => {
+    setup()
+    expect(document.querySelector('.term')?.getAttribute('style')).toContain('--term-line: 1.6em')
+    // Content-box, so a cap of N lines on the log is N lines of text and the bottom padding sits outside it.
+    expect(document.querySelector('.term-log')).toHaveStyle({ boxSizing: 'content-box' })
+    expect(document.querySelector('.term-log')?.getAttribute('style')).not.toContain('padding')
+  })
 })

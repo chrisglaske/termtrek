@@ -168,7 +168,7 @@ describe('course content', () => {
       expect(s.status).toBe('lesson-done')
     })
     it('discard-changes accepts the older git checkout -- <file>', () => {
-      expect(play(lessonById('discard-changes'), ['git diff', 'git checkout -- notes.txt']).status).toBe('lesson-done')
+      expect(play(lessonById('discard-changes'), ['git diff', 'git checkout -- notes.txt', 'git restore --source HEAD~1 notes.txt']).status).toBe('lesson-done')
     })
     it('ignore-files accepts a *.log pattern and git add .', () => {
       const lines = ['echo .env > .gitignore', "echo '*.log' >> .gitignore", 'git status', 'git add .', 'git commit -m "Ignore secrets and logs"']
@@ -250,6 +250,7 @@ describe('course content', () => {
         'git stash',
         'git switch main',
         'git stash pop',
+        'git restore --staged home.html',
         'git restore home.html',
         'git switch homepage',
         'git stash pop',
@@ -263,7 +264,7 @@ describe('course content', () => {
     expect(new Set(ids).size).toBe(ids.length)
     for (const l of allLessons()) {
       expect(l.minutes).toBeGreaterThanOrEqual(2)
-      expect(l.minutes).toBeLessThanOrEqual(10)
+      expect(l.minutes).toBeLessThanOrEqual(12)
       expect(l.steps.length).toBeGreaterThanOrEqual(2)
       expect(l.steps.length).toBeLessThanOrEqual(l.pages ? 10 : 5)
       const stepIds = l.steps.map((s) => s.id)
@@ -331,8 +332,19 @@ describe('course content', () => {
       'git restore notes.txt',
       'git restore --staged notes.txt',
       'git restore notes.txt',
+      'git restore --source HEAD~1 notes.txt',
     ])
     expect(fixed.status).toBe('lesson-done')
+  })
+
+  it('discard-changes teaches git restore --source for an older version', () => {
+    const lesson = lessonById('discard-changes')
+    expect(Object.keys(initRunner(lesson).world.repo!.commits)).toHaveLength(3)
+    const s = play(lesson, ['git diff', 'git restore notes.txt', 'git restore --source HEAD~1 notes.txt'])
+    expect(s.status).toBe('lesson-done')
+    const early = play(lesson, ['git diff', 'git restore notes.txt'])
+    expect(early.status).toBe('working')
+    expect(early.stepIndex).toBe(2)
   })
 
   it('amend warns when a new commit is made instead of amending', () => {
@@ -555,7 +567,36 @@ describe('Section 4, pull requests and the team scenario', () => {
   })
 
   it('update-your-branch accepts a merge instead of rebase', () => {
-    expect(play(lessonById('update-your-branch'), ['git fetch', 'git merge --no-edit origin/main', 'git push']).status).toBe('lesson-done')
+    const s = play(lessonById('update-your-branch'), ['git fetch', 'git merge --no-edit origin/main', 'git push'])
+    expect(s.status).toBe('working')
+    expect(s.stepIndex).toBe(3)
+  })
+
+  it('update-your-branch: pull --rebase stops on Alex\'s edit of the same line', () => {
+    const lesson = lessonById('update-your-branch')
+    expect(lesson.steps.length).toBeLessThanOrEqual(10)
+    expect(lesson.minutes).toBe(12)
+    const upTo = ['git fetch', 'git rebase origin/main', 'git push --force-with-lease']
+    const paused = play(lesson, [...upTo, 'git pull --rebase'])
+    // The pull passes step 3 (play moves on to the next step), leaving the rebase paused.
+    expect(paused.stepIndex).toBe(4)
+    expect(paused.world.repo?.op?.kind).toBe('rebase')
+  })
+
+  it('update-your-branch nudges a plain pull toward --rebase', () => {
+    const s = play(lessonById('update-your-branch'), ['git fetch', 'git rebase origin/main', 'git push --force-with-lease', 'git pull'])
+    expect(s.stepIndex).toBe(3)
+    expect(s.status).toBe('working')
+    expect(lastExplain(s)?.text).toContain('git pull --rebase')
+  })
+
+  it('update-your-branch shows git rebase --continue before the scenario', () => {
+    const shown = allLessons().flatMap((l) => l.steps.map((st) => ({ id: l.id, learn: st.learn })))
+    const at = shown.findIndex((x) => x.learn.includes('`git rebase --continue`'))
+    const scenario = shown.findIndex((x) => x.id === 'scenario-pushed-first')
+    expect(at).toBeGreaterThan(-1)
+    expect(at).toBeLessThan(scenario)
+    expect(shown[at]!.id).toBe('update-your-branch')
   })
 
   it('update-your-branch nudges a rejected push', () => {
@@ -668,4 +709,37 @@ describe('command cards fit a desktop lesson card', () => {
       })
     }
   }
+})
+
+describe('real-Git details and one word per idea', () => {
+  it('uses none of the retired phrases anywhere in a lesson', () => {
+    const banned = [/last save/, /compares with the server/, /about 90 days/, /\bolder name/, /put it in the box/, /in brackets/]
+    for (const l of allLessons()) {
+      const text = JSON.stringify(l)
+      for (const re of banned) expect(text, `${l.id}: ${re}`).not.toMatch(re)
+    }
+  })
+
+  const page = (lessonId: string, pageId: string) => {
+    const p = lessonById(lessonId).pages?.find((x) => x.id === pageId)
+    if (!p) throw new Error(`missing page ${lessonId}/${pageId}`)
+    return p
+  }
+
+  it('amend warns about Vim and shows :wq', () => {
+    expect(JSON.stringify(page('amend', 'real-editor'))).toContain(':wq')
+  })
+
+  it('read-the-history explains the pager', () => {
+    expect(JSON.stringify(page('read-the-history', 'pager'))).toContain('press `q`')
+  })
+
+  it('create-a-repo mentions master', () => {
+    expect(JSON.stringify(lessonById('create-a-repo'))).toContain('master')
+  })
+
+  it("ignore-files' stage page stages with git add .", () => {
+    const p = page('ignore-files', 'stage')
+    expect(p.kind === 'do' && p.command.map((c) => c.text).join(' ')).toBe('git add .')
+  })
 })

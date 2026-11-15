@@ -9,6 +9,9 @@ export const NOTES = 'Team meeting, Monday\nPick a name for the new site.\nSam d
 
 export const NOTES_V2 = NOTES + 'We launch on Friday.\n'
 
+/** `NOTES_V2` with the launch date moved. */
+export const NOTES_V3 = NOTES + 'We launch on Monday.\n'
+
 /** `NOTES_V2` with a line pasted in by mistake. */
 export const NOTES_JUNK = NOTES_V2 + 'asdf asdf (pasted by mistake)\n'
 

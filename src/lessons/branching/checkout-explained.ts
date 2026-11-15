@@ -98,6 +98,7 @@ export const checkoutExplained: Lesson = {
         { text: 'git checkout', say: 'go to' },
         { text: 'HEAD~1', say: 'one commit back' },
       ],
+      report: (w) => (w.repo?.head.kind === 'detached' ? "Git's note ends with **HEAD is now at…**: HEAD is on a commit, not on a branch. That is a detached HEAD." : null),
       done: '**Detached.** The ring sits on a commit instead of a branch label.',
     },
     {

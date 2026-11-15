@@ -160,7 +160,7 @@ export const mergeConflicts: Lesson = {
       id: 'resolve',
       kicker: 'Try it',
       title: 'Choose what to keep',
-      body: '`code` opens a file in the editor, like VS Code or Cursor on your computer. Then click **Keep incoming** and **Save**.',
+      body: '`code` opens a file in the editor, like VS Code (`code`) or Cursor (`cursor`) on your computer. Then click **Keep incoming** and **Save**.',
       visual: { kind: 'conflict', file: 'notes.txt', theirs: 'launch-date' },
       step: 1,
       command: [

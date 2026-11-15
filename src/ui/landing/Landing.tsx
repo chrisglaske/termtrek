@@ -4,6 +4,7 @@ import { Nav } from '../layout/Nav'
 import { Logo } from '../layout/Logo'
 import { ISSUES_URL, SOURCE_URL } from '../layout/links'
 import { BackupDialog } from '../BackupDialog'
+import { LANDING_TITLE } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { HeroLesson } from './HeroLesson'
 import { CourseRail } from './CourseRail'
@@ -26,7 +27,7 @@ function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
 }
 
 export function Landing(): React.JSX.Element {
-  useDocumentTitle('TermTrek: learn Git by using it')
+  useDocumentTitle(LANDING_TITLE)
   const { hash } = useLocation()
   const stats = courseStats()
   // Phones get a shorter page to read: no live lesson, and a way to send the site to a computer.
@@ -34,7 +35,7 @@ export function Landing(): React.JSX.Element {
   const home = () => `${window.location.origin}/`
   const [backup, setBackup] = useState(false)
   const backupButton = useRef<HTMLButtonElement>(null)
-  // "Scroll for more" is pinned to the bottom-right corner while the page sits at the top and the
+  // "Scroll for more" is pinned to the bottom-left corner, under the copy column, while the page sits at the top and the
   // next section is still out of sight, at every screen height. It fades out once the visitor scrolls,
   // or starts typing in the hero, where on a short screen it would cover the terminal's output.
   const [more, setMore] = useState(true)
@@ -96,12 +97,13 @@ export function Landing(): React.JSX.Element {
                       </svg>
                     </span>
                     <div>
-                      <h2 className="pc-t">Made for your computer</h2>
-                      <p>You type real commands and watch a picture change, so you'll want a keyboard and a bigger screen. Send yourself the link and start there.</p>
+                      <h2 className="pc-t">Made for an iPad or a computer</h2>
+                      <p>You type real commands and watch a picture change, so you'll want a keyboard and a bigger screen. Send yourself the link and start on a tablet or computer.</p>
                     </div>
                   </div>
                   <SendToComputer url={home} />
                   <p className="pc-fine">Opens your phone's share menu. Nothing is sent to us.</p>
+                  <p className="pc-fine">On a computer? Make the window bigger.</p>
                 </div>
               ) : (
                 <div className="ctas">
@@ -118,29 +120,29 @@ export function Landing(): React.JSX.Element {
                 <li><Tick />Your progress never leaves your device</li>
                 <li><Tick />Open source</li>
               </ul>
+              {!phone && (
+                <a
+                  className={more ? 'more' : 'more more-off'}
+                  href="#who"
+                  tabIndex={more ? undefined : -1}
+                  onClick={(e) => {
+                    // Scroll smoothly to the next section instead of jumping, and leave the address as it is.
+                    const who = document.getElementById('who')
+                    if (!who || typeof who.scrollIntoView !== 'function') return
+                    e.preventDefault()
+                    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+                    who.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' })
+                  }}
+                >
+                  Scroll for more
+                  <svg className="more-i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              )}
             </div>
             {!phone && <HeroLesson />}
           </div>
-          {!phone && (
-            <a
-              className={more ? 'more' : 'more more-off'}
-              href="#who"
-              tabIndex={more ? undefined : -1}
-              onClick={(e) => {
-                // Scroll smoothly to the next section instead of jumping, and leave the address as it is.
-                const who = document.getElementById('who')
-                if (!who || typeof who.scrollIntoView !== 'function') return
-                e.preventDefault()
-                const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-                who.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' })
-              }}
-            >
-              Scroll for more
-              <svg className="more-i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </a>
-          )}
         </section>
 
         <section className="who" id="who" aria-labelledby="who-title">

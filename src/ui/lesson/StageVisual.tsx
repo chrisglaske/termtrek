@@ -17,7 +17,7 @@ const BOXES: { key: StageBox; title: string; sub: string; empty: string }[] = [
     key: 'staged',
     title: 'Staged',
     sub: 'Chosen for the next save',
-    empty: 'Nothing chosen yet',
+    empty: 'Nothing staged',
   },
   {
     key: 'saved',

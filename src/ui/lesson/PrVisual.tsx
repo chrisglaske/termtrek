@@ -7,16 +7,16 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 const SAID = { approve: 'approved it', changes: 'asked for changes', comment: 'commented' } as const
 
 /** The newest pull request on the server as a small read-only card: title, branches, size and the latest review, from the live world. */
-export function PrVisual({ world }: { world: World }): React.JSX.Element | null {
+export function PrVisual({ world, fresh = false }: { world: World; fresh?: boolean }): React.JSX.Element | null {
   const remote = world.remote
   const pr = remote?.prs.reduce<(typeof remote.prs)[number] | undefined>((a, p) => (!a || p.number > a.number ? p : a), undefined)
   const seen = useRef<{ key: string; note: string | null } | null>(null)
   if (!remote || !pr) return null
   const key = `${pr.number}:${pr.state}`
-  if (!seen.current) seen.current = { key, note: null }
-  else if (seen.current.key !== key) {
-    seen.current = { key, note: pr.state === 'open' ? `Pull request #${pr.number} was just opened. Nothing is merged yet.` : `Pull request #${pr.number} was merged: ${pr.head} is now part of ${pr.base} on the server.` }
-  }
+  const told = () => (pr.state === 'open' ? `Pull request #${pr.number} was just opened. Nothing is merged yet.` : `Pull request #${pr.number} was merged: ${pr.head} is now part of ${pr.base} on the server.`)
+  // `fresh` is for a card that first appears right after the click that made this state.
+  if (!seen.current) seen.current = { key, note: fresh ? told() : null }
+  else if (seen.current.key !== key) seen.current = { key, note: told() }
   const note = seen.current.note
   const commits = prCommits(remote, pr).length
   const files = prFiles(remote, pr).length

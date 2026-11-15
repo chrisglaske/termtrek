@@ -3,6 +3,7 @@ import { openPr } from '../../engine/remote/pr'
 import { writeFile } from '../../engine/shell/fs'
 import { remoteUrl } from '../../engine/remote/host'
 import { teammateComment, teammatePush } from '../../engine/remote/teammate'
+import { runLine } from '../../engine/interpreter'
 import { HOME_PAGE, WELCOME, echoHome } from '../branching/setups'
 import { AGENDA, IDENTITY, NOTES, NOTES_V2, README, TEAMMATE } from '../sample'
 
@@ -106,3 +107,28 @@ export const PUSHED_FIRST: WorldSetup = {
     teammatePush({ branch: 'main', message: 'docs: add a guest list reminder', files: { 'notes.txt': NOTES_V2 + GUEST_LIST }, author: TEAMMATE }),
   ],
 }
+
+/** Both lines edit the first agenda item, so rebasing one onto the other conflicts. */
+export const ALEX_AGENDA_LINE = '1. Check the home page on a phone'
+export const YOUR_AGENDA_LINE = '1. Check the home page on a laptop'
+const agendaWith = (line: string): string => AGENDA.replace('1. Check the home page', line)
+
+/** Alex pushes a fix to `agenda` on the server. */
+export const alexFixesAgenda = teammatePush({
+  branch: 'agenda',
+  message: 'docs: mention phones',
+  files: { 'agenda.txt': agendaWith(ALEX_AGENDA_LINE) },
+  author: TEAMMATE,
+})
+
+/** You commit a change to the same agenda line on your computer. */
+const youEditAgenda = (w: World): World => {
+  const written = writeFile(w, `${w.repo?.root ?? w.cwd}/agenda.txt`, agendaWith(YOUR_AGENDA_LINE))
+  const staged = runLine(written, 'git add agenda.txt')
+  const done = runLine(staged.world, 'git commit -m "docs: mention laptops"')
+  if (staged.exitCode !== 0 || done.exitCode !== 0) throw new Error('setup could not commit the agenda change')
+  return done.world
+}
+
+/** Alex pushed a fix to `agenda` and you committed a change to the same line. */
+export const agendaDiverges = (w: World): World => youEditAgenda(alexFixesAgenda(w))

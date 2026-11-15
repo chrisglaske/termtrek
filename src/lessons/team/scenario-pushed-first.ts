@@ -40,14 +40,14 @@ export const scenarioPushedFirst: Lesson = {
   title: 'Scenario: someone pushed first',
   level: 'Advanced',
   minutes: 10,
-  assumes: 'You can push, pull, rebase and resolve a conflict.',
+  assumes: 'You can pull with a rebase and finish a paused one, as in Keep your branch up to date.',
   setup: PUSHED_FIRST,
   steps: [
     {
       id: 'push',
       title: 'Push your reminder',
       learn:
-        'You added a name tag reminder to `notes.txt` in a commit. Alex also added a line to the same file, and pushed first.\n\nThere\'s no command to copy this time. You know everything you need. Start by pushing your commit.',
+        'This is practice of what **Keep your branch up to date** taught. You added a name tag reminder to `notes.txt` in a commit. Alex also added a line to the same file, and pushed first.\n\nThere\'s no command to copy this time. You know everything you need. Start by pushing your commit.',
       task: 'Push your commit and read what Git says.',
       hints: ['You know this one.', 'Type `git push` and press Enter.'],
       solution: ['git push'],

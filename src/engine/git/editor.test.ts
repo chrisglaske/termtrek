@@ -80,7 +80,7 @@ describe('git commit --amend', () => {
     expect(world.repo!.commits[head]!.message).toBe('Better');
     expect(world.repo!.reflog[0]!.message).toBe('commit (amend): Better');
     expect(text(r).some((l) => l.startsWith(' Date: '))).toBe(true);
-    expect(text(r)[0]).toBe(`[main (root-commit) ${head}] Better`);
+    expect(text(r)[0]).toBe(`[main ${head}] Better`);
   });
   it('amend keeps the parent count and history size of the branch', () => {
     const w = run(base(), 'echo b >> notes.txt', 'git commit -am "Second"').world;

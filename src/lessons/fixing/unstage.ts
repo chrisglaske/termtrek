@@ -8,7 +8,7 @@ export const unstage: Lesson = {
   title: 'Unstage a file',
   level: 'Beginner',
   minutes: 4,
-  assumes: 'You can stage and commit (Section 1).',
+  assumes: 'You can stage and commit (Foundations).',
   setup: {
     cwd: 'project',
     config: IDENTITY,
@@ -65,7 +65,7 @@ export const unstage: Lesson = {
       id: 'situation',
       kicker: 'The problem',
       title: 'Too much is staged',
-      body: 'You staged **notes.txt** on purpose. Then `git add .` also grabbed **draft.txt**, a file that is not ready to share. Nothing is saved yet, so this is easy to fix.',
+      body: 'You staged **notes.txt** on purpose. Then `git add .` also grabbed **draft.txt**, a file that is not ready to share. Nothing is committed yet, so this is easy to fix.',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'staged' },
     },
     {

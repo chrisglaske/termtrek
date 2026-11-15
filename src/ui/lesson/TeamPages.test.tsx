@@ -5,6 +5,8 @@ import { axe } from 'vitest-axe'
 import App from '../App'
 import { STORAGE_KEY } from '../../progress/store'
 import { findLesson } from '../../lessons/course'
+import pageFlowCss from './PageFlow.css?raw'
+import { ALEX_AGENDA_LINE, YOUR_AGENDA_LINE } from '../../lessons/team/setups'
 
 const CONVERTED = [
   'clone-a-repo',
@@ -16,6 +18,11 @@ const CONVERTED = [
   'merge-and-clean-up',
   'update-your-branch',
 ]
+
+// The merge-style explainer is cut from the compact server page: the lesson before it teaches the styles, and it would clip.
+it('hides the merge-style explainer inside the lesson page instead of letting it clip', () => {
+  expect(pageFlowCss).toMatch(/\.pf-server-site \.rp-ways\s*\{[^}]*display:\s*none/)
+})
 
 const input = () => screen.getByRole('textbox', { name: 'Terminal input' })
 /** user-event reads `{` as a key name; `{{` types a literal brace. */
@@ -38,6 +45,11 @@ async function solve(user: User, lessonId: string, step: number) {
   if (s.solve?.some((a) => a.type === 'pr-open')) return user.click(screen.getByRole('button', { name: 'Create pull request' }))
   if (s.solve?.some((a) => a.type === 'pr-merge')) return user.click(screen.getByRole('button', { name: 'Create a merge commit' }))
   await user.type(input(), typed(s.solution[0]!))
+  if (s.solve?.some((a) => a.type === 'save-file')) {
+    await user.click(screen.getByRole('button', { name: /Keep both/ }))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+  }
+  if (s.solve?.some((a) => a.type === 'editor-done')) await user.click(screen.getByRole('button', { name: 'Save and close' }))
 }
 
 /** Moves on from the page showing now to the page titled `title`, doing any step on the way that is still to do. */
@@ -149,9 +161,17 @@ describe('Team lessons as calm pages', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Open a pull request' })).toHaveFocus()
     expect(screen.getByRole('group', { name: "The server's website" })).toBeInTheDocument()
     expect(continueBtn()).toBeDisabled()
+    // "into" is its own box so it can line up with the two selects.
+    expect(document.querySelector('.rp-into')).toHaveTextContent('into')
     await user.click(screen.getByRole('button', { name: 'Create pull request' }))
     expect(continueBtn()).toBeEnabled()
     expect(screen.getByText(/Pull request #1 is open/)).toBeInTheDocument()
+    // The lead now reads the page's done copy, and the card stays in the right column in its new state.
+    expect(document.querySelector('.pf-lead')).toHaveTextContent('Pull request #1 is open')
+    expect(document.querySelector('.pf-lead')).not.toHaveTextContent('Click')
+    const doneCard = screen.getByRole('region', { name: 'Pull request #1: feat: add a home page' })
+    expect(doneCard.closest('.pf-right')).not.toBeNull()
+    expect(doneCard).toHaveTextContent('Open')
     // The site goes away once the step is done, so nothing can be merged early.
     expect(screen.queryByRole('group', { name: "The server's website" })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Create a merge commit' })).toBeNull()
@@ -172,6 +192,11 @@ describe('Team lessons as calm pages', () => {
     await toPage(user, 'merge-and-clean-up', 'Merge the pull request')
     await user.click(screen.getByRole('button', { name: 'Create a merge commit' }))
     expect(screen.getByText(/Merged on the server/)).toBeInTheDocument()
+    expect(document.querySelector('.pf-lead')).toHaveTextContent('Merged on the server')
+    expect(document.querySelector('.pf-lead')).not.toHaveTextContent('Click')
+    const merged = screen.getByRole('region', { name: 'Pull request #1: feat: add a home page' })
+    expect(merged.closest('.pf-right')).not.toBeNull()
+    expect(merged).toHaveTextContent('Merged')
     expect(screen.queryByRole('button', { name: 'Delete branch' })).toBeNull()
     await toPage(user, 'merge-and-clean-up', 'Delete the server copy')
     expect(screen.getByText('Your computer has no homepage branch.')).toBeInTheDocument()
@@ -187,5 +212,40 @@ describe('Team lessons as calm pages', () => {
     await toPage(user, 'update-your-branch', 'Push the rewritten branch')
     await user.type(input(), typed('git push --force-with-lease'))
     expect(screen.getByText("Your agenda and the server's match.")).toBeInTheDocument()
+  })
+
+  it('pulls with --rebase, shows the conflict, pauses, then finishes and pushes in sync', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    open('update-your-branch')
+    await toPage(user, 'update-your-branch', 'Pull and replay your commit')
+    expect(document.body.textContent).toContain('Alex Kim pushed a fix to agenda on the server, and you committed a change to the same line on your computer.')
+    await user.type(input(), typed('git pull --rebase'))
+    expect(continueBtn()).toBeEnabled()
+    await toPage(user, 'update-your-branch', 'Git paused the rebase')
+    expect(screen.getByText(/git rebase --abort/)).toBeInTheDocument()
+    const raw = screen.getByLabelText('agenda.txt with conflict markers').textContent ?? ''
+    expect(raw).toContain(`<<<<<<< HEAD\n${ALEX_AGENDA_LINE}\n=======\n${YOUR_AGENDA_LINE}\n>>>>>>> `)
+    // The same label the editor shows next: the replayed commit, as real Git writes it.
+    expect(raw).toMatch(/>>>>>>> [0-9a-f]{7} \(.+\)$/)
+    await toPage(user, 'update-your-branch', 'Keep both lines')
+    expect(screen.getByRole('region', { name: 'Incoming, agenda' })).toHaveTextContent(YOUR_AGENDA_LINE)
+    await toPage(user, 'update-your-branch', 'Push the finished rebase')
+    expect(screen.getByText(/Your agenda is 1 commit ahead/)).toBeInTheDocument()
+    await user.type(input(), typed('git push'))
+    expect(screen.getByText("Your agenda and the server's match.")).toBeInTheDocument()
+  })
+
+  it('keeps each server row on one flex line and lists a rebased commit once (V7, V8)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    open('update-your-branch')
+    await toPage(user, 'update-your-branch', 'Rebase rewrote your branch')
+    const you = side(/^Your computer/)
+    const msgs = within(you).getAllByRole('listitem').map((li) => li.querySelector('.sv-msg')?.textContent).filter(Boolean)
+    expect(new Set(msgs).size).toBe(msgs.length)
+    const li = within(you).getAllByRole('listitem')[0]!
+    const kids = [...li.children].map((c) => c.className.split(' ')[0])
+    expect(kids[0]).toBe('sv-dot')
+    expect(kids[1]).toBe('sv-msg')
+    expect(within(you).getByText(/server copy/)).toBeInTheDocument()
   })
 })

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { describeChange } from './GraphVisual'
+import { render } from '@testing-library/react'
+import { createWorld } from '../../engine/world'
+import { readTheHistory } from '../../lessons/foundations/read-the-history'
+import { describeChange, GraphVisual } from './GraphVisual'
 
 type S = Parameters<typeof describeChange>[0]
 
@@ -11,6 +14,8 @@ const snap = (over: Partial<S>): S => ({
   ids: ['aaaaaaa1'],
   messages: { aaaaaaa1: 'one' },
   reach: { main: ['aaaaaaa1'] },
+  firstParent: { main: ['aaaaaaa1'] },
+  merges: [],
   ...over,
 })
 
@@ -38,8 +43,22 @@ describe('describeChange', () => {
   })
   it('says a fast-forward moved the branch forward', () => {
     const a = snap({ tips: { main: 'aaaaaaa1' }, reach: { main: ['aaaaaaa1'] } })
-    const b = snap({ headId: 'ccccccc3', tips: { main: 'ccccccc3' }, ids: ['aaaaaaa1', 'ccccccc3'], reach: { main: ['ccccccc3', 'aaaaaaa1'] } })
+    const b = snap({ headId: 'ccccccc3', tips: { main: 'ccccccc3' }, ids: ['aaaaaaa1', 'ccccccc3'], reach: { main: ['ccccccc3', 'aaaaaaa1'] }, firstParent: { main: ['ccccccc3', 'aaaaaaa1'] } })
     expect(describeChange(a, b)).toContain('main moved forward 1 commit')
+  })
+  it('counts first-parent steps: a merge is one move, not the commits it brought in', () => {
+    const a = snap({ tips: { main: 'aaaaaaa1' }, reach: { main: ['aaaaaaa1'] } })
+    const b = snap({
+      headId: 'mmmmmmm4',
+      tips: { main: 'mmmmmmm4' },
+      ids: ['aaaaaaa1', 'bbbbbbb2', 'mmmmmmm4'],
+      reach: { main: ['mmmmmmm4', 'bbbbbbb2', 'aaaaaaa1'] },
+      firstParent: { main: ['mmmmmmm4', 'aaaaaaa1'] },
+      merges: ['mmmmmmm4'],
+    })
+    const text = describeChange(a, b)!
+    expect(text).toContain('main moved forward to mmmmmmm (a merge commit)')
+    expect(text).not.toContain('2 commits')
   })
   it('says a removed label keeps its commits', () => {
     const a = snap({ tips: { main: 'aaaaaaa1', old: 'aaaaaaa1' }, reach: { main: ['aaaaaaa1'], old: ['aaaaaaa1'] } })
@@ -47,5 +66,29 @@ describe('describeChange', () => {
   })
   it('returns null when nothing changed', () => {
     expect(describeChange(snap({}), snap({}))).toBeNull()
+  })
+})
+
+describe('GraphVisual all-history picture', () => {
+  const world = createWorld(readTheHistory.setup)
+  const ids = Object.keys(world.repo!.commits).map((id) => id.slice(0, 7))
+
+  it('names every commit dot with its id, even the ones a branch label sits under', () => {
+    expect(ids).toHaveLength(4)
+    const { container } = render(<GraphVisual world={world} v={{ kind: 'graph', all: true }} />)
+    const printed = [...container.querySelectorAll('svg text.g-id')].map((t) => t.textContent)
+    for (const id of ids) expect(printed).toContain(id)
+  })
+
+  it('says which way each of the two views runs when the log list sits above the picture', () => {
+    const { container } = render(<GraphVisual world={world} v={{ kind: 'graph', all: true, log: true }} last="git log" />)
+    const caption = container.querySelector('figcaption')!.textContent!
+    expect(caption).toMatch(/list.*newest first/i)
+    expect(caption).toMatch(/picture.*oldest on the left/i)
+  })
+
+  it('keeps the plain caption when there is no list', () => {
+    const { container } = render(<GraphVisual world={world} v={{ kind: 'graph', all: true }} />)
+    expect(container.querySelector('figcaption')!.textContent).toBe('Oldest on the left, newest on the right')
   })
 })

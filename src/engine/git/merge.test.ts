@@ -303,3 +303,23 @@ describe('git merge', () => {
     expect(mergeBase(repo, 'y000001', 'x000001')).toBe('aaa0000');
   });
 });
+
+describe('git merge refused fast-forward (B10)', () => {
+  it('names the range first, says Aborting and skips the strategy line', () => {
+    const w = ffWorld();
+    const r = go(w, 'echo f2 > f.txt', 'git add f.txt', 'git commit -m "x"', 'git reset --hard HEAD~1', 'echo local > f.txt', 'git add f.txt', 'git merge feature');
+    expect(r.exitCode).toBe(1);
+    expect(text(r)[0]).toMatch(/^Updating [0-9a-f]{7}\.\.[0-9a-f]{7}$/);
+    expect(text(r)).not.toContain('Merge with strategy ort failed.');
+    expect(text(r).at(-1)).toBe('Aborting');
+  });
+});
+
+describe('merge --abort after restore --staged (A8)', () => {
+  it('keeps the conflict markers as a local change', () => {
+    const r = go(conflictWorld(), 'git merge feature', 'git restore --staged notes.txt', 'git merge --abort');
+    expect(r.exitCode).toBe(0);
+    expect(r.world.repo!.op).toBeNull();
+    expect(r.world.files[P + 'notes.txt']).toBe(MARKED);
+  });
+});

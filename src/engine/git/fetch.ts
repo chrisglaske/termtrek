@@ -8,8 +8,6 @@ import { activeRepo } from './repoState';
 
 const has = (obj: object, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key);
 
-export const NO_REMOTE_SPECIFIED = 'fatal: No remote repository specified.  Please, specify either a URL or a remote name from which new revisions should be fetched.';
-
 /** Git's block for a remote name that was never added. */
 export function unknownRemote(name: string): OutLine[] {
   return [
@@ -120,7 +118,7 @@ export const gitFetch: CommandFn = (world, args) => {
     const branch = repo.head.kind === 'branch' ? repo.head.name : null;
     const up = branch && has(repo.upstream, branch) ? repo.upstream[branch]! : null;
     name = up ? up.remote : has(repo.remotes, 'origin') ? 'origin' : undefined;
-    if (name === undefined) return { lines: [err(NO_REMOTE_SPECIFIED)], exitCode: 128 };
+    if (name === undefined) return { lines: [], world, exitCode: 0 }; // Git has nothing to fetch from and says nothing
   } else if (!has(repo.remotes, name) && name.startsWith('https://')) {
     return { lines: repoNotFound(name), exitCode: 128 };
   }

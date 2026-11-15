@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
 
-export const DEFAULT_DESCRIPTION =
-  'Learn Git by using it. A free, in-browser course with a real terminal, a live repo map and a simulated team server. No account, nothing saved about you.'
+import { DEFAULT_DESCRIPTION, SITE } from '../../seo/staticMeta'
+
+export { DEFAULT_DESCRIPTION }
 
 function metaDescription(): HTMLMetaElement | null {
   return document.querySelector<HTMLMetaElement>('meta[name="description"]')
 }
-
-const SITE = 'https://termtrek.work'
 
 /** The static index.html names "/" for every route; point it at the page the visitor is on. */
 export function syncCanonical(pathname: string): void {

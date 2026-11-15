@@ -34,7 +34,7 @@ export const pushYourWork: Lesson = {
     {
       id: 'status',
       title: 'Ask where you stand',
-      learn: 'Run `git status`. It compares you with the server and says your branch is "ahead of \'origin/main\' by 1 commit": you have one commit the server does not.',
+      learn: 'Run `git status`. It compares you with **origin/main**, its memory of the server, and says your branch is "ahead of \'origin/main\' by 1 commit": you have one commit the server does not.',
       task: 'Run `git status`.',
       hints: ['You have used this one before.', 'Type `git status` and press Enter.'],
       solution: ['git status'],
@@ -100,7 +100,7 @@ export const pushYourWork: Lesson = {
       id: 'status',
       kicker: 'Try it',
       title: 'Ask where you stand',
-      body: 'Git compares your branch with the server.',
+      body: 'Git compares your branch with **origin/main**, its memory of the server.',
       visual: { kind: 'server' },
       step: 2,
       command: [{ text: 'git status', say: 'where do I stand?' }],

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-/** Phones: the same width at which the layout drops to its narrowest form. */
-export const PHONE_QUERY = '(max-width: 560px)'
+/** Too small for the app: narrower than an iPad mini, or too short for the picture and terminal side by side. */
+export const PHONE_QUERY = '(max-width: 743px), (max-height: 499px)'
 
 export function isPhone(): boolean {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(PHONE_QUERY).matches

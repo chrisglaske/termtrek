@@ -4,6 +4,7 @@ import { tokenize } from '../engine/tokenize'
 import { activeRepo, getStatus, headCommitId, headTree } from '../engine/git/repoState'
 import { resolveRev } from '../engine/git/rev'
 import type { StepContext } from './schema'
+import { getConfig } from '../engine/git/config'
 
 /** True when a repo exists and the current directory is inside it. `rel` is the expected repo root, relative to home. */
 export const inRepo = (w: World, rel?: string): boolean => {
@@ -67,7 +68,7 @@ export const parentCount = (w: World): number => {
   return (id && w.repo?.commits[id]?.parents.length) || 0
 }
 
-export const hasIdentity = (w: World): boolean => !!w.config['user.name'] && !!w.config['user.email']
+export const hasIdentity = (w: World): boolean => !!getConfig(w, 'user.name') && !!getConfig(w, 'user.email')
 
 /** The words of each `&&`- or `;`-separated command in a line; empty when the line doesn't parse. */
 export function segmentsOf(line: string): string[][] {
