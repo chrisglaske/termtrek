@@ -26,7 +26,7 @@ export function NotFound(): React.JSX.Element {
 
 /**
  * The host answers unknown URLs with the app (HTTP 200), so tell search
- * engines not to index this one, and point the canonical at the home page.
+ * engines not to index this one, and point the canonical and og:url at the home page.
  */
 function useNoIndex(): void {
   useEffect(() => {
@@ -34,12 +34,19 @@ function useNoIndex(): void {
     meta.name = 'robots'
     meta.content = 'noindex'
     document.head.append(meta)
-    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
-    const before = canonical?.getAttribute('href')
-    canonical?.setAttribute('href', 'https://termtrek.work/')
+    // Leaving restores both; the next page sets its own address anyway.
+    const links: Array<[Element | null, string]> = [
+      [document.querySelector('link[rel="canonical"]'), 'href'],
+      [document.querySelector('meta[property="og:url"]'), 'content'],
+    ]
+    const before = links.map(([el, attr]) => el?.getAttribute(attr))
+    for (const [el, attr] of links) el?.setAttribute(attr, 'https://termtrek.work/')
     return () => {
       meta.remove()
-      if (before != null) canonical?.setAttribute('href', before)
+      links.forEach(([el, attr], i) => {
+        const was = before[i]
+        if (was != null) el?.setAttribute(attr, was)
+      })
     }
   }, [])
 }

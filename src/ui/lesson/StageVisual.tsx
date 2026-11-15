@@ -273,7 +273,7 @@ export function StageVisual({
                         ignoredFiles.slice(0, 2).map((p) => (
                           <li key={`ign:${p}`} className="sv-file sv-ghost sv-ignored">
                             <i aria-hidden="true" />
-                            <s className="sv-ign-name">{p}</s>
+                            <span className="sv-ign-name">{p}</span>
                             <em className="sv-tag">ignored</em>
                           </li>
                         ))}

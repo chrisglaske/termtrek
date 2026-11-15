@@ -31,13 +31,29 @@ export function place(tokens: DOMRect[], labels: number[], origin: DOMRect): Pla
     () => placeInOrder(tokens, labels, origin, reverse, 'start'),
     () => placeInOrder(tokens, labels, origin, order, 'end'),
   ]
-  let first: Placed[] | null = null
+  // When no layout is clean (a narrow card), keep the one with the fewest clashes.
+  let best: { placed: Placed[]; n: number } | null = null
   for (const t of tries) {
     const r = t()
     if (r.clean) return r.placed
-    first ??= r.placed
+    const n = clashes(r.placed, labels)
+    if (!best || n < best.n) best = { placed: r.placed, n }
   }
-  return first!
+  return best!.placed
+}
+
+/** How many times a connector runs through a label or two labels in a row overlap. */
+function clashes(placed: Placed[], labels: number[]): number {
+  let n = 0
+  for (const [i, p] of placed.entries()) {
+    for (const [j, q] of placed.entries()) {
+      if (i === j) continue
+      const w = labels[j] ?? 0
+      if (q.row < p.row && p.x > q.left - 4 && p.x < q.left + w + 4) n++
+      if (q.row === p.row && p.left < q.left + w && q.left < p.left + (labels[i] ?? 0)) n++
+    }
+  }
+  return n
 }
 
 /** Where a label sits on its connector: centred under it, starting at it, or ending at it. */
@@ -144,7 +160,8 @@ export function CommandCard({ parts, typed = '' }: { parts: CommandPart[]; typed
     ro?.observe(box)
     void document.fonts?.ready.then(measure)
     return () => ro?.disconnect()
-  }, [full])
+    // Extra letters typed past the end make the line longer: fit it again.
+  }, [full, extra.length > 0])
 
   const rows = placed ? Math.max(...placed.map((p) => p.row)) + 1 : 1
   return (

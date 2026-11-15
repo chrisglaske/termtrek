@@ -32,6 +32,15 @@ describe('CommandCard', () => {
     expect(screen.getByText(/Scroll sideways to see all of it/)).toBeInTheDocument()
   })
 
+  it('fits the command again when extra letters are typed past its end', () => {
+    layout(200, 300)
+    const { rerender } = render(<CommandCard parts={parts} typed="git status" />)
+    const measured = vi.mocked(HTMLElement.prototype.getBoundingClientRect)
+    measured.mockClear()
+    rerender(<CommandCard parts={parts} typed="git statusxx" />)
+    expect(measured).toHaveBeenCalled()
+  })
+
   it('shows no scroll hint when only a label reaches past the command', () => {
     layout(114, 116)
     render(<CommandCard parts={parts} />)
@@ -64,6 +73,14 @@ describe('place', () => {
     // Measured at 1280px: four tokens, two labels wider than their tokens, in a 485px card.
     const tokens = [rect(139, 72), rect(220, 18), rect(247, 54), rect(310, 36)]
     expect(problems(tokens, [110, 139, 80, 69], 485)).toEqual([])
+  })
+
+  it('picks the layout with the fewest problems when none is clean', () => {
+    // Five wide labels in a 190px card: no layout is perfect, and the centred one is the worst.
+    const tokens = [rect(4, 10), rect(23, 21), rect(53, 44), rect(106, 52), rect(167, 10)]
+    const labels = [86, 146, 102, 51, 113]
+    const clashes = problems(tokens, labels, 190).filter((p) => /runs through|overlap/.test(p))
+    expect(clashes.length).toBeLessThanOrEqual(2)
   })
 
   it('never crosses a connector through a label when the labels fit the card', () => {

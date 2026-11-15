@@ -70,8 +70,10 @@ describe('StageVisual ignored files', () => {
     const { container } = render(<StageVisual world={world} show={['folder', 'staged']} />)
     const row = container.querySelector('.sv-ignored')!
     expect(row).not.toBeNull()
-    expect(row.querySelector('s')).toHaveTextContent('debug.log')
-    expect(row.querySelector('s .sv-tag')).toBeNull()
+    // Struck through for the eye only: no <s>, which some screen readers read out as deleted text.
+    expect(row.querySelector('s')).toBeNull()
+    expect(row.querySelector('.sv-ign-name')).toHaveTextContent('debug.log')
+    expect(row.querySelector('.sv-ign-name .sv-tag')).toBeNull()
     expect(row.querySelector('.sv-tag')).toHaveTextContent('ignored')
   })
 })
