@@ -183,7 +183,7 @@ describe('git switch and checkout', () => {
     const w0 = base(['git branch old HEAD~1']);
     for (const cmd of ['git checkout old notes.txt', 'git checkout old -- notes.txt', 'git checkout HEAD~1 -- notes.txt']) {
       const { r, w } = go(w0, cmd);
-      expect(text(r)).toEqual([]);
+      expect(text(r)).toEqual(cmd === 'git checkout old notes.txt' ? [expect.stringMatching(/^Updated 1 path from [0-9a-f]{7}$/)] : []);
       expect(w.files[P + 'notes.txt']).toBe('1\n');
       expect(w.repo!.index['notes.txt']).toBe('1\n');
       expect(w.repo!.head).toEqual({ kind: 'branch', name: 'main' });
@@ -215,8 +215,9 @@ describe('git switch and checkout', () => {
   it('blocks switching during an op', () => {
     const w0 = base();
     const conflicted = { ...w0, repo: { ...w0.repo!, op: { kind: 'merge' as const, theirs: 'x', theirsLabel: 'f', message: 'm', conflicts: ['notes.txt'] } } };
-    expect(text(go(conflicted, 'git switch -c z').r)).toEqual(['error: you need to resolve your current index first', '\tnotes.txt']);
+    expect(text(go(conflicted, 'git switch -c z').r)).toEqual(['fatal: cannot switch branch while merging', 'Consider "git merge --quit" or "git worktree add".']);
+    expect(text(go(conflicted, 'git checkout -b z').r)).toEqual(['error: you need to resolve your current index first', '\tnotes.txt']);
     const clean = { ...w0, repo: { ...w0.repo!, op: { ...conflicted.repo!.op!, conflicts: [] } } };
-    expect(text(go(clean, 'git checkout -b z').r)).toEqual(['fatal: cannot switch branch while merging']);
+    expect(text(go(clean, 'git checkout -b z').r)).toEqual(['fatal: cannot switch branch while merging', 'Consider "git merge --quit" or "git worktree add".']);
   });
 });

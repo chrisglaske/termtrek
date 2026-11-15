@@ -30,7 +30,7 @@ export function decorationFor(repo: Repo, id: string): string {
 }
 
 /** Every commit reachable from the tips, newest first, each exactly once. */
-function walk(repo: Repo, tips: string[]): Commit[] {
+export function walk(repo: Repo, tips: string[]): Commit[] {
   const seen = new Set<string>();
   const frontier = [...tips];
   const result: Commit[] = [];
