@@ -137,7 +137,7 @@ function Connector({ label }: { label: string }): React.JSX.Element {
 
 
 const opLabel = (op: RepoOp): string =>
-  op.kind === 'merge' ? `Merging ${op.theirsLabel}` : op.kind === 'rebase' ? `Rebasing ${op.rebase?.branch ?? ''}`.trim() : 'Reverting'
+  op.kind === 'merge' ? `Merging ${op.theirsLabel}` : op.kind === 'rebase' ? `Rebasing ${op.rebase?.branch ?? ''}`.trim() : op.kind === 'stash' ? 'Stash conflict' : 'Reverting'
 /** The drawing's size and where its trunk (lane 0) sits, so a caller can hold several states in one fixed frame. */
 export interface GraphBox { width: number; height: number; trunkY: number }
 

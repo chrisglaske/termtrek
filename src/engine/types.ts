@@ -7,8 +7,8 @@ export type Head = { kind: 'branch'; name: string } | { kind: 'detached'; id: st
 export interface ReflogEntry { id: string; message: string } // e.g. "commit (initial): Add notes"
 export interface StashEntry { id: string; base: string; branch: string | null; message: string; index: Record<string, string>; work: Record<string, string> }
 export interface RebaseState { branch: string; onto: string; ontoLabel: string; orig: string; todo: string[]; current: string | null; stoppedAt: string | null }
-export interface RepoOp { kind: 'merge' | 'revert' | 'rebase'; theirs: string; theirsLabel: string; message: string; conflicts: string[]; rebase?: RebaseState }
-export interface CommitEdit { amend: boolean; all: boolean }
+export interface RepoOp { kind: 'merge' | 'revert' | 'rebase' | 'stash'; theirs: string; theirsLabel: string; message: string; conflicts: string[]; rebase?: RebaseState }
+export interface CommitEdit { amend: boolean; all: boolean; paths?: string[] } // paths: `git commit <paths>` (--only), repo-relative
 export interface EditorSession { file: string; text: string; action: CommitEdit; merge?: boolean; rebase?: boolean } // file e.g. '.git/COMMIT_EDITMSG'
 export interface Upstream { remote: string; branch: string }
 export interface PrComment { author: string; body: string; kind: 'comment' | 'approve' | 'changes'; at: number }

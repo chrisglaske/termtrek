@@ -8,7 +8,7 @@ const poppedOnMain = (c: StepContext): Explain | null =>
   onBranch(c.world, 'main') && workFile(c.world, 'home.html') !== treeFile(c.world, 'HEAD', 'home.html')
     ? {
         kind: 'warn',
-        text: "That put the homepage work onto **main**, where `home.html` is different, so the two clashed. The shelf entry is kept. Run `git restore home.html` to undo it on main, then `git switch homepage` and `git stash pop` there.",
+        text: "That put the homepage work onto **main**, where `home.html` is different, so the two clashed. The shelf entry is kept. Undo it on main with `git restore --staged home.html`, then `git restore home.html`. After that, `git switch homepage` and `git stash pop` there.",
       }
     : null
 

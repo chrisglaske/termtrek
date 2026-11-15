@@ -162,13 +162,13 @@ describe('RepoMap', () => {
     expect(container.querySelector('.repomap-op')?.textContent).toBe('Merging feature')
   })
 
-  it('does not say Merging for a conflicted stash pop', () => {
+  it('labels a conflicted stash pop as a stash conflict, not a merge', () => {
     const r = runLine(built(['echo stashed > notes.txt', 'git stash', 'echo other > notes.txt', 'git add .', 'git commit -m "c2"']), 'git stash pop')
     const w = r.world
     expect(r.lines.map((l) => l.map((x) => x.text).join('')).join('\n')).toContain('CONFLICT')
-    expect(w.repo!.op).toBeNull()
+    expect(w.repo!.op?.kind).toBe('stash')
     const { container } = render(<RepoMap world={w} />)
-    expect(container.querySelector('.repomap-op')).toBeNull()
+    expect(container.querySelector('.repomap-op')?.textContent).toBe('Stash conflict')
   })
 
   it('stash chip', () => {

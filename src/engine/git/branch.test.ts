@@ -221,3 +221,40 @@ describe('git switch and checkout', () => {
     expect(text(go(clean, 'git checkout -b z').r)).toEqual(['fatal: cannot switch branch while merging', 'Consider "git merge --quit" or "git worktree add".']);
   });
 });
+
+describe('git branch -v and -d with an upstream (Task 5)', () => {
+  const rem = {
+    slug: 'team/notes',
+    commits: [{ message: 'Add notes', files: { 'notes.txt': 'one\n' } }],
+  };
+  const URL = 'https://git.example.com/team/notes.git';
+  const cloned = (): World =>
+    run(buildWorld({ config, remote: rem }), `git clone ${URL}`, 'cd notes');
+  it('-v shows [ahead 1] without the upstream name, -vv adds it', () => {
+    const w = run(cloned(), 'echo x > x.txt', 'git add .', 'git commit -m "local"');
+    expect(text(runLine(w, 'git branch -v').lines ? runLine(w, 'git branch -v') : runLine(w, 'true'))[0]).toMatch(/^\* main \S+ \[ahead 1\] local$/);
+    expect(text(runLine(w, 'git branch -vv'))[0]).toMatch(/^\* main \S+ \[origin\/main: ahead 1\] local$/);
+  });
+  it('-d deletes a branch merged into its upstream but not HEAD, with Git\'s warning', () => {
+    let w = run(cloned(), 'git switch -c alexwork', 'echo b > b.txt', 'git add .', 'git commit -m w', 'git push -u origin alexwork', 'git switch main');
+    const r = runLine(w, 'git branch -d alexwork');
+    expect(r.exitCode).toBe(0);
+    expect(text(r)).toEqual([
+      "warning: deleting branch 'alexwork' that has been merged to",
+      "         'refs/remotes/origin/alexwork', but not yet merged to HEAD",
+      expect.stringMatching(/^Deleted branch alexwork \(was [0-9a-f]{7}\)\.$/),
+    ]);
+    w = r.world;
+    expect(w.repo!.branches.alexwork).toBeUndefined();
+  });
+  it('-d refuses a branch merged to HEAD but not to its upstream', () => {
+    const w = run(cloned(), 'git switch -c feat', 'echo b > b.txt', 'git add .', 'git commit -m w', 'git push -u origin feat', 'echo c >> b.txt', 'git commit -am g', 'git switch main', 'git merge feat');
+    const r = runLine(w, 'git branch -d feat');
+    expect(r.exitCode).toBe(1);
+    expect(text(r).slice(0, 3)).toEqual([
+      "warning: not deleting branch 'feat' that is not yet merged to",
+      "         'refs/remotes/origin/feat', even though it is merged to HEAD",
+      "error: the branch 'feat' is not fully merged",
+    ]);
+  });
+});

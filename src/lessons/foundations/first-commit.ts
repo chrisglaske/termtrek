@@ -26,8 +26,6 @@ function commitNudge(c: StepContext): Explain | null {
   if (w[0] !== 'git' || w[1] !== 'commit') return null
   if (w[w.length - 1] === '-m')
     return { kind: 'tip', text: 'Almost. Add your message after `-m`, inside quotes: `git commit -m "Add meeting notes"`.' }
-  if (printed(c).includes('unknown option'))
-    return { kind: 'tip', text: 'Put the whole message inside quotes, so Git reads all the words as one message: `git commit -m "Add meeting notes"`.' }
   return null
 }
 

@@ -219,3 +219,49 @@ describe('git add . explain', () => {
     expect(runLine(fresh(), 'git add notes.txt').explain?.text).toContain('Staged **notes.txt**.');
   });
 });
+
+describe('git commit pathspecs and message words (Task 5)', () => {
+  const two = () => run(fresh(), 'echo b > b.txt', 'git add .', 'git commit -m one', 'echo a2 > notes.txt', 'echo b2 > b.txt');
+  it('-m with a path commits only that path (--only)', () => {
+    const { world } = two();
+    const r = run(world, 'git add b.txt', 'git commit -m x notes.txt');
+    expect(r.r.exitCode).toBe(0);
+    const w = r.world.repo!;
+    const tip = w.commits[w.branches.main!]!;
+    expect(tip.tree).toEqual({ 'notes.txt': 'a2\n', 'b.txt': 'b\n' });
+    expect(w.index['b.txt']).toBe('b2\n');
+    expect(text(run(r.world, 'git status -s').r)).toEqual(['M  b.txt']);
+  });
+  it('an unknown path is refused in Git words', () => {
+    const r = run(two().world, 'git commit -m x nope.txt').r;
+    expect(r.exitCode).toBe(1);
+    expect(text(r)).toEqual(["error: pathspec 'nope.txt' did not match any file(s) known to git"]);
+  });
+  it('unquoted message words are read as file names', () => {
+    const r = run(two().world, 'git commit -m fix the typo').r;
+    expect(r.exitCode).toBe(1);
+    expect(text(r)).toEqual(["error: pathspec 'the' did not match any file(s) known to git", "error: pathspec 'typo' did not match any file(s) known to git"]);
+    expect(r.explain).toEqual({ kind: 'tip', text: 'Git read **the** as a file name. Put the whole message in quotes: `git commit -m "fix the typo"`.' });
+  });
+  it('-am with extra words refuses with Git\'s fatal', () => {
+    const r = run(two().world, 'git commit -am fix the typo').r;
+    expect(r.exitCode).toBe(128);
+    expect(text(r)).toEqual(["fatal: paths 'the ...' with -a does not make sense"]);
+    expect(r.explain?.kind).toBe('tip');
+  });
+  it('-am"msg" is -a -m msg', () => {
+    const { world, r } = run(two().world, 'git commit -am"msg"');
+    expect(r.exitCode).toBe(0);
+    expect(world.repo!.commits[world.repo!.branches.main!]!.message).toBe('msg');
+  });
+  it('amending the root commit prints no (root-commit)', () => {
+    const r = run(fresh(), 'git add .', 'git commit -m one', 'git commit --amend -m two').r;
+    expect(text(r)[0]).toMatch(/^\[main [0-9a-f]{7}\] two$/);
+  });
+  it('an unborn repo with nothing staged says Initial commit', () => {
+    const r = run(fresh(), 'git commit -m x').r;
+    expect(r.exitCode).toBe(1);
+    expect(text(r)).toContain('Initial commit');
+    expect(text(r)).not.toContain('No commits yet');
+  });
+});

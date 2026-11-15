@@ -39,6 +39,7 @@ const UNMERGED_LABEL: Record<UnmergedCode, string> = {
 export function unmergedCode(repo: Repo, path: string): UnmergedCode {
   const op = repo.op;
   const headId = headCommitId(repo);
+  if (op?.kind === 'stash') return 'UU'; // a stash pop/apply clashes on content
   if (op?.kind === 'rebase') {
     // A rebase replays one commit: its parent is the base, HEAD is ours and the commit is theirs.
     const picked = repo.commits[op.rebase?.current ?? ''];
@@ -130,6 +131,8 @@ export const gitStatus: CommandFn = (world, args) => {
     );
   } else if (op?.kind === 'rebase') {
     // The rebase block is already printed above.
+  } else if (op?.kind === 'stash') {
+    // Git prints no operation banner for a conflicted stash pop: just the unmerged paths.
   } else if (op && conflicts.length) {
     lines.push([{ text: 'You have unmerged paths.' }], muted('  (fix conflicts and run "git commit")'), muted('  (use "git merge --abort" to abort the merge)'), blank);
   } else if (op) {

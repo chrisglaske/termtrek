@@ -21,6 +21,22 @@ export const invalidBranchName = (name: string): OutLine[] => [
 
 export const hasBranch = (repo: Repo, name: string): boolean => Object.prototype.hasOwnProperty.call(repo.branches, name);
 
+/**
+ * Is `tip` safe to delete with `-d`? Like Git, a branch with an upstream is judged against that upstream
+ * (and Git warns when the answer differs from HEAD's); other branches are judged against HEAD.
+ */
+function mergedFor(repo: Repo, name: string, tip: string, headId: string | null, lines: OutLine[]): boolean {
+  const up = repo.upstream[name];
+  const ref = up ? `${up.remote}/${up.branch}` : null;
+  const upTip = ref !== null && Object.prototype.hasOwnProperty.call(repo.remoteRefs, ref) ? repo.remoteRefs[ref]! : null;
+  const inHead = headId !== null && isAncestor(repo, tip, headId);
+  if (upTip === null) return inHead;
+  const inUp = isAncestor(repo, tip, upTip);
+  if (inUp && !inHead) lines.push(err(`warning: deleting branch '${name}' that has been merged to`), err(`         'refs/remotes/${ref}', but not yet merged to HEAD`));
+  else if (!inUp && inHead) lines.push(err(`warning: not deleting branch '${name}' that is not yet merged to`), err(`         'refs/remotes/${ref}', even though it is merged to HEAD`));
+  return inUp;
+}
+
 export const gitBranch: CommandFn = (world, args) => {
   const repo = activeRepo(world);
   if (!repo) return { lines: [], exitCode: 128 };
@@ -84,7 +100,7 @@ export const gitBranch: CommandFn = (world, args) => {
       } else if (n === current) {
         lines.push(err(`error: cannot delete branch '${n}' used by worktree at '${repo.root}'`));
         code = 1;
-      } else if (tip !== null && del === 'd' && !(headId !== null && isAncestor(repo, tip, headId))) {
+      } else if (tip !== null && del === 'd' && !mergedFor(repo, n, tip, headId, lines)) {
         lines.push(err(`error: the branch '${n}' is not fully merged`), err(`hint: If you are sure you want to delete it, run 'git branch -D ${n}'`));
         code = 1;
       } else {
@@ -143,8 +159,11 @@ export const gitBranch: CommandFn = (world, args) => {
       const row = (label: string, id: string | null, star: boolean, branch: string | null): OutLine => {
         const mark = star ? '* ' : '  ';
         if (!verbose) return star ? [{ text: mark + label, tone: 'ok' }] : [{ text: mark + label }];
-        const sum = verbose > 1 && branch !== null ? trackingSummary(repo, branch) : null;
-        const bracket = sum ? ` [${sum.upstream}${sum.gone ? ': gone' : sum.ahead || sum.behind ? ': ' + [sum.ahead ? `ahead ${sum.ahead}` : '', sum.behind ? `behind ${sum.behind}` : ''].filter(Boolean).join(', ') : ''}]` : '';
+        const sum = branch !== null ? trackingSummary(repo, branch) : null;
+        // `-v` shows only how far apart the branches are; `-vv` adds the upstream's name.
+        const gap = sum ? [sum.ahead ? `ahead ${sum.ahead}` : '', sum.behind ? `behind ${sum.behind}` : ''].filter(Boolean).join(', ') : '';
+        const inner = !sum ? '' : verbose > 1 ? sum.upstream + (sum.gone ? ': gone' : gap ? ': ' + gap : '') : sum.gone ? 'gone' : gap;
+        const bracket = inner ? ` [${inner}]` : '';
         return [
           { text: mark + label.padEnd(width) + ' ', tone: star ? 'ok' : undefined },
           { text: id ?? '', tone: 'id' },

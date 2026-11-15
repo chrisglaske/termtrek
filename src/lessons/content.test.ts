@@ -250,6 +250,7 @@ describe('course content', () => {
         'git stash',
         'git switch main',
         'git stash pop',
+        'git restore --staged home.html',
         'git restore home.html',
         'git switch homepage',
         'git stash pop',

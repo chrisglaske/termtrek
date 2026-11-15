@@ -202,3 +202,49 @@ describe('git stash', () => {
     expect(text(go(world(), 'git stash nope'))).toEqual(["fatal: subcommand wasn't specified; 'push' can't be assumed due to unexpected token 'nope'"]);
   });
 });
+
+describe('git stash pop --index and conflicts (Task 5)', () => {
+  it('pop --index restores the staged state', () => {
+    const w = world(['echo one > notes.txt', 'git add notes.txt']);
+    const r = go(w, 'git stash', 'git stash pop --index');
+    expect(r.exitCode).toBe(0);
+    expect(r.world.repo!.index['notes.txt']).toBe('one\n');
+    expect(r.world.repo!.stash).toHaveLength(0);
+    expect(text(r).join('\n')).toContain('Changes to be committed:');
+  });
+  it('pop without --index leaves it unstaged', () => {
+    const w = world(['echo one > notes.txt', 'git add notes.txt']);
+    const r = go(w, 'git stash', 'git stash pop');
+    expect(r.world.repo!.index['notes.txt']).toBe('base\n');
+  });
+  const conflicted = () => go(world(['echo mine > notes.txt']), 'git stash', 'echo other > notes.txt', 'git commit -am "c2"', 'git stash pop');
+  it('a conflicted pop leaves unmerged paths, like Git', () => {
+    const r = conflicted();
+    const out = text(r);
+    expect(out).toContain('Unmerged paths:');
+    expect(out).toContain('\tboth modified:   notes.txt');
+    expect(out).not.toContain('You have unmerged paths.');
+    expect(out.join('\n')).not.toContain('git merge --abort');
+    expect(r.world.repo!.stash).toHaveLength(1);
+  });
+  it('commit is refused while unmerged; add clears it', () => {
+    const r = conflicted();
+    const c = runLine(r.world, 'git commit -m x');
+    expect(c.exitCode).toBe(128);
+    expect(text(c)).toContain('U\tnotes.txt');
+    const a = runLine(r.world, 'git add notes.txt');
+    expect(a.world.repo!.op).toBeNull();
+    expect(text(runLine(a.world, 'git status')).join('\n')).not.toContain('Unmerged');
+    expect(runLine(a.world, 'git commit -m r').exitCode).toBe(0);
+  });
+  it('merge --abort refuses', () => {
+    const r = runLine(conflicted().world, 'git merge --abort');
+    expect(r.exitCode).toBe(128);
+    expect(text(r)).toEqual(['fatal: There is no merge to abort (MERGE_HEAD missing).']);
+  });
+  it('stash drop still works', () => {
+    const r = runLine(conflicted().world, 'git stash drop');
+    expect(r.exitCode).toBe(0);
+    expect(r.world.repo!.stash).toHaveLength(0);
+  });
+});

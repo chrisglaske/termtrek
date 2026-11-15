@@ -9,6 +9,7 @@ import { formatDate } from './log';
 import { EDITOR_WAITING, messageTemplate } from './editor';
 import { gitStatus } from './status';
 import { rebaseMessage } from './rebase';
+import { matchPathspecs } from './worktree';
 
 const stripComments = (m: string): string => m.split('\n').filter((l) => !l.startsWith('#')).join('\n').trim();
 
@@ -44,10 +45,23 @@ const identityError = (world: World): RunResult | null => {
   };
 };
 
+/** `base` with each of `paths` replaced by its working-folder content (or removed when the file is gone). */
+function withPaths(world: World, base: Record<string, string>, paths: string[]): Record<string, string> {
+  const repo = activeRepo(world)!;
+  const work = workingFiles(world, repo);
+  const next = { ...base };
+  for (const p of paths) {
+    if (p in work) next[p] = work[p]!;
+    else delete next[p];
+  }
+  return next;
+}
+
 /** The index a commit would record: `-a` also stages modifications and deletions of tracked files. */
 export function commitIndex(world: World, edit: CommitEdit): Record<string, string> {
   const repo = activeRepo(world);
   if (!repo) return {};
+  if (edit.paths) return withPaths(world, headTree(repo), edit.paths);
   const index = { ...repo.index };
   if (edit.all) {
     const work = workingFiles(world, repo);
@@ -95,7 +109,7 @@ export function makeCommit(world: World, message: string, edit: CommitEdit): Run
   const headId = headCommitId(repo0);
   const old = headId ? repo0.commits[headId] : undefined;
   if (edit.amend && !old) return { world, lines: [err('fatal: You have nothing to amend.')], exitCode: 128 };
-  if (edit.amend && op && op.kind !== 'rebase') return { world, lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
+  if (edit.amend && op && op.kind !== 'rebase' && op.kind !== 'stash') return { world, lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
 
   const index = commitIndex(world, edit);
   const base = baseTree(world, edit);
@@ -113,9 +127,11 @@ export function makeCommit(world: World, message: string, edit: CommitEdit): Run
       : op?.kind === 'revert'
         ? `revert: ${summary}`
         : `commit${headId ? '' : ' (initial)'}: ${summary}`;
+  // `git commit <paths>` records only those paths; anything else already staged stays staged.
+  const nextIndex = edit.paths ? withPaths(world, repo0.index, edit.paths) : index;
   const repo = logRef({
     ...repo0,
-    index,
+    index: nextIndex,
     op: op?.kind === 'rebase' ? op : null, // a commit during a rebase stop keeps the rebase going
     commits: { ...repo0.commits, [id]: commit },
     branches: branch ? { ...repo0.branches, [branch]: id } : repo0.branches,
@@ -123,7 +139,8 @@ export function makeCommit(world: World, message: string, edit: CommitEdit): Run
   }, id, reflog);
 
   const root = parents.length === 0;
-  const where = branch ? (root ? `${branch} (root-commit)` : branch) : root ? 'detached HEAD (root-commit)' : 'detached HEAD';
+  const fresh = root && !edit.amend; // an amended root commit is still the root, but Git only says so for a new one
+  const where = branch ? (fresh ? `${branch} (root-commit)` : branch) : fresh ? 'detached HEAD (root-commit)' : 'detached HEAD';
   const lines: OutLine[] = [[{ text: `[${where} ` }, { text: id, tone: 'id' }, { text: `] ${summary}` }]];
   if (edit.amend) lines.push([{ text: ` Date: ${formatDate(old!.time)}` }]);
   if (parents.length < 2) {
@@ -165,9 +182,13 @@ export const gitCommit: CommandFn = (world, args, io) => {
   let allowEmpty = false;
   let noEdit = false;
   const messages: string[] = [];
+  const words: string[] = [];
+  let dashdash = false;
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
-    if (a === '-a' || a === '--all') edit.all = true;
+    if (dashdash) words.push(a);
+    else if (a === '--') dashdash = true;
+    else if (a === '-a' || a === '--all') edit.all = true;
     else if (a === '--allow-empty') allowEmpty = true;
     else if (a === '--amend') edit.amend = true;
     else if (a === '--no-edit') noEdit = true;
@@ -178,8 +199,28 @@ export const gitCommit: CommandFn = (world, args, io) => {
       messages.push(v);
       i++;
     } else if (a.startsWith('--message=')) messages.push(a.slice(10));
-    else if (a.startsWith('-m') && a.length > 2) messages.push(a.slice(2));
-    else return { lines: [err(`error: unknown option \`${a.replace(/^-+/, '')}'`)], exitCode: 129 };
+    else if (a.startsWith('-am') && a.length > 3) {
+      edit.all = true;
+      messages.push(a.slice(3));
+    } else if (a.startsWith('-m') && a.length > 2) messages.push(a.slice(2));
+    else if (a.startsWith('-') && a.length > 1) return { lines: [err(`error: unknown option \`${a.replace(/^-+/, '')}'`)], exitCode: 129 };
+    else words.push(a);
+  }
+
+  if (words.length > 0) {
+    const stray = messages.length > 0 ? { kind: 'tip' as const, text: `Git read **${words[0]}** as a file name. Put the whole message in quotes: \`git commit -m "${[messages[messages.length - 1], ...words].join(' ')}"\`.` } : undefined;
+    if (edit.all) return { lines: [err(`fatal: paths '${words[0]} ...' with -a does not make sense`)], explain: stray, exitCode: 128 };
+    const known = [...new Set([...Object.keys(headTree(repo0)), ...Object.keys(repo0.index)])];
+    const lines: OutLine[] = [];
+    const paths: string[] = [];
+    for (const w of words) {
+      const m = matchPathspecs(world, repo0, [w], known);
+      if ('outside' in m) return { lines: [err(`fatal: ${w}: '${w}' is outside repository at '${repo0.root}'`)], exitCode: 128 };
+      if ('missing' in m) lines.push(err(`error: pathspec '${w}' did not match any file(s) known to git`));
+      else paths.push(...m.paths);
+    }
+    if (lines.length) return { lines, explain: stray, exitCode: 1 };
+    edit.paths = [...new Set(paths)].sort();
   }
 
   const denied = identityError(world);
@@ -189,7 +230,7 @@ export const gitCommit: CommandFn = (world, args, io) => {
   const headId = headCommitId(repo0);
   const old = headId ? repo0.commits[headId] : undefined;
   if (edit.amend && !old) return { lines: [err('fatal: You have nothing to amend.')], exitCode: 128 };
-  if (edit.amend && op && op.kind !== 'rebase') return { lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
+  if (edit.amend && op && op.kind !== 'rebase' && op.kind !== 'stash') return { lines: [err(`fatal: You are in the middle of a ${op.kind} -- cannot amend.`)], exitCode: 128 };
   const rebasing = op?.kind === 'rebase';
   // During a rebase stop Git offers the stopped commit's message (MERGE_MSG) until a commit is made by hand.
   const opMessage = !op ? '' : rebasing ? rebaseMessage(repo0) : op.message;
@@ -200,7 +241,9 @@ export const gitCommit: CommandFn = (world, args, io) => {
     const paths = new Set([...Object.keys(head), ...Object.keys(index)]);
     if (![...paths].some((p) => head[p] !== index[p])) {
       const st = gitStatus(world, [], io);
-      return { lines: st.lines, exitCode: 1 };
+      // `git commit` calls the empty state of a new repo "Initial commit"; `git status` says "No commits yet".
+      const lines = st.lines.map((l) => (l.length === 1 && l[0]!.text === 'No commits yet' ? [{ text: 'Initial commit' }] : l));
+      return { lines, exitCode: 1 };
     }
   }
 

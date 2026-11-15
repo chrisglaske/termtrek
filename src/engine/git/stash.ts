@@ -1,5 +1,5 @@
 import type { CommandFn } from '../registry';
-import type { OutLine, Repo, StashEntry, World } from '../types';
+import type { OutLine, Repo, RepoOp, StashEntry, World } from '../types';
 import { shortId } from '../hash';
 import { mergeTrees } from '../merge3';
 import { err } from '../shell/fs';
@@ -99,7 +99,15 @@ function list(repo: Repo): Result {
   return { lines: repo.stash.map((e, i) => plain(`stash@{${i}}: ${e.message}`)), exitCode: 0 };
 }
 
-function apply(world: World, repo: Repo, spec: string | undefined, drop: boolean, io: Parameters<CommandFn>[2]): Result {
+function apply(world: World, repo: Repo, rest: string[], drop: boolean, io: Parameters<CommandFn>[2]): Result {
+  let restoreIndex = false;
+  let spec: string | undefined;
+  for (const a of rest) {
+    if (a === '--index') restoreIndex = true;
+    else if (a === '-q' || a === '--quiet') continue;
+    else if (a.startsWith('-') && a.length > 1) return { lines: [err(`error: unknown option \`${a.replace(/^-+/, '')}'`)], exitCode: 129 };
+    else if (spec === undefined) spec = a;
+  }
   if (repo.op) return { lines: [...needsMerge(repo), ...(drop ? [plain('The stash entry is kept in case you need it again.')] : [])], exitCode: 128 };
   const found = pick(repo, spec);
   if ('fail' in found) return found.fail;
@@ -117,8 +125,20 @@ function apply(world: World, repo: Repo, spec: string | undefined, drop: boolean
   for (const p of Object.keys(entry.index)) {
     if (!(p in base) && p in merged.work && !conflicted.has(p)) index[p] = merged.work[p]!;
   }
+  if (restoreIndex && conflicted.size === 0) {
+    // `--index` also puts back what was staged: paths staged in the stash are staged again, with their stashed content.
+    for (const p of new Set([...Object.keys(base), ...Object.keys(entry.index)])) {
+      if (entry.index[p] === base[p]) continue;
+      if (p in entry.index) index[p] = entry.index[p]!;
+      else delete index[p];
+    }
+  }
   const stash = drop && merged.conflicts.length === 0 ? repo.stash.filter((_, i) => i !== n) : repo.stash;
-  const next: World = { ...res.world, repo: { ...repo, index, stash } };
+  // Git leaves the clashing files unmerged (no operation banner), so `git status` lists them under "Unmerged paths".
+  const op: RepoOp | null = merged.conflicts.length > 0
+    ? { kind: 'stash', theirs: entry.id, theirsLabel: 'Stashed changes', message: '', conflicts: merged.conflicts.map((c) => c.path) }
+    : null;
+  const next: World = { ...res.world, repo: { ...repo, index, stash, op } };
 
   const lines: OutLine[] = [];
   const both = autoMerged(base, ours, entry.work);
@@ -171,8 +191,8 @@ export const gitStash: CommandFn = (world, args, io) => {
   if (sub === undefined || sub.startsWith('-')) return push(world, repo, args);
   if (sub === 'push') return push(world, repo, rest);
   if (sub === 'list') return list(repo);
-  if (sub === 'pop') return apply(world, repo, rest[0], true, io);
-  if (sub === 'apply') return apply(world, repo, rest[0], false, io);
+  if (sub === 'pop') return apply(world, repo, rest, true, io);
+  if (sub === 'apply') return apply(world, repo, rest, false, io);
   if (sub === 'drop') return dropEntry(world, repo, rest[0]);
   if (['show', 'clear', 'save', 'branch', 'create', 'store'].includes(sub)) return unsupported(sub);
   return { lines: [err(`fatal: subcommand wasn't specified; 'push' can't be assumed due to unexpected token '${sub}'`)], exitCode: 128 };

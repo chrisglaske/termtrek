@@ -106,7 +106,9 @@ function opGuard(repo: Repo, verb: 'switch' | 'checkout'): Omit<RunResult, 'worl
   if (op.conflicts.length > 0 && !(verb === 'switch' && op.kind === 'merge')) {
     return {
       lines: [err('error: you need to resolve your current index first'), ...op.conflicts.map((p) => [{ text: '\t' + p }])],
-      explain: { kind: 'warn', text: `A ${op.kind} is still in progress. Fix the conflicted files, \`git add\` them and \`git commit\`, then you can switch branches.` },
+      explain: op.kind === 'stash'
+        ? { kind: 'warn', text: 'Your `git stash pop` left conflicts. Fix the conflicted files and `git add` them, then you can switch branches.' }
+        : { kind: 'warn', text: `A ${op.kind} is still in progress. Fix the conflicted files, \`git add\` them and \`git commit\`, then you can switch branches.` },
       exitCode: 1,
     };
   }

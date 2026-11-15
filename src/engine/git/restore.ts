@@ -3,6 +3,11 @@ import { err } from '../shell/fs';
 import { activeRepo, headTree, workingFiles } from './repoState';
 import { matchPathspecs, writeWork } from './worktree';
 
+import type { RepoOp } from '../types';
+
+/** A conflicted stash pop ends once no path is left unmerged. */
+const stashDone = (op: RepoOp | null): RepoOp | null => (op?.kind === 'stash' && op.conflicts.length === 0 ? null : op);
+
 export const gitRestore: CommandFn = (world, args) => {
   const repo = activeRepo(world);
   if (!repo) return { lines: [], exitCode: 128 };
@@ -53,7 +58,7 @@ export const gitRestore: CommandFn = (world, args) => {
   else if (staged) text = `Unstaged ${what}. The file in your folder is untouched, so your edits are safe, they just aren't in the next commit.`;
   else text = `Put ${what} back to how it was in the staging area. The edit you discarded is gone for good, because Git never saved it.`;
   return {
-    world: { ...next, repo: { ...repo, index, op: repo.op && unmerged.length ? { ...repo.op, conflicts: unmerged.filter((p) => !m.paths.includes(p)) } : repo.op } },
+    world: { ...next, repo: { ...repo, index, op: stashDone(repo.op && unmerged.length ? { ...repo.op, conflicts: unmerged.filter((p) => !m.paths.includes(p)) } : repo.op) } },
     lines: [],
     explain: { kind: staged && !worktree ? 'ok' : 'warn', text },
     exitCode: 0,
