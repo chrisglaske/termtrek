@@ -75,7 +75,7 @@ export const mergeAndCleanUp: Lesson = {
       id: 'approved',
       kicker: 'The setup',
       title: 'Alex approved your pull request',
-      body: 'The review is done, and your fix is in. Time to merge it into **main**.',
+      body: 'The review is done, and the change Alex asked for is in. Time to merge it into **main**.',
       visual: { kind: 'pr' },
     },
     {

@@ -45,7 +45,7 @@ export const shareAProject: Lesson = {
     {
       id: 'status',
       title: 'Check where you stand',
-      learn: 'Run `git status`. With an upstream set, it compares you with the server and says "up to date with \'origin/main\'".',
+      learn: 'Run `git status`. With an upstream set, it compares you with **origin/main**, its memory of the server, and says "up to date with \'origin/main\'".',
       task: 'Check the status.',
       hints: ['You have used this one before.', 'Type `git status` and press Enter.'],
       solution: ['git status'],
@@ -113,7 +113,7 @@ export const shareAProject: Lesson = {
       id: 'status',
       kicker: 'Try it',
       title: 'Check where you stand',
-      body: 'With the link set, status compares you with the server.',
+      body: 'With the link set, status compares your branch with **origin/main**, its memory of the server.',
       visual: { kind: 'server' },
       step: 2,
       command: [{ text: 'git status', say: 'where do I stand?' }],

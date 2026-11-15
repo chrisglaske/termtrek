@@ -15,4 +15,9 @@ describe('push-a-branch skipping ahead', () => {
     s = runnerReducer(s, run('git push -u origin homepage'))
     expect(s.status).toBe('step-done')
   })
+
+  it('keeps the -u sentence out of the shared success text', () => {
+    const step = pushABranch.steps.find((st) => st.id === 'push-fails')!
+    expect(step.success).not.toMatch(/-u/)
+  })
 })

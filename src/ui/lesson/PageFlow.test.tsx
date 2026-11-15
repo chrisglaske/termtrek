@@ -78,7 +78,7 @@ describe('Calm lesson pages (first-commit)', () => {
     expect(line.querySelectorAll('.cc-tok')).toHaveLength(2)
     const says = screen.getByRole('list', { name: 'What each part means' })
     const items = within(says).getAllByRole('listitem')
-    expect(items.map((li) => li.textContent)).toEqual(['git add: put it in the box', 'notes.txt: this file'])
+    expect(items.map((li) => li.textContent)).toEqual(['git add: stage it', 'notes.txt: this file'])
     await user.type(input(), 'git add notes.txt{Enter}')
     later()
     await user.click(continueBtn())

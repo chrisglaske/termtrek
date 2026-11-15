@@ -97,8 +97,8 @@ export const discardChanges: Lesson = {
         { text: 'git', say: 'talk to Git' },
         { text: 'diff', say: 'show what changed' },
       ],
-      done: '**One junk line.** The line that starts with + is the mistake. Everything else matches your last save.',
-      report: () => 'Git compared your file with your last save. A line that starts with `+` was added, and one that starts with `-` was removed.',
+      done: '**One junk line.** The line that starts with + is the mistake. Everything else matches your last commit.',
+      report: () => 'Git compared your file with your last commit. A line that starts with `+` was added, and one that starts with `-` was removed.',
     },
     {
       kind: 'read',
@@ -121,14 +121,14 @@ export const discardChanges: Lesson = {
       id: 'restore',
       kicker: 'Try it',
       title: 'Put the file back',
-      body: '`restore` puts a file back the way it was in your last save.',
+      body: '`restore` puts a file back the way it was in your last commit.',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
       step: 1,
       command: [
         { text: 'git restore', say: 'put something back' },
         { text: 'notes.txt', say: 'this file' },
       ],
-      done: '**Gone.** notes.txt matches your last save again, and nothing is left to commit.',
+      done: '**Gone.** notes.txt matches your last commit again, and nothing is left to commit.',
     },
     {
       kind: 'read',

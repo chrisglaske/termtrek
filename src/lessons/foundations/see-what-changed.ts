@@ -74,7 +74,7 @@ export const seeWhatChanged: Lesson = {
       id: 'staged',
       title: 'Check what you are about to commit',
       learn:
-        "Once you stage a change, `git diff` shows nothing, because it only lists changes you haven't staged. To see what's staged, add an option: `git diff --staged`. It shows exactly what your next commit will contain. (`--cached` is an older name for the same option.)",
+        "Once you stage a change, `git diff` shows nothing, because it only lists changes you haven't staged. To see what's staged, add an option: `git diff --staged`. It shows exactly what your next commit will contain. (`--cached` is another name for the same option.)",
       task: 'Show the staged changes.',
       hints: [
         'Run the diff command with the option for staged changes.',
@@ -135,7 +135,7 @@ export const seeWhatChanged: Lesson = {
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
       step: 1,
       command: [
-        { text: 'git add', say: 'put it in the box' },
+        { text: 'git add', say: 'stage it' },
         { text: 'notes.txt', say: 'this file' },
       ],
       done: '**Staged.** The change is chosen for your next save.',
@@ -145,7 +145,7 @@ export const seeWhatChanged: Lesson = {
       id: 'empty',
       kicker: 'A surprise',
       title: 'Now git diff shows nothing',
-      body: 'Plain `git diff` only lists changes that are **not** staged yet. Add the option `--staged` to see what your next commit will hold. (`--cached` is an older name for the same option.)',
+      body: 'Plain `git diff` only lists changes that are **not** staged yet. Add the option `--staged` to see what your next commit will hold. (`--cached` is another name for the same option.)',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'staged' },
     },
     {

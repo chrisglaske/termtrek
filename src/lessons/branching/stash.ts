@@ -152,7 +152,7 @@ export const stash: Lesson = {
       id: 'where',
       kicker: 'Before you take it back',
       title: 'Unshelve where you shelved',
-      body: 'Taking work off the shelf puts it in the folder of the branch you are on. So go back to **homepage** first.',
+      body: 'Taking work off the shelf puts it in the folder of the branch you are on, so to carry on where you were, go back to **homepage** first.',
       visual: { kind: 'graph', branches: true },
     },
     {

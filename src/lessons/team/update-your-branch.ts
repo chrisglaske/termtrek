@@ -185,7 +185,7 @@ export const updateYourBranch: Lesson = {
       id: 'lease',
       kicker: 'The idea',
       title: 'Replace it, but safely',
-      body: '`--force-with-lease` lets your push replace the server\'s copy, but only if nobody else pushed to that branch since you last fetched. You never wipe out a teammate\'s work by accident.',
+      body: '`--force-with-lease` lets your push replace the server\'s copy, but only if nobody else pushed to that branch since you last fetched. You never wipe out a teammate\'s work by accident.\n\nThe rule from Fixing mistakes is about shared branches like main. Your own pull-request branch is fine to rewrite, as long as nobody else builds on it.',
       visual: { kind: 'none' },
     },
     {

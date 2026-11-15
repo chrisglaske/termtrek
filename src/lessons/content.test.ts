@@ -710,3 +710,36 @@ describe('command cards fit a desktop lesson card', () => {
     }
   }
 })
+
+describe('real-Git details and one word per idea', () => {
+  it('uses none of the retired phrases anywhere in a lesson', () => {
+    const banned = [/last save/, /compares with the server/, /about 90 days/, /\bolder name/, /put it in the box/, /in brackets/]
+    for (const l of allLessons()) {
+      const text = JSON.stringify(l)
+      for (const re of banned) expect(text, `${l.id}: ${re}`).not.toMatch(re)
+    }
+  })
+
+  const page = (lessonId: string, pageId: string) => {
+    const p = lessonById(lessonId).pages?.find((x) => x.id === pageId)
+    if (!p) throw new Error(`missing page ${lessonId}/${pageId}`)
+    return p
+  }
+
+  it('amend warns about Vim and shows :wq', () => {
+    expect(JSON.stringify(page('amend', 'real-editor'))).toContain(':wq')
+  })
+
+  it('read-the-history explains the pager', () => {
+    expect(JSON.stringify(page('read-the-history', 'pager'))).toContain('press `q`')
+  })
+
+  it('create-a-repo mentions master', () => {
+    expect(JSON.stringify(lessonById('create-a-repo'))).toContain('master')
+  })
+
+  it("ignore-files' stage page stages with git add .", () => {
+    const p = page('ignore-files', 'stage')
+    expect(p.kind === 'do' && p.command.map((c) => c.text).join(' ')).toBe('git add .')
+  })
+})

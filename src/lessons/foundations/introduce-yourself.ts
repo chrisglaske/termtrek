@@ -110,7 +110,7 @@ export const introduceYourself: Lesson = {
       id: 'guide',
       kicker: 'On your own computer',
       title: 'Want to do this for real?',
-      body: '[This guide shows how to set your name](/guides/set-your-name) on your own computer.',
+      body: '[Set your name and email](/guides/set-your-name) on your own computer.',
       visual: { kind: 'none' },
     },
     {

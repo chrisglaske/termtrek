@@ -102,7 +102,7 @@ export const firstCommit: Lesson = {
       visual: { kind: 'stage', show: ['folder', 'staged'], hot: 'folder' },
       step: 0,
       command: [
-        { text: 'git add', say: 'put it in the box' },
+        { text: 'git add', say: 'stage it' },
         { text: 'notes.txt', say: 'this file' },
       ],
       done: '**Staged.** notes.txt is chosen, but not saved yet.',
