@@ -4,6 +4,7 @@ import { Nav } from '../layout/Nav'
 import { Logo } from '../layout/Logo'
 import { ISSUES_URL, SOURCE_URL } from '../layout/links'
 import { BackupDialog } from '../BackupDialog'
+import { LANDING_TITLE } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { HeroLesson } from './HeroLesson'
 import { CourseRail } from './CourseRail'
@@ -26,7 +27,7 @@ function Tick({ size = 10 }: { size?: number }): React.JSX.Element {
 }
 
 export function Landing(): React.JSX.Element {
-  useDocumentTitle('TermTrek: learn Git by using it')
+  useDocumentTitle(LANDING_TITLE)
   const { hash } = useLocation()
   const stats = courseStats()
   // Phones get a shorter page to read: no live lesson, and a way to send the site to a computer.

@@ -4,6 +4,7 @@ import { allLessons, course } from '../../lessons/course'
 import type { Lesson } from '../../lessons/schema'
 import { useProgress } from '../../progress/ProgressContext'
 import { Nav } from '../layout/Nav'
+import { COURSE_META } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import '../buttons.css'
 import './Home.css'
@@ -45,7 +46,7 @@ function pickNext(done: Record<string, unknown>, last?: string): Lesson | undefi
 }
 
 export function Home(): React.JSX.Element {
-  useDocumentTitle('Your course · TermTrek', 'Learn Git by typing real commands in a practice terminal and watching your project history change. Free, no account.')
+  useDocumentTitle(COURSE_META.title, COURSE_META.description)
   const { progress } = useProgress()
   const all = allLessons()
   const total = all.filter((l) => course.some((s) => s.status === 'launch' && s.lessons.includes(l))).length

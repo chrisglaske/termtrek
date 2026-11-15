@@ -3,6 +3,7 @@ import { PLAYGROUND } from '../../lessons/playground'
 import { useLessonRunner } from '../../lessons/useLessonRunner'
 import { CommandPill } from '../CommandPill'
 import { Nav } from '../layout/Nav'
+import { PLAYGROUND_META } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { RepoPanel } from '../lesson/LessonScreen'
 import { Workspace } from '../lesson/Workspace'
@@ -61,7 +62,7 @@ function PlaygroundRun(): React.JSX.Element {
 }
 
 export function Playground(): React.JSX.Element {
-  useDocumentTitle('Playground · TermTrek', 'Practice Git freely on a sample project with a real-feeling terminal, a live repo map and a pretend team server. Nothing is saved.')
+  useDocumentTitle(PLAYGROUND_META.title, PLAYGROUND_META.description)
   return (
     <>
       <Nav />

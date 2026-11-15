@@ -22,6 +22,31 @@ if (existsSync(join(DIST, '404.html'))) {
   problems.push('dist/404.html exists and would break the SPA fallback')
 }
 
+// Per-route heads: every lesson, guide and static page has its own HTML, and the sitemap lists them all.
+if (existsSync(join(DIST, 'index.html'))) {
+  const lessonPage = join(DIST, 'learn', 'merge-conflicts.html')
+  if (!existsSync(lessonPage)) problems.push('dist/learn/merge-conflicts.html missing')
+  else {
+    const page = readFileSync(lessonPage, 'utf8')
+    if (!/<meta property="og:title" content="[^"]*Merge[^"]*"/i.test(page)) problems.push('learn/merge-conflicts.html has no lesson og:title')
+    if (!page.includes('<link rel="canonical" href="https://termtrek.work/learn/merge-conflicts"')) problems.push('learn/merge-conflicts.html has the wrong canonical')
+    if (!page.includes('property="og:url" content="https://termtrek.work/learn/merge-conflicts"')) problems.push('learn/merge-conflicts.html has the wrong og:url')
+  }
+  const sitemap = join(DIST, 'sitemap.xml')
+  if (!existsSync(sitemap)) problems.push('dist/sitemap.xml missing')
+  else {
+    const locs = [...readFileSync(sitemap, 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
+    for (const loc of locs) {
+      const path = new URL(loc).pathname
+      if (path !== '/' && !existsSync(join(DIST, `${path}.html`))) problems.push(`sitemap lists ${path} but dist${path}.html is missing`)
+    }
+    if (locs.length < 40 || !locs.includes('https://termtrek.work/') || !locs.includes('https://termtrek.work/learn/merge-conflicts')) {
+      problems.push(`dist/sitemap.xml lists only ${locs.length} urls`)
+    }
+  }
+  if (!existsSync(join(DIST, 'apple-touch-icon.png'))) problems.push('dist/apple-touch-icon.png missing')
+}
+
 const ALLOWED_ORIGINS = ['https://static.cloudflareinsights.com']
 
 if (existsSync(join(DIST, 'index.html'))) {

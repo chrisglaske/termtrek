@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import { findGuide } from '../../guides/guides'
 import type { GuideStep, Os } from '../../guides/guides'
 import { Nav } from '../layout/Nav'
+import { guideMeta as metaOf } from '../../seo/staticMeta'
 import { useDocumentTitle } from '../layout/useDocumentTitle'
 import { CommandPill } from '../CommandPill'
 import { RichText } from '../RichText'
@@ -67,7 +68,8 @@ function GuideView({ id }: { id: string }): React.JSX.Element {
   const guide = findGuide(id)!
   const [os, setOs] = useState<Os>(defaultOs)
   const [done, setDone] = useState<Record<string, boolean>>({})
-  useDocumentTitle(`${guide.title} · TermTrek`, guide.summary)
+  const guideMeta = metaOf(guide)
+  useDocumentTitle(guideMeta.title, guideMeta.description)
   const toggle = (k: string) => setDone((d) => ({ ...d, [k]: !d[k] }))
   const options: { os: Os; label: string }[] = [
     { os: 'macos', label: 'macOS' },
