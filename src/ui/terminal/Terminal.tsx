@@ -54,6 +54,9 @@ function Prompt({
   )
 }
 
+/** One line of terminal text. The log's line-height and its heights all use it, so a log scrolled to the bottom starts on a whole line. */
+const LINE_VAR = { '--term-line': '1.6em' } as React.CSSProperties
+
 export function Terminal({
   entries,
   cwdLabel,
@@ -166,13 +169,14 @@ export function Terminal({
   return (
     <div
       className="term"
+      style={LINE_VAR}
       onClick={(e) => {
         if (!(e.target as HTMLElement).closest('button'))
           inputRef.current?.focus()
       }}
     >
       <div className="term-bar">{title}</div>
-      <div className="term-log" ref={logRef}>
+      <div className="term-log" ref={logRef} style={{ boxSizing: 'content-box' }}>
         {intro && <FeedbackCard explain={intro} onCommand={run} />}
         <div role="log" aria-live="polite">
           {entries.map((en, i) => (

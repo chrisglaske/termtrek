@@ -1,5 +1,5 @@
 import type { World } from '../../engine/types'
-import { treeFile } from '../../lessons/checks'
+import { hasMarkers, treeFile, workFile } from '../../lessons/checks'
 
 /** Lines one text has that the other does not, in order. */
 const only = (a: string, b: string): string[] => {
@@ -44,10 +44,17 @@ export function ConflictVisual({ world, file, theirs, markers }: { world: World;
       </figure>
     )
   }
+  // Once the saved file has no markers left, show which side(s) it kept.
+  const saved = workFile(world, file)
+  const settled = saved !== undefined && !hasMarkers(saved)
+  const has = (lines: string[]) => lines.length > 0 && lines.every((l) => saved!.split('\n').includes(l))
+  const kept = { cur: settled && has(mine), inc: settled && has(their) }
+  const anyKept = kept.cur || kept.inc
   const side = (kind: 'cur' | 'inc', label: string, branch: string, lines: string[]) => (
-    <section className={`cv-side cv-${kind}`} aria-label={`${label}, ${branch}`}>
+    <section className={`cv-side cv-${kind}${anyKept ? (kept[kind] ? ' cv-kept' : ' cv-dim') : ''}`} aria-label={`${label}, ${branch}`}>
       <h3>
         {label} <code>{branch}</code>
+        {kept[kind] && <span className="cv-tag">Kept</span>}
       </h3>
       {lines.map((l, i) => (
         <p key={i}>{l}</p>
