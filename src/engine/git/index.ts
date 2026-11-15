@@ -18,6 +18,7 @@ import { gitRemote } from './remote';
 import { gitReset } from './reset';
 import { gitRestore } from './restore';
 import { gitRevert } from './revert';
+import { gitRm } from './rm';
 import { gitStash } from './stash';
 import { gitStatus } from './status';
 import { gitCheckout, gitSwitch } from './switch';
@@ -35,6 +36,7 @@ const subs: Record<string, Sub> = {
   log: { run: gitLog, needsRepo: true },
   diff: { run: gitDiff, needsRepo: true },
   restore: { run: gitRestore, needsRepo: true },
+  rm: { run: gitRm, needsRepo: true },
   reset: { run: gitReset, needsRepo: true },
   reflog: { run: gitReflog, needsRepo: true },
   branch: { run: gitBranch, needsRepo: true },
@@ -49,6 +51,14 @@ const subs: Record<string, Sub> = {
   pull: { run: gitPull, needsRepo: true },
   push: { run: gitPush, needsRepo: true },
 };
+
+/** Real Git commands TermTrek does not build; they get an honest message, not "not a git command". */
+export const NOT_YET: string[] = [
+  'show', 'tag', 'mv', 'cherry-pick', 'clean', 'blame', 'rev-parse', 'ls-files', 'check-ignore', 'describe', 'bisect', 'grep',
+  'shortlog', 'worktree', 'submodule', 'archive', 'gc', 'notes', 'apply', 'am', 'format-patch', 'sparse-checkout', 'maintenance',
+  'range-diff', 'whatchanged', 'cat-file', 'show-ref', 'for-each-ref', 'ls-tree', 'mergetool', 'difftool', 'request-pull', 'bundle',
+  'fsck', 'prune', 'repack', 'gui', 'citool', 'gitk', 'instaweb', 'send-email', 'filter-branch', 'replace',
+];
 
 /** Single source of truth for known subcommands (used by did-you-mean and Tab). */
 export const gitSubcommands = (): string[] => Object.keys(subs);
@@ -66,6 +76,7 @@ const USAGE = [
   '   log       Show commit logs',
   '   diff      Show changes between commits, index and working tree',
   '   restore   Restore working tree files',
+  '   rm        Remove files from the working tree and from the index',
   '   reset     Reset current HEAD to the specified state',
   '   reflog    Manage reflog information',
   '   branch    List, create, or delete branches',
@@ -88,6 +99,13 @@ export const git: CommandFn = (world, args, io) => {
   }
   if (name === '--version' || name === '-v' || name === 'version') return { lines: [out('git version 2.47.0')], exitCode: 0 };
   const sub = Object.prototype.hasOwnProperty.call(subs, name) ? subs[name] : undefined;
+  if (!sub && NOT_YET.includes(name)) {
+    return {
+      lines: [err(`git: '${name}' is a real Git command, but TermTrek doesn't have it yet.`)],
+      explain: { kind: 'tip', text: 'TermTrek covers the commands the course teaches. Type `git help` to see them.' },
+      exitCode: 1,
+    };
+  }
   if (!sub) return { lines: [err(`git: '${name}' is not a git command. See 'git --help'.`)], exitCode: 1 };
   if (sub.needsRepo && !activeRepo(world)) {
     return { lines: [err('fatal: not a git repository (or any of the parent directories): .git')], exitCode: 128 };

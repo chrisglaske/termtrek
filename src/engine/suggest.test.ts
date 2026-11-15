@@ -72,3 +72,11 @@ describe('complete branch names', () => {
     expect(complete(w, 'git checkout fe').options).toEqual(['feature', 'feat.txt']);
   });
 });
+
+describe('did-you-mean skips real but unbuilt git commands', () => {
+  it('does not turn git tag or git show into another command', () => {
+    expect(didYouMean('git tag v1')).toBeNull();
+    expect(didYouMean('git show HEAD')).toBeNull();
+    expect(didYouMean('git blame a.txt')).toBeNull();
+  });
+});

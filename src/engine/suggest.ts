@@ -1,6 +1,6 @@
 import type { World } from './types';
 import { registry } from './registry';
-import { gitSubcommands } from './git';
+import { gitSubcommands, NOT_YET } from './git';
 import { resolvePath } from './paths';
 
 /** Optimal string alignment distance (Damerau-Levenshtein, adjacent transpositions). */
@@ -50,7 +50,7 @@ export function didYouMean(line: string): string | null {
     if (!sm) return null;
     const sub = sm[2]!;
     const subs = gitSubcommands();
-    if (subs.includes(sub)) return null;
+    if (subs.includes(sub) || NOT_YET.includes(sub)) return null;
     const fix = closest(sub, subs, 2);
     return fix ? `git${sm[1]}${fix}${sm[3]}` : null;
   }
