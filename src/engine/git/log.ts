@@ -2,6 +2,8 @@ import type { CommandFn } from '../registry';
 import type { Commit, OutLine, Repo } from '../types';
 import { err } from '../shell/fs';
 import { activeRepo, headCommitId } from './repoState';
+import { ancestors } from './refs';
+import { parseRevArgs } from './revargs';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -54,7 +56,11 @@ export const gitLog: CommandFn = (world, args) => {
   let all = false;
   let graph = false;
   let limit = Infinity;
+  const words: string[] = [];
+  let dashdash = false;
   for (let i = 0; i < args.length; i++) {
+    if (dashdash) { words.push(args[i]!); continue; }
+    if (args[i] === '--') { dashdash = true; words.push('--'); continue; }
     const a = args[i]!;
     if (a === '--oneline') oneline = true;
     else if (a === '--all') all = true;
@@ -67,18 +73,41 @@ export const gitLog: CommandFn = (world, args) => {
     else if (/^-n\d+$/.test(a)) limit = Number(a.slice(2));
     else if (a.startsWith('--max-count=')) limit = Number(a.slice(12));
     else if (a.startsWith('-')) return { lines: [err(`fatal: unrecognized argument: ${a}`)], exitCode: 128 };
+    else words.push(a);
   }
-  let cur: string | null = headCommitId(repo);
-  if (cur === null) {
+  const parsed = parseRevArgs(world, repo, words);
+  if (!parsed.ok) return { lines: parsed.lines, exitCode: 128 };
+  const cur: string | null = headCommitId(repo);
+  if (cur === null && parsed.revs.length === 0) {
     const b = repo.head.kind === 'branch' ? repo.head.name : 'HEAD';
     return { lines: [err(`fatal: your current branch '${b}' does not have any commits yet`)], exitCode: 128 };
   }
-  const tips: string[] = [cur];
+  const tips: string[] = [];
+  const hidden = new Set<string>();
+  for (const r of parsed.revs) {
+    if (r.kind === 'one') tips.push(r.id);
+    else {
+      tips.push(r.to);
+      for (const id of ancestors(repo, r.from)) hidden.add(id);
+    }
+  }
+  if (parsed.revs.length === 0 && cur !== null) tips.push(cur);
   if (all) {
     for (const t of Object.values(repo.branches)) if (t !== null) tips.push(t);
+    for (const t of Object.values(repo.remoteRefs)) tips.push(t);
     if (repo.head.kind === 'detached') tips.push(repo.head.id);
   }
-  const shown = walk(repo, tips).slice(0, limit);
+  const touches = (c: Commit): boolean => {
+    if (parsed.paths.length === 0) return true;
+    const parent = c.parents[0] !== undefined ? repo.commits[c.parents[0]] : undefined;
+    const before = parent?.tree ?? {};
+    const hit = (p: string) => parsed.paths.some((x) => x === '' || p === x || p.startsWith(x + '/'));
+    for (const p of new Set([...Object.keys(c.tree), ...Object.keys(before)])) {
+      if (hit(p) && c.tree[p] !== before[p]) return true;
+    }
+    return false;
+  };
+  const shown = walk(repo, tips).filter((c) => !hidden.has(c.id) && touches(c)).slice(0, limit);
   const lines: OutLine[] = [];
   const mark = graph ? '* ' : '';
   const bar = graph ? '| ' : '';

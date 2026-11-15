@@ -3,9 +3,9 @@ import type { OutLine, Tone } from '../types';
 import { lineDiff } from '../diffLines';
 import type { DiffLine } from '../diffLines';
 import { shortId } from '../hash';
-import { resolvePath } from '../paths';
 import { err } from '../shell/fs';
 import { activeRepo, headTree, workingFiles } from './repoState';
+import { parseRevArgs } from './revargs';
 
 const CONTEXT = 3;
 const ZERO = '0000000';
@@ -46,31 +46,12 @@ function hunks(d: DiffLine[]): { header: string; body: DiffLine[] }[] {
 
 const tones: Record<DiffLine['op'], Tone> = { ' ': 'out', '+': 'ok', '-': 'error' };
 
-export const gitDiff: CommandFn = (world, args) => {
-  const repo = activeRepo(world);
-  if (!repo) return { lines: [], exitCode: 128 };
-  let staged = false;
-  const specs: string[] = [];
-  let dashdash = false;
-  for (const a of args) {
-    if (!dashdash && a === '--') dashdash = true;
-    else if (!dashdash && (a === '--staged' || a === '--cached')) staged = true;
-    else if (!dashdash && a.startsWith('-') && a.length > 1) return { lines: [err(`error: invalid option: ${a}`)], exitCode: 129 };
-    else specs.push(a);
-  }
-  const prefixes = specs.map((s) => {
-    const abs = resolvePath(world, s);
-    return abs === repo.root ? '' : abs.startsWith(repo.root + '/') ? abs.slice(repo.root.length + 1) : null;
-  });
-  if (prefixes.includes(null)) return { lines: [err('fatal: outside repository')], exitCode: 128 };
-  const wanted = (p: string) => prefixes.length === 0 || prefixes.some((x) => x === '' || p === x || p.startsWith(x + '/'));
+type Tree = Record<string, string>;
 
-  const before = staged ? headTree(repo) : repo.index;
-  const after = staged ? repo.index : workingFiles(world, repo);
+/** Print the per-file diff between two trees, for the paths `wanted` accepts. */
+function printDiff(before: Tree, after: Tree, wanted: (p: string) => boolean, paths: string[]): OutLine[] {
   const lines: OutLine[] = [];
-  const paths = Object.keys(before).sort();
-  const all = staged ? [...new Set([...paths, ...Object.keys(after)])].sort() : paths; // unstaged: tracked paths only
-  for (const p of all) {
+  for (const p of paths) {
     if (!wanted(p)) continue;
     const a = before[p];
     const b = after[p];
@@ -90,5 +71,58 @@ export const gitDiff: CommandFn = (world, args) => {
       for (const x of h.body) lines.push([{ text: x.op + x.text, tone: tones[x.op] }]);
     }
   }
-  return { lines, exitCode: 0 };
+  return lines;
+}
+
+export const gitDiff: CommandFn = (world, args) => {
+  const repo = activeRepo(world);
+  if (!repo) return { lines: [], exitCode: 128 };
+  let staged = false;
+  const words: string[] = [];
+  let dashdash = false;
+  for (const a of args) {
+    if (!dashdash && a === '--') {
+      dashdash = true;
+      words.push(a);
+    } else if (!dashdash && (a === '--staged' || a === '--cached')) staged = true;
+    else if (!dashdash && a.startsWith('-') && a.length > 1) return { lines: [err(`error: invalid option: ${a}`)], exitCode: 129 };
+    else words.push(a);
+  }
+  const parsed = parseRevArgs(world, repo, words);
+  if (!parsed.ok) return { lines: parsed.lines, exitCode: 128 };
+  const prefixes = parsed.paths;
+  const wanted = (p: string) => prefixes.length === 0 || prefixes.some((x) => x === '' || p === x || p.startsWith(x + '/'));
+  const treeOf = (id: string): Tree => ({ ...(repo.commits[id]?.tree ?? {}) });
+  const keys = (a: Tree, b: Tree) => [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
+
+  let before: Tree;
+  let after: Tree;
+  let all: string[];
+  const [r1, r2] = parsed.revs;
+  if (r1 && r1.kind === 'range') {
+    before = treeOf(r1.from);
+    after = treeOf(r1.to);
+    all = keys(before, after);
+  } else if (r1 && r2) {
+    const second = r2.kind === 'one' ? r2.id : r2.to;
+    before = treeOf(r1.id);
+    after = treeOf(second);
+    all = keys(before, after);
+  } else if (r1) {
+    before = treeOf(r1.id);
+    if (staged) {
+      after = { ...repo.index };
+      all = keys(before, after);
+    } else {
+      const work = workingFiles(world, repo);
+      after = {};
+      for (const p of Object.keys(repo.index)) if (p in work) after[p] = work[p]!;
+      all = keys(before, repo.index);
+    }
+  } else {
+    before = staged ? headTree(repo) : repo.index;
+    after = staged ? repo.index : workingFiles(world, repo);
+    all = staged ? keys(before, after) : Object.keys(before).sort(); // unstaged: tracked paths only
+  }
+  return { lines: printDiff(before, after, wanted, all), exitCode: 0 };
 };
