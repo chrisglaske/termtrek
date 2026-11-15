@@ -168,7 +168,7 @@ describe('course content', () => {
       expect(s.status).toBe('lesson-done')
     })
     it('discard-changes accepts the older git checkout -- <file>', () => {
-      expect(play(lessonById('discard-changes'), ['git diff', 'git checkout -- notes.txt']).status).toBe('lesson-done')
+      expect(play(lessonById('discard-changes'), ['git diff', 'git checkout -- notes.txt', 'git restore --source HEAD~1 notes.txt']).status).toBe('lesson-done')
     })
     it('ignore-files accepts a *.log pattern and git add .', () => {
       const lines = ['echo .env > .gitignore', "echo '*.log' >> .gitignore", 'git status', 'git add .', 'git commit -m "Ignore secrets and logs"']
@@ -332,8 +332,19 @@ describe('course content', () => {
       'git restore notes.txt',
       'git restore --staged notes.txt',
       'git restore notes.txt',
+      'git restore --source HEAD~1 notes.txt',
     ])
     expect(fixed.status).toBe('lesson-done')
+  })
+
+  it('discard-changes teaches git restore --source for an older version', () => {
+    const lesson = lessonById('discard-changes')
+    expect(Object.keys(initRunner(lesson).world.repo!.commits)).toHaveLength(3)
+    const s = play(lesson, ['git diff', 'git restore notes.txt', 'git restore --source HEAD~1 notes.txt'])
+    expect(s.status).toBe('lesson-done')
+    const early = play(lesson, ['git diff', 'git restore notes.txt'])
+    expect(early.status).toBe('working')
+    expect(early.stepIndex).toBe(2)
   })
 
   it('amend warns when a new commit is made instead of amending', () => {

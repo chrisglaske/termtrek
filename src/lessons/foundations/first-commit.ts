@@ -74,7 +74,7 @@ export const firstCommit: Lesson = {
       check: (c) => commitCount(c.world) === 1 && isTracked(c.world, 'notes.txt'),
       nudge: commitNudge,
       success:
-        "**Snapshot saved.** Git gave your commit an ID, the short code inside the brackets in the output, and **main** now points at it. In **Your repo**, it's the first dot in your history. From now on, you can always get this version back.",
+        "**Snapshot saved.** Git gave your commit an ID, the short code inside the brackets in the output, and **main** now points at it. In **Your repo**, it's the first dot in your history. From now on, you can always get this version back. *Fixing mistakes* shows how.",
     },
   ],  pages: [
     {
@@ -145,7 +145,7 @@ export const firstCommit: Lesson = {
       id: 'safe',
       kicker: 'Why it matters',
       title: 'Your work is now safe',
-      body: 'This snapshot stays exactly as it is. If you change **notes.txt** later, you can always get this version back.',
+      body: 'This snapshot stays exactly as it is. If you change **notes.txt** later, you can always get this version back. *Fixing mistakes* shows how.',
       visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'saved' },
     },
     {

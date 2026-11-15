@@ -1,6 +1,8 @@
 import type { Lesson } from '../schema'
 import { isStaged, ranGit, treeFile, workFile } from '../checks'
-import { IDENTITY, NOTES_JUNK, NOTES_V2, README } from '../sample'
+import { IDENTITY, NOTES_V2, NOTES_V3, README } from '../sample'
+
+const JUNK = NOTES_V3 + 'asdf asdf (pasted by mistake)\n'
 
 export const discardChanges: Lesson = {
   id: 'discard-changes',
@@ -11,13 +13,14 @@ export const discardChanges: Lesson = {
   assumes: 'You can unstage a file and read a diff.',
   setup: {
     cwd: 'project',
-    files: { 'project/notes.txt': NOTES_JUNK },
+    files: { 'project/notes.txt': JUNK },
     config: IDENTITY,
     repo: {
       at: 'project',
       commits: [
         { message: 'docs: add README with a project summary', files: { 'README.md': README } },
-        { message: 'docs: add meeting notes with the launch date', files: { 'notes.txt': NOTES_V2 } },
+        { message: 'docs: add the launch date', files: { 'notes.txt': NOTES_V2 } },
+        { message: 'docs: move the launch date', files: { 'notes.txt': NOTES_V3 } },
       ],
     },
   },
@@ -56,7 +59,24 @@ export const discardChanges: Lesson = {
       success:
         "**Gone.** `notes.txt` matches your last commit again, and **Your repo** shows nothing changed. When you're sure an edit is a mistake, this is the quickest way out.",
     },
-  ],  pages: [
+    {
+      id: 'old-version',
+      title: 'Go back further',
+      learn:
+        "`git restore` can also fetch a file from an older commit. Add `--source` and say which commit:\n- `HEAD` is your latest commit, and `HEAD~1` is the one before it.\n- `git restore --source HEAD~1 notes.txt` puts the version from one commit before the last into your folder.\n\nThe file shows up as a change you haven't staged, so you can read it, then commit it or throw it away.",
+      task: 'Put `notes.txt` back to how it was one commit before your last.',
+      hints: [
+        'Use `git restore`, name the older commit with `--source`, then the file.',
+        'One commit before the last is `HEAD~1`.',
+        'Type `git restore --source HEAD~1 notes.txt` and press Enter.',
+      ],
+      solution: ['git restore --source HEAD~1 notes.txt'],
+      check: (c) => workFile(c.world, 'notes.txt') === NOTES_V2,
+      success:
+        '**The old date is back.** `notes.txt` now shows the version from before your last commit. Commit it if you want to keep it.',
+    },
+  ],
+  pages: [
     {
       kind: 'read',
       id: 'situation',
@@ -109,6 +129,29 @@ export const discardChanges: Lesson = {
         { text: 'notes.txt', say: 'this file' },
       ],
       done: '**Gone.** notes.txt matches your last save again, and nothing is left to commit.',
+    },
+    {
+      kind: 'read',
+      id: 'older-version',
+      kicker: 'Going further back',
+      title: 'You can also go further back',
+      body: 'The folder can be set to any commit\'s version of a file, not just your last one. Name the commit, and Git copies that version in.',
+      visual: { kind: 'graph', all: true },
+    },
+    {
+      kind: 'do',
+      id: 'source',
+      kicker: 'Try it',
+      title: 'Get an older version back',
+      body: '`--source` says which commit to take the file from. `HEAD~1` means one commit before the last.',
+      visual: { kind: 'stage', show: ['folder', 'staged', 'saved'], hot: 'folder' },
+      step: 2,
+      command: [
+        { text: 'git restore', say: 'put something back' },
+        { text: '--source HEAD~1', say: 'from one commit before the last' },
+        { text: 'notes.txt', say: 'this file' },
+      ],
+      done: '**The old date is back.** notes.txt now shows the version from before your last commit. Commit it if you want to keep it.',
     },
     {
       kind: 'read',

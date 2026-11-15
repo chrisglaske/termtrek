@@ -1,6 +1,7 @@
 import type { CommandFn } from '../registry';
 import { err } from '../shell/fs';
 import { activeRepo, headTree, workingFiles } from './repoState';
+import { resolveRev } from './rev';
 import { matchPathspecs, writeWork } from './worktree';
 
 import type { RepoOp } from '../types';
@@ -15,8 +16,16 @@ export const gitRestore: CommandFn = (world, args) => {
   let worktree = false;
   const specs: string[] = [];
   let dashdash = false;
-  for (const a of args) {
-    if (!dashdash && a === '--') dashdash = true;
+  let sourceRev: string | null = null;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (!dashdash && (a === '--source' || a === '-s')) {
+      const v = args[++i];
+      if (v === undefined) return { lines: [err(`error: option \`${a === '-s' ? 's' : 'source'}' requires a value`)], exitCode: 129 };
+      sourceRev = v;
+    } else if (!dashdash && a.startsWith('--source=')) sourceRev = a.slice('--source='.length);
+    else if (!dashdash && a.startsWith('-s') && a.length > 2 && !a.startsWith('--')) sourceRev = a.slice(2);
+    else if (!dashdash && a === '--') dashdash = true;
     else if (!dashdash && (a === '--staged' || a === '-S')) staged = true;
     else if (!dashdash && (a === '--worktree' || a === '-W')) worktree = true;
     else if (!dashdash && (a === '-SW' || a === '-WS')) staged = worktree = true;
@@ -27,7 +36,13 @@ export const gitRestore: CommandFn = (world, args) => {
   if (specs.length === 0) return { lines: [err('fatal: you must specify path(s) to restore')], exitCode: 128 };
 
   const head = headTree(repo);
-  const known = staged ? [...Object.keys(head), ...Object.keys(repo.index)] : Object.keys(repo.index);
+  let fromTree: Record<string, string> | null = null;
+  if (sourceRev !== null) {
+    const id = resolveRev(repo, sourceRev);
+    if (id === null) return { lines: [err(`fatal: could not resolve '${sourceRev}'`)], exitCode: 128 };
+    fromTree = repo.commits[id]!.tree;
+  }
+  const known = fromTree ? Object.keys(fromTree) : staged ? [...Object.keys(head), ...Object.keys(repo.index)] : Object.keys(repo.index);
   const m = matchPathspecs(world, repo, specs, known);
   if ('outside' in m) return { lines: [err(`fatal: ${m.outside}: '${m.outside}' is outside repository at '${repo.root}'`)], exitCode: 128 };
   if ('missing' in m) return { lines: [err(`error: pathspec '${m.missing}' did not match any file(s) known to git`)], exitCode: 1 };
@@ -36,14 +51,14 @@ export const gitRestore: CommandFn = (world, args) => {
   const stuck = m.paths.find((p) => unmerged.includes(p));
   if (stuck !== undefined && !(staged && !worktree)) return { lines: [err(`error: path '${stuck}' is unmerged`)], exitCode: 1 };
 
-  const source = staged ? head : repo.index;
+  const source = fromTree ?? (staged ? head : repo.index);
   const index = { ...repo.index };
   let next = world;
   const lost: string[] = [];
   const work = workingFiles(world, repo);
   for (const p of m.paths) {
     if (staged) {
-      if (p in head) index[p] = head[p]!;
+      if (p in source) index[p] = source[p]!;
       else delete index[p];
     }
     if (worktree && (p in source || staged)) {
@@ -54,7 +69,10 @@ export const gitRestore: CommandFn = (world, args) => {
   }
   const what = m.paths.length === 1 ? `**${m.paths[0]}**` : specs.map((s) => `**${s}**`).join(', ');
   let text: string;
-  if (staged && worktree) text = `Reset ${what} in the staging area and in your folder to match the last commit. Any edits that weren't committed are gone.`;
+  if (sourceRev !== null) {
+    const where = staged && worktree ? 'in the staging area and in your folder' : staged ? 'in the staging area' : 'in your folder';
+    text = `Put ${what} back to the version from \`${sourceRev}\` ${where}.${staged && !worktree ? '' : ' Any edits that weren\'t committed are gone.'}`;
+  } else if (staged && worktree) text = `Reset ${what} in the staging area and in your folder to match the last commit. Any edits that weren't committed are gone.`;
   else if (staged) text = `Unstaged ${what}. The file in your folder is untouched, so your edits are safe, they just aren't in the next commit.`;
   else text = `Put ${what} back to how it was in the staging area. The edit you discarded is gone for good, because Git never saved it.`;
   return {
