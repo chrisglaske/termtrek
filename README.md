@@ -29,7 +29,7 @@ TermTrek teaches Git by letting you use it. You type real Git commands into a si
 | --- | --- |
 | ![Choosing a file: the Folder and Staged boxes, with a caption saying what moved](docs/screenshots/lesson-stage.png) | ![Pushing to the server: the new commit travels across and is marked new](docs/screenshots/lesson-server.png) |
 | **Every command shows its effect.** A caption says what moved. | **Teamwork is visible.** Watch a push or fetch cross to the server. |
-| ![Fixing a commit message: the graph says the old commit was replaced](docs/screenshots/lesson-graph.png) | ![Dark mode: ignored files shown dimmed and struck through](docs/screenshots/lesson-dark.png) |
+| ![Reading the history: git log next to the commit graph, newest first](docs/screenshots/lesson-graph.png) | ![Dark mode: ignored files shown dimmed, their names struck through](docs/screenshots/lesson-dark.png) |
 | **Mistakes are explained.** An amend replaces a commit, and the graph says so. | **Light and dark.** Ignored files are dimmed, not hidden. |
 
 ## Features
