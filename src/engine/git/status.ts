@@ -1,6 +1,7 @@
 import type { CommandFn } from '../registry';
 import type { OutLine, Span } from '../types';
 import type { Repo } from '../types';
+import { err } from '../shell/fs';
 import { activeRepo, getStatus, headCommitId, headTree } from './repoState';
 import { mergeBase } from './refs';
 import { trackingSummary } from './tracking';
@@ -62,14 +63,20 @@ function codeFor(path: string, base: Record<string, string>, ours: Record<string
   return 'UU';
 }
 
+const STATUS_FLAGS = /^(-s|-b|-sb|-bs|-v|-u|--short|--branch|--long|--verbose|--porcelain(=v?1)?|--untracked-files(=(all|normal|no))?|-uall|-unormal|-uno)$/;
+
 export const gitStatus: CommandFn = (world, args) => {
   const repo = activeRepo(world);
   const st = repo ? getStatus(world) : null;
   if (!repo || !st) return { lines: [], exitCode: 128 }; // dispatcher guards this
-  const short = args.includes('-s') || args.includes('--short') || args.includes('-sb');
+  const bad = args.find((a) => a.startsWith('-') && a !== '--' && !STATUS_FLAGS.test(a));
+  if (bad !== undefined) return { lines: [err(`error: unknown option \`${bad.replace(/^-+/, '')}'`), [{ text: 'usage: git status [<options>] [--] [<pathspec>...]' }]], exitCode: 129 };
+  const porcelain = args.some((a) => /^--porcelain(=v?1)?$/.test(a));
+  const short = porcelain || args.includes('-s') || args.includes('--short') || args.includes('-sb');
   const showBranch = args.includes('-b') || args.includes('--branch') || args.includes('-sb');
   const cwdRel = world.cwd === repo.root ? '' : world.cwd.slice(repo.root.length + 1);
-  const rel = (p: string) => relFromCwd(cwdRel, p);
+  // --porcelain always prints paths from the repo root; -s is relative to the current folder.
+  const rel = (p: string) => (porcelain ? p : relFromCwd(cwdRel, p));
   const born = headCommitId(repo) !== null;
   const lines: OutLine[] = [];
   const op = repo.op;
@@ -97,6 +104,7 @@ export const gitStatus: CommandFn = (world, args) => {
       lines.push(spans);
     }
     for (const p of st.untracked) if (!conflicts.includes(p)) lines.push(line({ text: '??', tone: 'error' }, { text: ' ' + rel(p) }));
+    if (porcelain) return { lines: lines.map((l) => l.map((sp) => ({ text: sp.text }))), exitCode: 0 };
     return { lines, explain: { kind: 'tip', text: '`git status` is your "where am I?" command.' }, exitCode: 0 };
   }
 

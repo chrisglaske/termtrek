@@ -242,3 +242,28 @@ describe('git pull', () => {
 function createNoRepo(): World {
   return buildWorld({ config: { 'user.name': 'Sam', 'user.email': 's@x.com' } });
 }
+
+describe('git pull refused and explicit up to date (B10, B19)', () => {
+  it('a dirty file blocks a fast-forward pull: Updating, error, Aborting, exit 1', () => {
+    const w = run(mate(cloned(), 'Alex notes', { 'notes.txt': 'alex\n' }), 'echo mine > notes.txt');
+    const r = runLine(w, 'git pull');
+    expect(r.exitCode).toBe(1);
+    const t = text(r);
+    expect(t.find((l) => l.startsWith('Updating '))).toBeDefined();
+    expect(t.indexOf('Aborting')).toBe(t.length - 1);
+    expect(t).not.toContain('Merge with strategy ort failed.');
+  });
+  it('git pull origin main when up to date shows the FETCH_HEAD rows first', () => {
+    const r = runLine(cloned(), 'git pull origin main');
+    expect(r.exitCode).toBe(0);
+    expect(text(r)).toEqual(['From https://git.example.com/team/notes', ' * branch            main       -> FETCH_HEAD', 'Already up to date.']);
+    expect(text(runLine(cloned(), 'git pull'))).toEqual(['Already up to date.']);
+  });
+  it('git pull origin main with news puts FETCH_HEAD above the tracking row', () => {
+    const r = runLine(mate(cloned()), 'git pull origin main');
+    const t = text(r);
+    expect(t[0]).toBe('From https://git.example.com/team/notes');
+    expect(t[1]).toBe(' * branch            main       -> FETCH_HEAD');
+    expect(t[2]).toMatch(/^ {3}[0-9a-f]{7}\.\.[0-9a-f]{7} {2}main {7}-> origin\/main$/);
+  });
+});

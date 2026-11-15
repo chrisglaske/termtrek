@@ -82,6 +82,7 @@ export const gitPush: CommandFn = (world, args) => {
   // Pick the remote name and branch.
   let remoteName = pos[0];
   let branch = pos[1];
+  let srcLabel: string | undefined;
   if (remoteName === undefined) {
     const fallback = currentUp ? currentUp.remote : has(repo.remotes, 'origin') ? 'origin' : undefined;
     if (fallback === undefined) return { lines: NO_DESTINATION.map(err), exitCode: 128 };
@@ -101,6 +102,7 @@ export const gitPush: CommandFn = (world, args) => {
     else if (pos[0] === undefined && !setUp) return { lines: noUpstream(current, remoteName), explain: { kind: 'tip', text: `This branch is not linked to a branch on the server yet. \`git push -u ${remoteName} ${current}\` does the same thing in short, and remembers the link.` }, exitCode: 128 };
   } else if (branch === 'HEAD' && current !== null && !del) {
     branch = current;
+    srcLabel = 'HEAD';
   }
   const dest = destBranch ?? branch;
 
@@ -154,7 +156,7 @@ export const gitPush: CommandFn = (world, args) => {
 
   // Rejections leave the server and the repo exactly as they were.
   const reject = (why: string, hints: string[], explain: string): ReturnType<CommandFn> => ({
-    lines: [out(`To ${url}`), err(` ! [rejected]        ${branch} -> ${dest} (${why})`), failed, ...hints.map(muted)],
+    lines: [out(`To ${url}`), err(` ! [rejected]        ${srcLabel ?? branch} -> ${dest} (${why})`), failed, ...hints.map(muted)],
     explain: { kind: 'warn', text: explain },
     exitCode: 1,
   });
@@ -188,9 +190,9 @@ export const gitPush: CommandFn = (world, args) => {
     lines.push(muted('remote:'), muted(`remote: Open a pull request for '${dest}' in the Remote tab.`), muted('remote:'));
   }
   lines.push(out(`To ${url}`));
-  if (serverTip === null) lines.push(refRow('*', '[new branch]', `${branch} -> ${dest}`));
-  else if (forced) lines.push(refRow('+', `${serverTip}...${localTip}`, `${branch} -> ${dest} (forced update)`));
-  else lines.push(refRow(' ', `${serverTip}..${localTip}`, `${branch} -> ${dest}`));
+  if (serverTip === null) lines.push(refRow('*', '[new branch]', `${srcLabel ?? branch} -> ${dest}`));
+  else if (forced) lines.push(refRow('+', `${serverTip}...${localTip}`, `${srcLabel ?? branch} -> ${dest} (forced update)`));
+  else lines.push(refRow(' ', `${serverTip}..${localTip}`, `${srcLabel ?? branch} -> ${dest}`));
   const tail = setUp ? ` Your local **${branch}** now tracks **${remoteName}/${dest}**, so a plain \`git push\` works next time.` : '';
   return finish(
     lines,

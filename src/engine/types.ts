@@ -16,7 +16,7 @@ export interface PullRequest { number: number; title: string; body: string; head
 export interface Activity { seq: number; who: 'you' | 'teammate'; text: string } // text: **bold** and `cmd` allowed
 export interface Remote { url: string; slug: string; commits: Record<string, Commit>; branches: Record<string, string>; defaultBranch: string; prs: PullRequest[]; activity: Activity[] }
 export interface RemoteSetup { slug: string; commits?: { message: string; files: Record<string, string> }[]; author?: { name: string; email: string } }
-export interface Repo { root: string; commits: Record<string, Commit>; branches: Record<string, string | null>; head: Head; index: Record<string, string>; reflog: ReflogEntry[]; stash: StashEntry[]; op: RepoOp | null; remotes: Record<string, string>; remoteRefs: Record<string, string>; upstream: Record<string, Upstream>; originHead: string | null }
+export interface Repo { root: string; commits: Record<string, Commit>; branches: Record<string, string | null>; head: Head; index: Record<string, string>; reflog: ReflogEntry[]; stash: StashEntry[]; op: RepoOp | null; remotes: Record<string, string>; remoteRefs: Record<string, string>; upstream: Record<string, Upstream>; originHead: string | null; config: Record<string, string> }
 export interface World { home: string; cwd: string; files: Record<string, string>; dirs: string[]; repo: Repo | null; config: Record<string, string>; seq: number; pending?: EditorSession; remote?: Remote }
 export interface RunResult { world: World; lines: OutLine[]; explain?: Explain; clear?: boolean; open?: string; exitCode: number }
 export interface WorldSetup {

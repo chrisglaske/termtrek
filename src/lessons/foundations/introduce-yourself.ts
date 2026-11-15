@@ -1,6 +1,7 @@
 import type { Lesson } from '../schema'
 import { hasIdentity } from '../checks'
 import { NOTES, README } from '../sample'
+import { getConfig } from '../../engine/git/config'
 
 export const introduceYourself: Lesson = {
   id: 'introduce-yourself',
@@ -26,7 +27,7 @@ export const introduceYourself: Lesson = {
         'Type `git config --global user.name "Sam Rivera"`, or use your own name.',
       ],
       solution: ['git config --global user.name "Sam Rivera"'],
-      check: (c) => !!c.world.config['user.name']?.trim(),
+      check: (c) => !!getConfig(c.world, 'user.name')?.trim(),
       success:
         '**Name saved.** Git will sign your snapshots with this name. One more setting to go: your email.',
     },

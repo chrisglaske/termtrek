@@ -75,6 +75,7 @@ export function createWorld(setup: WorldSetup = {}): World {
       remoteRefs: {},
       upstream: {},
       originHead: null,
+      config: {},
     };
   }
 

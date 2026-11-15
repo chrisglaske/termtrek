@@ -10,6 +10,7 @@ import { EDITOR_WAITING, messageTemplate } from './editor';
 import { gitStatus } from './status';
 import { rebaseMessage } from './rebase';
 import { matchPathspecs } from './worktree';
+import { getConfig } from './config';
 
 const stripComments = (m: string): string => m.split('\n').filter((l) => !l.startsWith('#')).join('\n').trim();
 
@@ -19,8 +20,8 @@ export const AMEND_REFLOG = 'commit (amend)';
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 const identityError = (world: World): RunResult | null => {
-  const name = world.config['user.name'];
-  const email = world.config['user.email'];
+  const name = getConfig(world, 'user.name');
+  const email = getConfig(world, 'user.email');
   if (name && email) return null;
   const missing = !email ? 'email' : 'name';
   return {
@@ -90,8 +91,8 @@ export function makeCommit(world: World, message: string, edit: CommitEdit): Run
   if (!repo0) return { world, lines: [], exitCode: 128 };
   const denied = identityError(world);
   if (denied) return denied;
-  const name = world.config['user.name']!;
-  const email = world.config['user.email']!;
+  const name = getConfig(world, 'user.name')!;
+  const email = getConfig(world, 'user.email')!;
   const op = repo0.op;
   if (op && op.conflicts.length > 0) {
     return {

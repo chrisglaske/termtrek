@@ -54,3 +54,35 @@ describe('git dispatcher', () => {
     expect(runLine(w, 'git status').exitCode).toBe(128);
   });
 });
+
+describe('config scopes (A7)', () => {
+  it('a local --unset leaves the global name and exits 5', () => {
+    const w = createWorld({ cwd: 'project', repo: { at: 'project' } });
+    const g = runLine(w, 'git config --global user.name "Sam"').world;
+    const r = runLine(g, 'git config --unset user.name');
+    expect(r.exitCode).toBe(5);
+    expect(text(runLine(r.world, 'git config user.name'))).toEqual(['Sam']);
+  });
+  it('local values win and --global unsets the global one', () => {
+    const w = createWorld({ cwd: 'project', repo: { at: 'project' } });
+    let x = runLine(w, 'git config --global user.name "Sam"').world;
+    x = runLine(x, 'git config user.name "Lee"').world;
+    expect(text(runLine(x, 'git config user.name'))).toEqual(['Lee']);
+    expect(text(runLine(x, 'git config --global user.name'))).toEqual(['Sam']);
+    expect(runLine(x, 'git config --local --unset user.name').exitCode).toBe(0);
+    expect(runLine(runLine(x, 'git config --global --unset user.name').world, 'git config user.name').exitCode).toBe(0);
+  });
+  it('a plain write outside a repo is fatal', () => {
+    const r = runLine(createWorld(), 'git config user.name Sam');
+    expect([text(r), r.exitCode]).toEqual([['fatal: not in a git directory'], 128]);
+  });
+});
+
+describe('git init in a subfolder (A9)', () => {
+  it('refuses with the one-repository message and no Reinitialized line', () => {
+    const w = createWorld({ cwd: 'project', repo: { at: 'project' }, dirs: ['project/inner'] });
+    const r = runLine(w, 'git init inner');
+    expect([text(r), r.exitCode]).toEqual([['fatal: TermTrek supports one Git repository at a time.'], 128]);
+    expect(text(runLine(runLine(w, 'cd inner').world, 'git init'))).toEqual(['fatal: TermTrek supports one Git repository at a time.']);
+  });
+});

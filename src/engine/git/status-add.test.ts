@@ -142,3 +142,26 @@ describe('git status full output', () => {
     ]);
   });
 });
+
+describe('status flags (B14)', () => {
+  it('--porcelain is the short format and --porcelain=v1 too', () => {
+    const w = runLine(fresh(), 'echo x > extra.txt').world;
+    const a = runLine(w, 'git status --porcelain');
+    expect(text(a)).toEqual(['?? extra.txt', '?? notes.txt']);
+    expect(a.lines.every((l) => l.every((s) => s.tone === undefined))).toBe(true);
+    expect(text(runLine(w, 'git status --porcelain=v1'))).toEqual(text(a));
+  });
+  it('an unknown flag is an error with exit 129', () => {
+    const r = runLine(fresh(), 'git status --bogus');
+    expect(r.exitCode).toBe(129);
+    expect(text(r)[0]).toBe("error: unknown option `bogus'");
+  });
+});
+
+describe('porcelain from a subfolder', () => {
+  it('prints root-relative paths, while -s stays relative to the folder', () => {
+    const w = createWorld({ cwd: 'project/sub', repo: { at: 'project' }, files: { 'project/sub/y.txt': 'y\n', 'project/top.txt': 't\n' } });
+    expect(text(runLine(w, 'git status --porcelain'))).toEqual(['?? sub/', '?? top.txt']);
+    expect(text(runLine(w, 'git status -s'))).toEqual(['?? ./', '?? ../top.txt']);
+  });
+});

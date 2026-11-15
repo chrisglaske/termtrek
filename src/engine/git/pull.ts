@@ -2,11 +2,12 @@ import type { CommandFn } from '../registry';
 import type { OutLine, RunResult, World } from '../types';
 import { err, out } from '../shell/fs';
 import { fromUrl } from '../remote/host';
-import { fetchInto } from './fetch';
+import { fetchInto, refRow } from './fetch';
 import { isAncestor } from './refs';
 import { activeRepo, headCommitId, headTree, workingFiles } from './repoState';
 import { startMerge } from './merge';
 import { startRebase } from './rebase';
+import { getConfig } from './config';
 
 const has = (obj: object, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key);
 const USAGE = 'usage: git pull [<options>] [<repository> [<refspec>...]]';
@@ -108,7 +109,14 @@ export const gitPull: CommandFn = (world, args) => {
 
   const fetched = fetchInto(world, remoteName, { prune: false });
   if (!fetched.ok) return { lines: fetched.lines, exitCode: fetched.exitCode };
-  const fetchLines = quiet ? [] : fetched.lines;
+  // `git pull origin main` also reports the FETCH_HEAD row, even when nothing new came down.
+  const withHead = (lines: OutLine[]): OutLine[] => {
+    if (pos.length < 2) return lines;
+    const row = refRow('*', 'branch', `${pos[1]!.padEnd(10)} -> FETCH_HEAD`);
+    return lines.length === 0 ? [out(`From ${fromUrl(r0Url)}`), row] : [lines[0]!, row, ...lines.slice(1)];
+  };
+  const r0Url = repo.remotes[remoteName]!;
+  const fetchLines = quiet ? [] : withHead(fetched.lines);
   const w1 = fetched.world;
   const r1 = w1.repo!;
   // -q hides the progress report of a pull that went through; conflicts, errors and the editor prompt still show.
@@ -130,7 +138,7 @@ export const gitPull: CommandFn = (world, args) => {
 
   const tip = r1.remoteRefs[ref]!;
   const headId = headCommitId(r1);
-  const mode = flag ?? (world.config['pull.rebase'] === 'true' ? 'rebase' : world.config['pull.rebase'] === 'false' ? 'merge' : world.config['pull.ff'] === 'only' ? 'ff-only' : null);
+  const mode = flag ?? (getConfig(world, 'pull.rebase') === 'true' ? 'rebase' : getConfig(world, 'pull.rebase') === 'false' ? 'merge' : getConfig(world, 'pull.ff') === 'only' ? 'ff-only' : null);
 
   if (mode === 'rebase') {
     const head = headTree(r1);

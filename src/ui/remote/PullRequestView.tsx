@@ -3,6 +3,7 @@ import type { PrComment, PullRequest, Remote, World } from '../../engine/types'
 import { behindBase, mergeState, prCommits, prFiles } from '../../engine/remote/pr'
 import { DiffView } from './DiffView'
 import { BranchChip } from './RemoteOverview'
+import { getConfig } from '../../engine/git/config'
 
 type Tab = 'conversation' | 'commits' | 'files'
 
@@ -157,7 +158,7 @@ export function PullRequestView({
 }): React.JSX.Element {
   const [tab, setTab] = useState<Tab>('conversation')
   const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({})
-  const me = world.config['user.name']
+  const me = getConfig(world, 'user.name')
   const commits = prCommits(remote, pr)
   const files = prFiles(remote, pr)
   const def = remote.defaultBranch

@@ -4,6 +4,7 @@ import { lineDiff } from '../diffLines';
 import { mergeTrees } from '../merge3';
 import { shortId } from '../hash';
 import { addActivity } from './model';
+import { getConfig } from '../git/config';
 
 type Commits = Record<string, Commit>;
 
@@ -85,7 +86,7 @@ export function behindBase(remote: Remote, pr: PullRequest): number {
   return [...reachable(remote.commits, baseTip)].filter((id) => !onMb.has(id)).length;
 }
 
-const learner = (world: World) => world.config['user.name'] || 'You';
+const learner = (world: World) => getConfig(world, 'user.name') || 'You';
 
 export function openPr(
   world: World,
@@ -136,7 +137,7 @@ export function mergePr(world: World, number: number): { ok: true; world: World 
   const message = `Merge pull request #${number} from ${pr.head}\n\n${pr.title}`;
   const parents = [baseTip, headTip];
   const id = shortId(`remote,${parents.join(',')}${JSON.stringify(tree)}${message}${seq}`);
-  const author = { name: learner(world), email: world.config['user.email'] || 'you@example.com' };
+  const author = { name: learner(world), email: getConfig(world, 'user.email') || 'you@example.com' };
   const commit: Commit = { id, parents, tree, message, author, time: seq };
   const prs = remote.prs.map((p) => (p.number === number ? { ...p, state: 'merged' as const, mergeCommit: id, headTip } : p));
   const next = addActivity(

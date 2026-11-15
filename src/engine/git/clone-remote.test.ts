@@ -76,7 +76,7 @@ describe('git clone', () => {
   it('clone refused while a repo exists', () => {
     const w = run(fresh(), 'mkdir other', 'cd other', 'git init');
     const r = runLine(run(w, 'cd ..'), `git clone ${URL}`);
-    expect(text(r)).toEqual(['fatal: TermTrek supports one Git repository at a time']);
+    expect(text(r)).toEqual(['fatal: TermTrek supports one Git repository at a time.']);
     expect(r.exitCode).toBe(128);
     expect(runLine(w, `git clone ${URL}`).exitCode).toBe(128);
   });

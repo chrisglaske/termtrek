@@ -42,7 +42,11 @@ export const gitRevert: CommandFn = (world, args, io) => {
 
   const spec = pos[0]!;
   const id = resolveRev(repo, spec);
-  if (id === null) return { lines: unresolved(repo, spec), exitCode: 128 };
+  if (id === null) {
+    // `git revert` words a missing revision as "bad revision", not the pathspec-style ambiguity message.
+    const none = unresolved(repo, spec);
+    return { lines: none.length === 1 ? none : [err(`fatal: bad revision '${spec}'`)], exitCode: 128 };
+  }
   const commit = repo.commits[id]!;
   if (commit.parents.length > 1) {
     return { lines: [err(`error: commit ${id} is a merge but no -m option was given.`), FAILED], exitCode: 128 };
