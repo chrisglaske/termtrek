@@ -78,7 +78,7 @@ function GuideView({ id }: { id: string }): React.JSX.Element {
       <Nav />
       <main id="main" className="guides-main" tabIndex={-1}>
         <p className="guides-crumb">
-          <Link to="/guides">All guides</Link>
+          <Link to="/guides">All setup guides</Link>
         </p>
         <h1>{guide.title}</h1>
         <p className="guides-note">This page is not simulated. You do these steps on your own computer.</p>

@@ -264,7 +264,7 @@ export function Landing(): React.JSX.Element {
               <h2 id="foot-learn">Learn</h2>
               <a href="#course">Course</a>
               <Link to="/playground">Playground</Link>
-              <Link to="/guides">Guides</Link>
+              <Link to="/guides">Setup guides</Link>
             </nav>
             <nav aria-labelledby="foot-project">
               <h2 id="foot-project">Project</h2>

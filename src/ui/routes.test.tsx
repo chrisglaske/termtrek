@@ -40,7 +40,8 @@ describe('routes', () => {
   it('lists the guides', () => {
     at('/guides')
     expect(screen.getAllByRole('link', { name: /minutes/ })).toHaveLength(3)
-    expect(document.title).toBe('Guides · TermTrek')
+    expect(screen.getByRole('heading', { level: 1, name: 'Setup guides' })).toBeInTheDocument()
+    expect(document.title).toBe('Setup guides · TermTrek')
   })
 
   it('opens a guide and shows not found for an unknown one', () => {
@@ -48,6 +49,7 @@ describe('routes', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Install Git' })).toBeInTheDocument()
     expect(document.title).toBe('Install Git · TermTrek')
     expect(screen.getByText('xcode-select --install')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'All setup guides' })).toHaveAttribute('href', '/guides')
   })
 
   it('shows not found for an unknown guide', () => {

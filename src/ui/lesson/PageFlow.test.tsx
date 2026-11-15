@@ -37,6 +37,12 @@ describe('Calm lesson pages (first-commit)', () => {
     expect(ps.flatMap((p) => (p.kind === 'do' ? [p.step] : []))).toEqual([0, 1])
   })
 
+  it('opens the lesson list from a Lessons button, not a second "Course"', async () => {
+    open()
+    await userEvent.click(screen.getByRole('button', { name: 'Lessons' }))
+    expect(screen.getByRole('navigation', { name: 'Lessons' })).toBeInTheDocument()
+  })
+
   it('shows the pages in order with progress dots', async () => {
     const { user } = open()
     expect(screen.getByRole('heading', { level: 1, name: 'Your first commit' })).toBeInTheDocument()

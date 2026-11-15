@@ -216,7 +216,7 @@ describe('Landing', () => {
     const link = (name: string) => within(foot).getByRole('link', { name })
     expect(link('Course')).toHaveAttribute('href', '#course')
     expect(link('Playground')).toHaveAttribute('href', '/playground')
-    expect(link('Guides')).toHaveAttribute('href', '/guides')
+    expect(link('Setup guides')).toHaveAttribute('href', '/guides')
     expect(link('Source on GitHub')).toHaveAttribute('href', SOURCE_URL)
     expect(link('Report a problem')).toHaveAttribute('href', ISSUES_URL)
     expect(link('Suggest a lesson')).toHaveAttribute('href', ISSUES_URL)

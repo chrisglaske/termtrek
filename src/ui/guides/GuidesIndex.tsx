@@ -5,12 +5,12 @@ import { useDocumentTitle } from '../layout/useDocumentTitle'
 import './Guides.css'
 
 export function GuidesIndex(): React.JSX.Element {
-  useDocumentTitle('Guides · TermTrek', 'Step-by-step guides for your own computer: install Git, set your name and sign in to GitHub on macOS or Windows.')
+  useDocumentTitle('Setup guides · TermTrek', 'Step-by-step guides for your own computer: install Git, set your name and sign in to GitHub on macOS or Windows.')
   return (
     <>
       <Nav />
       <main id="main" className="guides-main" tabIndex={-1}>
-        <h1>On your computer</h1>
+        <h1>Setup guides</h1>
         <p className="guides-lead">The course runs in your browser. These guides help you set up the real thing, on macOS or Windows.</p>
         <ul className="guides-list">
           {guides.map((g) => (

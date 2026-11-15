@@ -60,13 +60,13 @@ export function Nav(): React.JSX.Element {
           </button>
           <div id="nav-menu" className={open ? 'nav-menu is-open' : 'nav-menu'}>
             <Link className="nav-link" to="/learn" onClick={() => setOpen(false)}>
-              Home
+              Course
             </Link>
             <Link className="nav-link" to="/playground" onClick={() => setOpen(false)}>
               Playground
             </Link>
             <Link className="nav-link" to="/guides" onClick={() => setOpen(false)}>
-              Guides
+              Setup guides
             </Link>
             <button
               type="button"
